@@ -15,6 +15,7 @@ import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/hero_amount_display.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
+import 'package:hermanos_ledgr/shared/widgets/version_pill.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -60,11 +61,18 @@ class DashboardScreen extends ConsumerWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        Text(
-                          'Personal Ledger',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              'Personal Ledger',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(width: Spacing.sm),
+                            const VersionPill(),
+                          ],
                         ),
                       ],
                     ),

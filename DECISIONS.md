@@ -189,6 +189,28 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - Cloud API (GPT/Gemini) — violates 100% offline, zero-cloud privacy principle.
 **Rationale:** Delivers instantaneous (< 50ms) logging for 90% of transactions with zero memory strain, while preserving full conversational LLM capabilities for complex inputs and summaries. Reduces download size from ~1.2 GB to ~350 MB and peak RAM from ~1.2 GB to < 400 MB, perfectly suited for the Samsung Galaxy A36.
 
+### D-014: Semantic Versioning (SemVer) Lifecycle
+**Date:** 2026-09-29
+**Status:** Accepted
+**Context:** App is undergoing active iterations. Calling early development builds `v1.0.0` misrepresents progress, and changes need structured version tracking.
+**Decision:** Standardize on strict Semantic Versioning (`0.Y.Z` for pre-1.0 development, moving to `1.0.0` only when all PRD requirements, Drift DB, and on-device LLM are fully implemented and stable). Every code task will increment patch (`0.Y.Z+1`) or minor (`0.(Y+1).0`), synchronized across `pubspec.yaml` and `app_constants.dart`. A subtle `VersionPill` component is displayed in-app.
+**Alternatives Considered:**
+- Static version until final release — loses tracking of progressive build milestones.
+- Unstructured date-based versioning — less compatible with Flutter build numbers and automated release pipelines.
+**Rationale:** Keeps build artifacts identifiable, aligns with Flutter's `version: X.Y.Z+B` system, and enables clear communication during testing.
+
+---
+
+### D-015: GitHub Releases In-App OTA Auto-Updater
+**Date:** 2026-09-29
+**Status:** Accepted (Roadmap for future implementation)
+**Context:** Since Hermanos Ledgr is a personal-use app that will not be published to Google Play Store, updating the app on the phone currently requires manual USB cable sideloading or downloading APKs manually.
+**Decision:** Plan an in-app OTA auto-updater that queries the GitHub Releases API (`api.github.com/repos/johncarlangelo/hermanos-ledgr/releases/latest`) on startup and from the Settings screen. When a newer version tag is found, the app prompts the user, downloads the APK to local cache, and invokes the Android Package Installer.
+**Alternatives Considered:**
+- Google Play Console internal testing track — requires developer account, review overhead, and breaks zero-cloud independence.
+- Third-party app stores (F-Droid / Obtainium) — adds external app dependencies.
+**Rationale:** Preserves 100% self-reliance and privacy. Pushing a tag to `main` with GitHub Actions builds and publishes the APK automatically, allowing the owner to update directly from their phone with one tap.
+
 ---
 
 *Add new decisions below this line.*

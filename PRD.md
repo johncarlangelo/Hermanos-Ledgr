@@ -1,29 +1,29 @@
 # Product Requirements Document (PRD)
 ## Hermanos Ledgr — Personal Budget Tracker
 
-> **Version:** 1.0 · **Last Updated:** 2026-09-28
-> **Author:** John C. · **Status:** Planning
+> **Version:** 0.1.0-alpha · **Last Updated:** 2026-09-29  
+> **Author:** John C. · **Status:** In Active Development (Pre-1.0)
 
 ---
 
 ## 1. Overview
 
-**Hermanos Ledgr** is a personal-use Android budget tracking app inspired by [Tarsi Budget Tracker](https://www.tarsi.cloud/features). It recreates Tarsi's core financial tracking capabilities without the paywall, cloud dependency, or social features. The app runs entirely offline on a **Samsung Galaxy A36 5G** (Snapdragon 6 Gen 3, 6–8 GB RAM, Android 15/16).
+**Hermanos Ledgr** is a personal-use Android budget tracking app built with Flutter. It is an offline-first finance tracker featuring bespoke Hermanos-Stash styling, custom-tailored mobile components, and local LLM integration. The app runs entirely offline on a **Samsung Galaxy A36 5G / A55** (Snapdragon 6 Gen 3, 6–8 GB RAM, Android 15/16).
 
-### 1.1 Why Rebuild?
-
-Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) behind a monthly subscription. Since this app is for **personal use only** and will never be published on any app store, it can replicate that feature set freely, tailored exactly to the owner's workflow.
+### 1.1 App Philosophy
+This app is for **personal use only** and will never be published on any app store. It delivers a fast, frictionless financial tracker tailored exactly to the owner's workflow with zero subscriptions, zero paywalls, and zero cloud lock-in.
 
 ### 1.2 Key Principles
 
 | Principle | Detail |
 |---|---|
 | **No Paywall** | Every feature is unlocked from day one |
-| **Android Only** | Target: Samsung Galaxy A36 5G (Snapdragon 6 Gen 3) |
+| **Android Only** | Target: Samsung Galaxy A36 / A55 (Snapdragon 6 Gen 3) |
 | **Offline First** | All data lives on-device; no account/login required |
 | **Local AI** | Cascaded hybrid: Tier 1 Fast Classifier (<30MB) + Tier 2 Sub-1B Light LLM (Qwen 2.5 0.5B ~350MB via `flutter_llama`) |
 | **Data Portability** | Export/import JSON/CSV for backup and phone migration |
 | **Privacy** | Zero analytics, zero telemetry, zero cloud |
+| **Zero Native UI** | Bespoke Hermanos-Stash design; no stock Android dialogs, dropdowns, or toasts |
 
 ---
 
@@ -87,14 +87,23 @@ Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) b
 | **Import** | Import from JSON backup to restore or migrate to new phone |
 | **Receipt Scanning** | Camera/gallery → OCR extracts amount and merchant → pre-fill transaction |
 
-### 3.6 UX & Polish
+### 3.6 Settings & Personalization
 
 | Feature | Description |
 |---|---|
-| **Light & Dark Mode** | Follows system theme or manual toggle |
-| **Quick Notes** | Jot future expenses/reminders without creating a transaction |
-| **Bank Templates** | Pre-built templates for Philippine banks and e-wallets (BDO, BPI, GCash, Maya, etc.) |
-| **Multiple Profiles** | Separate profiles (personal, family, side business) each with own accounts/budgets |
+| **Theme Controls** | Switch between System, Light, Dark, and AMOLED (true-black) with live swatch cards |
+| **Profile & Preferences** | Manage user display name, currency indicator (`₱ PHP`), and default launch screen |
+| **Haptic Feedback** | Configurable tactile feedback for custom keypad taps and ledger actions |
+| **Local AI Management** | Status of on-device Qwen 3 model, privacy guarantees, and inference settings |
+| **Data Tools** | Manual JSON/CSV export, backup restore, replay onboarding, and safe ledger reset |
+
+### 3.7 In-App OTA Auto-Updater (Future Roadmap)
+
+| Feature | Description |
+|---|---|
+| **GitHub Releases Detection** | Automatically poll GitHub Releases API for new version tags whenever major, minor, or patch changes are pushed to `main` |
+| **Seamless Sideloading** | Background APK download with checksum verification and direct Android package installer invocation without Play Store |
+| **Update Notification** | Custom bottom sheet modal showing release notes and one-tap "Update Now" action |
 
 ---
 

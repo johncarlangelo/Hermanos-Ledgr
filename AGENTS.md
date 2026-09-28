@@ -136,6 +136,34 @@ See `DESIGN.md` and `.agents/skills/flutter-m3-premium-design/SKILL.md` for comp
 
 ---
 
+## Semantic Versioning (SemVer) Rules
+
+Agents MUST actively maintain and bump the semantic version according to what is implemented, fixed, or modified:
+- **Pre-1.0 Development Phase (`0.Y.Z`)**:
+  The current development state is strictly in early pre-release (`v0.1.0-alpha`). It is **NOT v1.0.0**. Version 1.0.0 is reserved exclusively for the complete, stable release featuring full Drift SQLite persistence, on-device LLM inference, and all core PRD requirements.
+- **Patch Version Bump (`0.Y.Z` → `0.Y.(Z+1)` / build +1)**:
+  - Triggered by: Bug fixes, UI/styling tweaks, text/spacing corrections, minor refactors.
+  - Example: Fixing a double drag handle or padding overflow bumps `0.1.0` → `0.1.1`.
+- **Minor Version Bump (`0.Y.Z` → `0.(Y+1).0` / build +1)**:
+  - Triggered by: New feature screens or major capabilities.
+  - Example: Implementing the Settings screen, Drift DAO layer, camera OCR scanner, or CSV data export.
+- **Major Version Bump (`X.0.0`)**:
+  - Reserved strictly for full production milestone readiness (`v1.0.0`) when the entire PRD feature set is completed for daily personal driver use on the Samsung Galaxy A36/A55.
+- **Mandatory SemVer Files to Synchronize:**
+  1. [`pubspec.yaml`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/pubspec.yaml) (`version: X.Y.Z+B`)
+  2. [`lib/core/constants/app_constants.dart`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/lib/core/constants/app_constants.dart) (`appVersion`, `appBuildNumber`, `appVersionDisplay`)
+- **Version Pill:** The app displays a subtle custom `VersionPill` (`v0.1.0-alpha`) on the Dashboard header and Settings screen.
+
+---
+
+## Future Capabilities Roadmap
+
+### In-App OTA Auto-Updater
+- An automated updater checking GitHub Releases API (`api.github.com/repos/johncarlangelo/hermanos-ledgr/releases/latest`) whenever major, minor, or patch releases are pushed to `main`.
+- When an update is detected, the app displays a custom bottom sheet prompting the user, downloads the release APK silently in the background, and triggers package installation on Android without Google Play Store dependency.
+
+---
+
 ## Key Decisions
 
 All architectural and design decisions are logged in `DECISIONS.md`. When making a non-obvious choice, add an entry there with the rationale.
