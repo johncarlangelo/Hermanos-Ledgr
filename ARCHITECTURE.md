@@ -242,9 +242,10 @@ lib/
 │   │
 │   ├── ai_assistant/
 │   │   ├── data/
-│   │   │   ├── llm_service.dart          # flutter_llama wrapper
+│   │   │   ├── classifier_service.dart   # Tier 1 fast decision model & entity extractor (<30MB)
+│   │   │   ├── llm_service.dart          # Tier 2 flutter_llama wrapper (sub-1B GGUF)
 │   │   │   ├── model_manager.dart        # Download, load, manage GGUF models
-│   │   │   └── nlp_parser.dart           # Parse LLM output → transaction
+│   │   │   └── nlp_parser.dart           # Parse hybrid output → ParsedTransaction
 │   │   ├── domain/
 │   │   │   ├── chat_message.dart
 │   │   │   ├── parsed_transaction.dart
@@ -259,6 +260,7 @@ lib/
 │   │   │       └── model_download_dialog.dart
 │   │   └── providers/
 │   │       ├── chat_provider.dart
+│   │       ├── classifier_provider.dart
 │   │       └── llm_provider.dart
 │   │
 │   ├── receipt_scanner/
@@ -493,57 +495,78 @@ CREATE INDEX idx_budgets_period ON budgets(profile_id, category_id, period);
 
 ---
 
-## 6. LLM Integration Architecture
+## 6. Cascaded Hybrid AI Architecture (Tier 1 Classifier + Tier 2 Light LLM)
+
+To ensure zero UI latency (< 50ms), minimal battery consumption, and a lightweight download footprint on the Samsung Galaxy A36 (Snapdragon 6 Gen 3, 6–8 GB RAM), Hermanos Ledgr uses a **two-tier cascaded architecture**:
 
 ```
-┌──────────────────────────────────────────────────┐
-│                   Chat Screen                     │
-│  User types: "Jollibee 250 from GCash"           │
-└──────────────────┬───────────────────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────────────────┐
-│              Chat Provider (Riverpod)             │
-│  1. Add user message to chat history              │
-│  2. Build system prompt with context              │
-│  3. Send to LLM Service                           │
-└──────────────────┬───────────────────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────────────────┐
-│           LLM Service (Background Isolate)        │
-│  - flutter_llama inference                        │
-│  - Streaming token output                         │
-│  - System prompt includes:                        │
-│    • User's categories list                       │
-│    • User's accounts list                         │
-│    • Today's date                                 │
-│    • Response format instructions (JSON)          │
-└──────────────────┬───────────────────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────────────────┐
-│           NLP Parser                              │
-│  Parse LLM JSON response → ParsedTransaction     │
-│  {type, amount, category, account, date, note}    │
-└──────────────────┬───────────────────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────────────────┐
-│           Transaction Action Card (UI)            │
-│  Show parsed transaction for user confirmation    │
-│  [✓ Confirm]  [✏️ Edit]  [✕ Undo]                │
-└──────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                       Chat / Voice Input                    │
+│           User types: "Jollibee 250 GCash"                  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Chat Provider (Riverpod)                    │
+│   Evaluates input complexity & passes to Tier 1 Classifier   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│         Tier 1: Fast Classifier & Entity Extractor          │
+│   - Lightweight non-autoregressive decision model (< 30 MB) │
+│   - Execution time: < 20 ms, RAM: < 30 MB                   │
+│   - Extracts amount, date, matches account & category       │
+│   - Calibrated Confidence Score >= Threshold (e.g. 0.85)?   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+            ┌──────────────────┴──────────────────┐
+     [High Confidence]                     [Low Confidence /
+      (Single expense,                      Complex split,
+     obvious entities)                      conversational,
+            │                               daily summary]
+            │                                     │
+            ▼                                     ▼
+ ┌──────────────────────┐              ┌──────────────────────┐
+ │  Instant Direct Map  │              │  Tier 2: Light LLM   │
+ │  Produces            │              │  (Qwen 2.5 0.5B /    │
+ │  ParsedTransaction   │              │   SmolLM 2 360M)     │
+ │  in < 50ms           │              │  - Runs via          │
+ └──────────┬───────────┘              │    flutter_llama     │
+            │                          │  - Background Isolate│
+            │                          │  - Generates JSON    │
+            │                          └──────────┬───────────┘
+            │                                     │
+            └──────────────────┬──────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    NLP Parser / Normalizer                  │
+│       Standardizes output into structured ParsedTransaction │
+│          {type, amount, category, account, date, note}       │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                Transaction Action Card (UI)                 │
+│         Show parsed transaction for user confirmation       │
+│             [✓ Confirm]   [✏️ Edit]   [✕ Discard]            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 6.1 Model Management
+### 6.1 Two-Tier Model Sizing & Lifecycle
 
-- Models stored in app's internal storage (`getApplicationDocumentsDirectory()`)
-- Download from Hugging Face on first use (with progress bar)
-- Support switching between models in Settings
-- Model files: ~1-1.5 GB each (Q4_K_M quantized)
+| Tier | Component | Engine / Format | Download Size | RAM Usage | Latency | Primary Role |
+|---|---|---|---|---|---|---|
+| **Tier 1** | Fast Decision Model / Classifier | On-device model / compiled rules | < 30 MB (bundled or instant) | < 30 MB | < 20 ms | 90% of daily transactions ("Starbucks 250", "Salary 35k") |
+| **Tier 2** | Sub-1B Light LLM (`Qwen 2.5 0.5B Instruct` / `SmolLM 2 360M`) | `flutter_llama` (llama.cpp FFI) / Q4_K_M GGUF | ~350 MB (~220 MB for SmolLM) | ~380 MB | < 1.5 s | Complex multi-item splits, conversational prompts, spending summaries |
 
-### 6.2 System Prompt Template
+- **Tier 1 (System 1):** Always active, instant response, runs on CPU without activating heavy GPU or high-memory isolates. Resolves ~90% of typical ledger entries.
+- **Tier 2 (System 2):** Downloaded on first use or first complex query; loaded into a background isolate only when needed; automatically unloaded or suspended when navigating away from AI features.
+- Models stored in app's internal storage (`getApplicationDocumentsDirectory()`).
+- Support switching between models or purging model storage in Settings.
+
+### 6.2 Tier 2 System Prompt Template
 
 ```
 You are a personal finance assistant. Parse the user's message into a structured transaction.
@@ -613,13 +636,14 @@ If you cannot parse the input, respond with:
 | Concern | Strategy |
 |---|---|
 | **App startup** | Lazy-load features; only Dashboard loads eagerly |
-| **LLM loading** | Load model on first AI tab visit; keep in memory while in chat |
-| **LLM inference** | Always run in background Isolate; never block UI thread |
+| **Tier 1 Classifier** | Instantaneous (< 20 ms), tiny memory (< 30 MB), zero battery drain for 90% of entries |
+| **LLM loading** | Load sub-1B model (~350 MB GGUF) only when invoked or in chat tab; unload or sleep when idle |
+| **LLM inference** | Always run in background Isolate; never block UI thread; Qualcomm Adreno GPU acceleration |
 | **Database queries** | Use Drift's streaming queries for reactive UI; add indexes on hot columns |
 | **Image storage** | Compress receipt images to 80% JPEG before storing |
 | **List rendering** | Use `ListView.builder` for all transaction lists (lazy loading) |
 | **Chart rendering** | Cache chart data; recompute only on data change |
-| **Memory** | Monitor RAM usage when LLM is loaded (~2-3 GB); unload model when leaving AI tab |
+| **Memory** | Monitor RAM usage (< 150 MB baseline, peak < 500 MB when Tier 2 LLM isolate active) |
 
 ---
 

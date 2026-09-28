@@ -71,7 +71,10 @@ The app is built around the **"Calm Finance"** philosophy: an uncluttered, high-
   * 🔴 **Over Budget** (> 100% limit)
 * **Savings Goal Preview**: Track target dates and progress rings for emergency funds or long-term goals.
 
-### 6. Hermanos AI Assistant (On-Device LLM)
+### 6. Hermanos AI Assistant (Cascaded Hybrid AI)
+* **Cascaded Two-Tier Pipeline**:
+  * **Tier 1 (Fast Classifier & Extractor)**: Ultra-fast on-device decision model (< 30 MB) executing in `< 20ms` with calibrated confidence—resolves ~90% of daily transactions without waking heavy LLM isolates.
+  * **Tier 2 (Sub-1B Light LLM)**: Compact `Qwen 2.5 0.5B Instruct` (~350 MB GGUF) via `flutter_llama` with Qualcomm Adreno GPU acceleration, invoked only for complex multi-item splits, conversational queries, and daily spending summaries.
 * **Natural Language Logging**: Type or speak naturally:
   * *"Starbucks 250 GCash"*
   * *"Salary 35k BDO"*
@@ -207,8 +210,8 @@ flutter test
   - Real-time aggregation of Drift streams into the dashboard
 - [ ] **Phase 5: Budget & Goal Engines**
   - Monthly budget calculations, overspend warnings, savings goal contributions
-- [ ] **Phase 9: Local LLM Engine**
-  - `flutter_llama` FFI integration with Qwen 3 1.7B GGUF model download and inference
+- [ ] **Phase 9: Cascaded Hybrid AI Engine**
+  - Tier 1 Fast Classifier (< 30 MB, < 20 ms) + Tier 2 Sub-1B Light LLM (`Qwen 2.5 0.5B` ~350 MB GGUF) via `flutter_llama`
 
 See [`PROGRESS.md`](PROGRESS.md) and [`TASKS.md`](TASKS.md) for detailed task tracking.
 

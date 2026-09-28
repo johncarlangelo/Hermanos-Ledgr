@@ -21,7 +21,7 @@ Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) b
 | **No Paywall** | Every feature is unlocked from day one |
 | **Android Only** | Target: Samsung Galaxy A36 5G (Snapdragon 6 Gen 3) |
 | **Offline First** | All data lives on-device; no account/login required |
-| **Local LLM** | On-device AI via `flutter_llama` + GGUF models (Qwen 3 1.7B or SmolLM 2 1.7B) |
+| **Local AI** | Cascaded hybrid: Tier 1 Fast Classifier (<30MB) + Tier 2 Sub-1B Light LLM (Qwen 2.5 0.5B ~350MB via `flutter_llama`) |
 | **Data Portability** | Export/import JSON/CSV for backup and phone migration |
 | **Privacy** | Zero analytics, zero telemetry, zero cloud |
 
@@ -68,11 +68,12 @@ Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) b
 
 | Feature | Description |
 |---|---|
-| **Natural Language Logging** | Type or speak: "Starbucks 250", "Salary 30k last Friday" → auto-parsed into structured transaction |
-| **Voice Input** | Speech-to-text → LLM parsing → transaction creation |
-| **Offline AI** | Model runs entirely on-device via `flutter_llama` (no internet needed) |
-| **Smart Categorization** | LLM auto-suggests category/account based on description |
-| **Daily Summary** | AI-generated brief summary of the day's spending (on-demand) |
+| **Cascaded Hybrid Pipeline** | Tier 1: Fast Classifier/Extractor (<50ms) handles 90% of simple entries without waking LLM. Tier 2: Sub-1B Light LLM handles multi-item & complex inputs. |
+| **Natural Language Logging** | Type or speak: "Starbucks 250", "Salary 30k last Friday", "Dinner 1500 split with 2 friends" → auto-parsed into structured transaction |
+| **Voice Input** | Speech-to-text → Hybrid parsing → transaction creation |
+| **Offline AI** | Models run entirely on-device (zero internet, zero API keys, 100% private) |
+| **Smart Categorization** | Decision model auto-classifies category & account based on description |
+| **Daily Summary** | Sub-1B LLM generates brief summaries of the day's spending on-demand |
 | **Insights** | Pattern recognition — spending trends, unusual expenses, budget drift warnings |
 
 ### 3.5 Data & Privacy
@@ -119,8 +120,8 @@ Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) b
 | **Framework** | Flutter (Dart) — Android only build |
 | **State Management** | Riverpod 2.x |
 | **Local Database** | Drift (SQLite wrapper) |
-| **On-Device LLM** | `flutter_llama` (llama.cpp via FFI) |
-| **LLM Model** | Qwen 3 1.7B Q4_K_M or SmolLM 2 1.7B Q4_K_M (GGUF) — download on first use |
+| **On-Device AI Engine** | Tier 1: Local Classifier/Pattern Extractor + Tier 2: `flutter_llama` (llama.cpp FFI) |
+| **Language Model** | Qwen 2.5 0.5B Instruct Q4_K_M (~350 MB) or SmolLM 2 360M (~220 MB) — download on first use |
 | **OCR** | Google ML Kit (on-device text recognition) |
 | **Speech-to-Text** | Android native STT (via `speech_to_text` package) |
 | **Charts** | `fl_chart` |
@@ -161,8 +162,8 @@ Since this is personal-use software, success is measured by:
 
 | Risk | Mitigation |
 |---|---|
-| LLM too slow on device | Use Q4_K_M quantization; fallback to smaller model (Gemma 3 1B) |
-| LLM model too large to download | Implement download-on-first-use with progress indicator |
+| AI too slow or memory-heavy | Use Cascaded Hybrid architecture: Tier 1 Classifier resolves 90% in <50ms; Tier 2 Sub-1B model (Qwen 0.5B) uses only ~350MB RAM |
+| Model too large to download | Sub-1B model is only ~350MB (vs 1.5GB 2B+ models); download on first use with clear progress |
 | Database corruption | Daily auto-backup + manual export |
 | OCR inaccuracy | Allow manual correction after scan; OCR is a convenience, not a requirement |
 | Scope creep | Strict adherence to out-of-scope list; features added only after v1 is stable |

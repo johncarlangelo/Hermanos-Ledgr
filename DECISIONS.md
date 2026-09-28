@@ -81,9 +81,9 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 
 ### D-005: Qwen 3 1.7B Q4_K_M as Default LLM Model
 **Date:** 2026-09-28
-**Status:** Accepted
+**Status:** Superseded by D-013
 **Context:** Need a model small enough for mobile but capable enough to parse "Starbucks 250 from GCash" into structured JSON.
-**Decision:** Default to Qwen 3 1.7B Q4_K_M. Offer SmolLM 2 1.7B as alternative. Gemma 3 1B as lightweight fallback.
+**Decision:** Originally defaulted to Qwen 3 1.7B. Superseded by D-013 in favor of a two-tier hybrid architecture (Tier 1 Classifier + Tier 2 Sub-1B Light LLM: Qwen 2.5 0.5B / SmolLM 2 360M).
 **Alternatives Considered:**
 - Larger models (3B+) — too much RAM, too slow
 - Smaller models (<1B) — insufficient for reliable JSON output
@@ -175,6 +175,19 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - Heavy glassmorphism / skeuomorphism throughout — reduces contrast and battery life on mobile
 - Ad-hoc styling per screen — leads to inconsistency across features
 **Rationale:** Standardizing tokens in `DESIGN.md` and a dedicated skill ensures consistent implementation across all phases. The "Calm Finance" philosophy emphasizes speed of input and tabular clarity over flashy gamification, perfectly matching the personal finance use-case.
+
+### D-013: Cascaded Hybrid AI Architecture (Fast Classifier + Sub-1B Light LLM)
+**Date:** 2026-09-28
+**Status:** Accepted (Amends and supersedes D-005 model sizing)
+**Context:** Running a 1.7B–2B parameter model for every basic transaction ("Starbucks 250") on a mobile phone (Samsung Galaxy A36) introduces unnecessary memory allocation (~1.2 GB RAM), battery usage, and large download size (~1.2 GB). However, pure heuristics alone cannot handle complex multi-item splits or conversational spending summaries.
+**Decision:** Adopt a two-tier cascaded hybrid pipeline:
+1. **Tier 1 (System 1 - Fast Classifier & Entity Extractor):** A lightweight non-autoregressive decision model / pattern extractor (< 30 MB, < 20ms) that resolves ~90% of straightforward daily entries (extracting amount, date, and classifying category/account with calibrated confidence).
+2. **Tier 2 (System 2 - Sub-1B Light LLM):** An ultra-compact GGUF model (`Qwen 2.5 0.5B Instruct` ~350 MB, with `SmolLM 2 360M` ~220 MB as alternative) running via `flutter_llama`. The Tier 1 router invokes Tier 2 only when input is complex, multi-entity, conversational, or for generating daily spending summaries.
+**Alternatives Considered:**
+- Monolithic 1.7B–3B LLM for all inputs — overkill for simple logging, 1.2 GB RAM footprint, higher battery draw.
+- Pure classifier only without LLM — cannot generate natural language summaries or handle complex conversational queries.
+- Cloud API (GPT/Gemini) — violates 100% offline, zero-cloud privacy principle.
+**Rationale:** Delivers instantaneous (< 50ms) logging for 90% of transactions with zero memory strain, while preserving full conversational LLM capabilities for complex inputs and summaries. Reduces download size from ~1.2 GB to ~350 MB and peak RAM from ~1.2 GB to < 400 MB, perfectly suited for the Samsung Galaxy A36.
 
 ---
 

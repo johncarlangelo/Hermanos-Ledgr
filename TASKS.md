@@ -173,27 +173,28 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 ---
 
-## Phase 9: AI Assistant (Local LLM)
-> **Goal:** Chat interface with on-device natural language transaction logging
+## Phase 9: AI Assistant (Cascaded Hybrid AI: Classifier + Light LLM)
+> **Goal:** Two-tier chat interface & natural language logging (Tier 1 Fast Classifier <30MB, <20ms + Tier 2 Sub-1B Light LLM `Qwen 2.5 0.5B` ~350MB)
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 9.1 | Add `flutter_llama` dependency and configure Android build | 🟡 | 0.3 | ⬜ TODO |
-| 9.2 | Build `ModelManager` — download, store, load GGUF models | 🔴 | 9.1 | ⬜ TODO |
-| 9.3 | Build `LlmService` — inference wrapper with streaming | 🔴 | 9.2 | ⬜ TODO |
-| 9.4 | Build `NlpParser` — parse LLM JSON output → `ParsedTransaction` | 🟡 | 9.3, 3.1 | ⬜ TODO |
-| 9.5 | Create LLM and chat providers | 🟡 | 9.3, 9.4 | ⬜ TODO |
-| 9.6 | Design and write system prompt template | 🟡 | 9.3 | ⬜ TODO |
-| 9.7 | Build chat screen UI (message list, input bar) | 🔴 | 9.5 | ⬜ TODO |
-| 9.8 | Build chat bubble widget | 🟡 | 9.7 | ⬜ TODO |
-| 9.9 | Build transaction action card (confirm/edit/undo) | 🟡 | 9.7, 3.6 | ⬜ TODO |
-| 9.10 | Implement confirm flow (action card → save transaction) | 🟡 | 9.9, 3.10 | ⬜ TODO |
-| 9.11 | Add voice input button (speech-to-text → LLM) | 🟡 | 9.7 | ⬜ TODO |
-| 9.12 | Build model download dialog with progress | 🟡 | 9.2 | ⬜ TODO |
-| 9.13 | Implement daily summary generation | 🟡 | 9.3, 3.3 | ⬜ TODO |
-| 9.14 | Implement insights/pattern analysis | 🟡 | 9.3, 3.3 | ⬜ TODO |
-| 9.15 | Chat history persistence (load on screen open) | 🟢 | 9.7, 1.4 | ⬜ TODO |
-| 9.16 | Test with various NL inputs on Samsung A36 | 🟡 | 9.10 | ⬜ TODO |
+| 9.1 | Build `ClassifierService` — Tier 1 fast decision model & entity extractor (<30MB) | 🟡 | 3.1 | ⬜ TODO |
+| 9.2 | Build hybrid router logic — direct map high-confidence inputs vs delegate complex/summaries to Tier 2 | 🟡 | 9.1 | ⬜ TODO |
+| 9.3 | Add `flutter_llama` dependency and configure Android Vulkan/OpenCL build | 🟡 | 0.3 | ⬜ TODO |
+| 9.4 | Build `ModelManager` — download, store, and manage Sub-1B light GGUF model (`Qwen 2.5 0.5B` / `SmolLM 2 360M`) | 🔴 | 9.3 | ⬜ TODO |
+| 9.5 | Build `LlmService` — background isolate inference wrapper with token streaming for complex queries | 🔴 | 9.4 | ⬜ TODO |
+| 9.6 | Build `NlpParser` — unified parser standardizing Tier 1 & Tier 2 outputs → `ParsedTransaction` | 🟡 | 9.1, 9.5 | ⬜ TODO |
+| 9.7 | Create hybrid AI providers (`ClassifierProvider`, `LlmProvider`, `ChatProvider`) | 🟡 | 9.2, 9.6 | ⬜ TODO |
+| 9.8 | Design and benchmark optimized system prompt for sub-1B model | 🟡 | 9.5 | ⬜ TODO |
+| 9.9 | Build chat screen UI (offline badge, message list, prompt chips, input bar) | 🔴 | 9.7 | ⬜ TODO |
+| 9.10 | Build chat bubble widget (user messages + assistant responses) | 🟡 | 9.9 | ⬜ TODO |
+| 9.11 | Build transaction action card (amount, category, account preview with confirm/edit/discard) | 🟡 | 9.9, 3.6 | ⬜ TODO |
+| 9.12 | Implement confirm flow (action card → save transaction to Drift DB with 5s undo toast) | 🟡 | 9.11, 3.10 | ⬜ TODO |
+| 9.13 | Add voice input button (Android speech-to-text → hybrid pipeline) | 🟡 | 9.9 | ⬜ TODO |
+| 9.14 | Build model download dialog with progress indicator (for optional Tier 2 Sub-1B model) | 🟡 | 9.4 | ⬜ TODO |
+| 9.15 | Implement daily spending summary generation (via Tier 2 LLM) | 🟡 | 9.5, 3.3 | ⬜ TODO |
+| 9.16 | Chat history persistence in Drift database (`chat_messages` table) | 🟢 | 9.9, 1.4 | ⬜ TODO |
+| 9.17 | Benchmark & test on Samsung Galaxy A36 (Tier 1 <20ms, Tier 2 <1.5s, edge case splits) | 🟡 | 9.12 | ⬜ TODO |
 
 ---
 
@@ -271,9 +272,9 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 6. Savings Goals | 8 | ~6 hours |
 | 7. Debt & Receivables | 8 | ~7 hours |
 | 8. Recurring & Forecast | 9 | ~10 hours |
-| 9. AI Assistant | 16 | ~18 hours |
+| 9. AI Assistant | 17 | ~18 hours |
 | 10. Receipt Scanner | 6 | ~5 hours |
 | 11. Backup & Data | 7 | ~8 hours |
 | 12. Settings & Profiles | 8 | ~6 hours |
 | 13. Polish & Optimization | 8 | ~7 hours |
-| **Total** | **129** | **~114 hours** |
+| **Total** | **130** | **~114 hours** |
