@@ -118,6 +118,17 @@ Shared code goes in `lib/core/` (database, models, utils) or `lib/shared/` (reus
 - Parse LLM output as JSON; fallback to showing raw text if parsing fails
 - Always require user confirmation before committing an AI-parsed transaction
 
+### Git & Commit Standards
+- **Strict 1-Liner Conventional Commits:** All git commit messages MUST be a single line. NEVER write long, multi-paragraph, or bulleted commit messages.
+- **Format:** `<type>(<scope>): <short description in lowercase imperative mood>`
+- **Allowed Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+- **Max Length:** ~72 characters (concise, clean, scannable on GitHub).
+- **Examples:**
+  - ✅ `feat(settings): add settings screen and user preferences`
+  - ✅ `fix(drawer): resolve double drag handle in account picker`
+  - ✅ `style(theme): update color tokens to stash teal`
+  - ❌ `feat(settings): add settings screen\n\n- Detailed item 1\n- Detailed item 2` (NO paragraphs or bullet points)
+
 ---
 
 ## Design System Tokens Summary
@@ -149,7 +160,9 @@ Agents MUST actively maintain and bump the semantic version according to what is
   - Example: Implementing the Settings screen, Drift DAO layer, camera OCR scanner, or CSV data export.
 - **Major Version Bump (`X.0.0`)**:
   - Reserved strictly for full production milestone readiness (`v1.0.0`) when the entire PRD feature set is completed for daily personal driver use on the Samsung Galaxy A36/A55.
-- **Mandatory SemVer Files to Synchronize:**
+- **No Bump (`docs`, `skills`, `chore`, non-app changes)**:
+  - Updates to documentation, agent rules, skills, repository configurations, or toolchains that do NOT touch runtime application code do **NOT** bump the version. Version numbers remain untouched.
+- **Mandatory SemVer Files to Synchronize (when code changes occur):**
   1. [`pubspec.yaml`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/pubspec.yaml) (`version: X.Y.Z+B`)
   2. [`lib/core/constants/app_constants.dart`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/lib/core/constants/app_constants.dart) (`appVersion`, `appBuildNumber`, `appVersionDisplay`)
 - **Version Pill:** The app displays a subtle custom `VersionPill` (`v0.1.0-alpha`) on the Dashboard header and Settings screen.
@@ -201,4 +214,5 @@ flutter build apk --release
 - ❌ Do not use bare circular spinners for page loading (use shimmer)
 - ❌ Do not use raw colors (`Colors.red`, `Colors.green`)
 - ❌ Do not use stock Android native UI components (`AlertDialog`, `DropdownButton`, `PopupMenuButton`, raw `SnackBar`, `Toast`, `Checkbox`, `Radio`, `Switch`) — everything must be custom-tailored
+- ❌ Do not write multi-line, paragraphed, or bulleted commit messages (strictly 1-liner conventional commits only)
 - ❌ Do not store sensitive data unencrypted (though this is a personal app, be sensible)
