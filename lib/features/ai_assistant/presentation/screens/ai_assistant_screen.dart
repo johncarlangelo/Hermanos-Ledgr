@@ -199,7 +199,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
       categoryId: categoryId,
       categoryName: categoryName,
       categoryIcon: isIncome ? Icons.payments_rounded : Icons.restaurant_rounded,
-      categoryColor: isIncome ? const Color(0xFF2E7D32) : const Color(0xFFF57C00),
+      categoryColor: isIncome ? const Color(0xFF2E7D52) : const Color(0xFFF57C00),
       accountId: accountId,
       accountName: accountName,
       date: DateTime.now(),

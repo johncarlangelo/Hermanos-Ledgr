@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-**Hermanos Ledgr** is a personal-use Android budget tracking app built with Flutter. It is a Tarsi-inspired offline-first finance tracker with local LLM integration. See `PRD.md` for full requirements and `ARCHITECTURE.md` for technical architecture.
+**Hermanos Ledgr** is a personal-use Android budget tracking app built with Flutter. It is an offline-first finance tracker with custom-tailored Hermanos-Stash styling and local LLM integration. See `PRD.md` for full requirements and `ARCHITECTURE.md` for technical architecture.
 
 ---
 
@@ -20,7 +20,7 @@
 - **LLM:** `flutter_llama` (llama.cpp via FFI, GGUF models)
 - **OCR:** Google ML Kit (on-device)
 - **Charts:** `fl_chart`
-- **Design:** Material Design 3 with `ColorScheme.fromSeed(seedColor: Color(0xFF2E7D32))`
+- **Design:** Material Design 3 with `ColorScheme.fromSeed(seedColor: Color(0xFF00897B))` (Stash Teal)
 
 ---
 
@@ -33,12 +33,18 @@
 ### Core UI Rules for Agents:
 1. **Cards:** Corner radius must be **16dp**, elevation **0**, background `surfaceContainer`.
 2. **Numbers:** All money amounts MUST use `fontFeatures: [FontFeature.tabularFigures()]` so digits do not jump or jitter.
-3. **Colors:** Never use raw `Colors.green` or `Colors.red`. Always use semantic color tokens from `SemanticColors` or `colorScheme`.
+3. **Colors:** Never use raw `Colors.green` or `Colors.red`. Always use semantic color tokens from `SemanticColors` or `colorScheme`. Primary accent is Stash Teal (`#7FB8AE`).
 4. **Loading States:** Always use **shimmer skeleton cards** (not circular spinners) for data screens.
 5. **Empty States:** Every empty view must have an icon (48dp, 40% opacity), descriptive message, and CTA button.
-6. **Undo Toast:** Show a 5-second SnackBar with an `[Undo]` button after adding, editing, or deleting transactions.
+6. **Undo Toast:** Use `UndoSnackbar.show` (floating pill banner) with an `[Undo]` button after adding, editing, or deleting transactions.
 7. **Hero Numbers:** Net worth and balances place the label *above* the number and use count-up animations (300ms easeOutCubic).
 8. **Motion:** Use staggered card cascades (50ms delay) when lists or dashboards load.
+9. **Zero Stock Android Native UI (Strict Rule):** We do NOT use generic Android native UI components anywhere in this app. Everything must be custom and tailored:
+   - ❌ **No Native Alerts/Dialogs:** No `AlertDialog` or `SimpleDialog`. Use custom bottom sheets (28dp top radius, Stash dark container hierarchy) or tailored overlay modals.
+   - ❌ **No Dropdowns or Native Menus:** No `DropdownButton`, `DropdownButtonFormField`, or `PopupMenuButton`. Build custom modal bottom sheets or selection tiles with custom icon badges, balances, and selection check indicators.
+   - ❌ **No Stock Snackbars or Toasts:** Never invoke raw `ScaffoldMessenger.of(context).showSnackBar` or system toasts. Use `UndoSnackbar` (`UndoSnackbar.show`, `UndoSnackbar.error`, `UndoSnackbar.info`) which renders floating pill cards styled with Stash raised containers and teal accents.
+   - ❌ **No Stock Checkboxes/Radios/Switches:** Never use standard `Checkbox`, `Radio`, or `Switch`. Build custom animated containers (`AnimatedContainer`) with 7dp corner radii, smooth color transitions, and check icons.
+   - ❌ **No System Pickers:** No default `showDatePicker` / `showTimePicker`. Use custom interactive calendar/time sheets.
 
 ---
 
@@ -117,7 +123,8 @@ Shared code goes in `lib/core/` (database, models, utils) or `lib/shared/` (reus
 ## Design System Tokens Summary
 
 - **Theme:** Material Design 3 with `useMaterial3: true`
-- **Seed Color:** `#2E7D32` (Forest Green)
+- **Seed Color:** `#00897B` (Stash Teal — Hermanos-Stash palette)
+- **Primary Accent:** `#7FB8AE` (Teal)
 - **Font:** Google Fonts — Inter with tabular figures
 - **Dark Mode:** Default; follows system preference
 - **AMOLED Mode:** True black (`#000000`) option for Samsung displays
@@ -165,4 +172,5 @@ flutter build apk --release
 - ❌ Do not use `setState` for state management (use Riverpod)
 - ❌ Do not use bare circular spinners for page loading (use shimmer)
 - ❌ Do not use raw colors (`Colors.red`, `Colors.green`)
+- ❌ Do not use stock Android native UI components (`AlertDialog`, `DropdownButton`, `PopupMenuButton`, raw `SnackBar`, `Toast`, `Checkbox`, `Radio`, `Switch`) — everything must be custom-tailored
 - ❌ Do not store sensitive data unencrypted (though this is a personal app, be sensible)

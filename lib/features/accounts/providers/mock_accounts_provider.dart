@@ -32,7 +32,7 @@ class AccountsNotifier extends Notifier<List<AccountModel>> {
         type: AccountType.cash,
         balance: 4350.00,
         icon: Icons.payments_rounded,
-        color: Color(0xFF2E7D32),
+        color: Color(0xFF00897B),
         institution: 'Cash',
         monthlyChange: -450.0,
       ),

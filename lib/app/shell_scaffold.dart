@@ -44,50 +44,306 @@ class ShellScaffold extends ConsumerWidget {
     }
   }
 
-  void _showThemeDialog(BuildContext context, WidgetRef ref) {
-    final currentMode = ref.read(themeProvider);
-
-    showDialog(
+  void _showThemeSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Display Theme'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Dark Mode (M3 Tonal)'),
-              trailing: currentMode == AppThemeMode.dark
-                  ? Icon(Icons.check_circle_rounded,
-                      color: Theme.of(context).colorScheme.primary)
-                  : null,
-              onTap: () {
-                ref.read(themeProvider.notifier).setTheme(AppThemeMode.dark);
-                Navigator.of(ctx).pop();
-              },
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final currentMode = ref.watch(themeProvider);
+            final theme = Theme.of(context);
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  Spacing.xs,
+                  Spacing.lg,
+                  Spacing.xl,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(Spacing.sm),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.palette_rounded,
+                            size: 22,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: Spacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Display Theme',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                'Tailored visual styles for your display',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20),
+                          onPressed: () => Navigator.of(ctx).pop(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: Spacing.lg),
+
+                    // Theme Options
+                    _buildThemeOptionCard(
+                      context: context,
+                      theme: theme,
+                      mode: AppThemeMode.dark,
+                      currentMode: currentMode,
+                      title: 'Dark Mode',
+                      subtitle: 'Deep Stash glass surfaces with soft teal accents',
+                      badge: 'Balanced Tonal',
+                      badgeColor: theme.colorScheme.primary,
+                      paletteBg: const Color(0xFF08090D),
+                      paletteCard: const Color(0xFF12151E),
+                      paletteAccent: const Color(0xFF7FB8AE),
+                      icon: Icons.dark_mode_rounded,
+                      onTap: () {
+                        ref
+                            .read(themeProvider.notifier)
+                            .setTheme(AppThemeMode.dark);
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+
+                    _buildThemeOptionCard(
+                      context: context,
+                      theme: theme,
+                      mode: AppThemeMode.amoled,
+                      currentMode: currentMode,
+                      title: 'AMOLED Black',
+                      subtitle: 'True black (#000000) for Samsung OLED power saving',
+                      badge: '⚡ OLED Saver',
+                      badgeColor: const Color(0xFF7FC08D),
+                      paletteBg: const Color(0xFF000000),
+                      paletteCard: const Color(0xFF0C1017),
+                      paletteAccent: const Color(0xFF7FB8AE),
+                      icon: Icons.brightness_2_rounded,
+                      onTap: () {
+                        ref
+                            .read(themeProvider.notifier)
+                            .setTheme(AppThemeMode.amoled);
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+
+                    _buildThemeOptionCard(
+                      context: context,
+                      theme: theme,
+                      mode: AppThemeMode.light,
+                      currentMode: currentMode,
+                      title: 'Light Mode',
+                      subtitle: 'Crisp daylight slate with vibrant teal highlights',
+                      badge: 'Daylight Ready',
+                      badgeColor: const Color(0xFF00796B),
+                      paletteBg: const Color(0xFFF4F6F8),
+                      paletteCard: const Color(0xFFFFFFFF),
+                      paletteAccent: const Color(0xFF00897B),
+                      icon: Icons.light_mode_rounded,
+                      onTap: () {
+                        ref
+                            .read(themeProvider.notifier)
+                            .setTheme(AppThemeMode.light);
+                      },
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOptionCard({
+    required BuildContext context,
+    required ThemeData theme,
+    required AppThemeMode mode,
+    required AppThemeMode currentMode,
+    required String title,
+    required String subtitle,
+    required String badge,
+    required Color badgeColor,
+    required Color paletteBg,
+    required Color paletteCard,
+    required Color paletteAccent,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = mode == currentMode;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(Spacing.md),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                : theme.colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+              width: isSelected ? 1.5 : 1.0,
             ),
-            ListTile(
-              title: const Text('AMOLED Black (Samsung True Black)'),
-              trailing: currentMode == AppThemeMode.amoled
-                  ? Icon(Icons.check_circle_rounded,
-                      color: Theme.of(context).colorScheme.primary)
-                  : null,
-              onTap: () {
-                ref.read(themeProvider.notifier).setTheme(AppThemeMode.amoled);
-                Navigator.of(ctx).pop();
-              },
-            ),
-            ListTile(
-              title: const Text('Light Mode'),
-              trailing: currentMode == AppThemeMode.light
-                  ? Icon(Icons.check_circle_rounded,
-                      color: Theme.of(context).colorScheme.primary)
-                  : null,
-              onTap: () {
-                ref.read(themeProvider.notifier).setTheme(AppThemeMode.light);
-                Navigator.of(ctx).pop();
-              },
-            ),
-          ],
+          ),
+          child: Row(
+            children: [
+              // Mini Swatch Palette Preview
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: paletteBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: 6,
+                      left: 6,
+                      right: 6,
+                      bottom: 12,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: paletteCard,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 4,
+                      right: 6,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: paletteAccent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+
+              // Title, Subtitle & Badge
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            badge,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: badgeColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: Spacing.sm),
+
+              // Selection Indicator
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color:
+                      isSelected ? theme.colorScheme.primary : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.outlineVariant,
+                    width: isSelected ? 0 : 1.5,
+                  ),
+                ),
+                child: isSelected
+                    ? Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: theme.colorScheme.onPrimary,
+                      )
+                    : null,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -129,7 +385,7 @@ class ShellScaffold extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.palette_outlined, size: 22),
             tooltip: 'Change Theme',
-            onPressed: () => _showThemeDialog(context, ref),
+            onPressed: () => _showThemeSheet(context, ref),
           ),
           // Re-experience Onboarding Button (for testing & review)
           IconButton(
@@ -146,36 +402,47 @@ class ShellScaffold extends ConsumerWidget {
         ],
       ),
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (idx) => _onItemTapped(idx, context),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+              width: 1,
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'Transactions',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.add_circle_outline_rounded),
-            selectedIcon: Icon(Icons.add_circle_rounded),
-            label: 'Log',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet_rounded),
-            label: 'Budget',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.smart_toy_outlined),
-            selectedIcon: Icon(Icons.smart_toy_rounded),
-            label: 'AI',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: (idx) => _onItemTapped(idx, context),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined),
+              selectedIcon: Icon(Icons.receipt_long_rounded),
+              label: 'Ledger',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.add_circle_outline_rounded),
+              selectedIcon: Icon(Icons.add_circle_rounded),
+              label: 'Log',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+              label: 'Budget',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.smart_toy_outlined),
+              selectedIcon: Icon(Icons.smart_toy_rounded),
+              label: 'AI',
+            ),
+          ],
+        ),
       ),
     );
   }

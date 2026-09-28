@@ -319,7 +319,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             theme,
             mode: AppThemeMode.dark,
             title: 'Dark Mode (Recommended)',
-            description: 'Material 3 tonal depth with subtle contrast and calm surfaces.',
+            description: 'Deep Stash glass surfaces with soft teal accents and balanced contrast.',
             icon: Icons.dark_mode_rounded,
             isSelected: currentMode == AppThemeMode.dark,
           ),
@@ -337,7 +337,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             theme,
             mode: AppThemeMode.light,
             title: 'Light Mode',
-            description: 'Crisp, high-contrast forest green theme for bright environments.',
+            description: 'Crisp, high-contrast slate with vibrant teal accents for bright daylight.',
             icon: Icons.light_mode_rounded,
             isSelected: currentMode == AppThemeMode.light,
           ),
@@ -510,11 +510,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ],
                       ),
                     ),
-                    Checkbox(
-                      value: state.selectedStarterAccounts.contains(acc['name']),
-                      onChanged: (_) => ref
-                          .read(onboardingProvider.notifier)
-                          .toggleStarterAccount(acc['name'] as String),
+                    Builder(
+                      builder: (context) {
+                        final isSelected = state.selectedStarterAccounts
+                            .contains(acc['name']);
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(7),
+                            color: isSelected
+                                ? theme.colorScheme.primary
+                                : Colors.transparent,
+                            border: Border.all(
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outline
+                                      .withValues(alpha: 0.4),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: isSelected
+                              ? Icon(
+                                  Icons.check_rounded,
+                                  size: 16,
+                                  color: theme.colorScheme.onPrimary,
+                                )
+                              : null,
+                        );
+                      },
                     ),
                   ],
                 ),

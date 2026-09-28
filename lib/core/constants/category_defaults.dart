@@ -97,7 +97,7 @@ class CategoryDefaults {
       id: 'salary',
       name: 'Salary',
       icon: Icons.payments_rounded,
-      color: Color(0xFF2E7D32), // Forest green
+      color: Color(0xFF2E7D52), // Stash green
       isExpense: false,
     ),
     CategoryItem(

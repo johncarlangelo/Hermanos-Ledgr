@@ -106,9 +106,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   void _save() {
     final amount = double.tryParse(_amountString) ?? 0.0;
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an amount greater than 0')),
-      );
+      UndoSnackbar.error(context, message: 'Please enter an amount greater than 0');
       return;
     }
 
@@ -116,9 +114,17 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     final account = _selectedAccount ?? (accounts.isNotEmpty ? accounts.first : null);
 
     if (account == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an account')),
-      );
+      UndoSnackbar.error(context, message: 'Please select a source account');
+      return;
+    }
+
+    if (_type == TransactionType.transfer && _selectedDestinationAccount == null) {
+      UndoSnackbar.error(context, message: 'Please select a destination account');
+      return;
+    }
+
+    if (_type == TransactionType.transfer && _selectedAccount?.id == _selectedDestinationAccount?.id) {
+      UndoSnackbar.error(context, message: 'Source and destination accounts must be different');
       return;
     }
 
@@ -185,43 +191,84 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           children: [
             // Top Section (Fixed Header)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.lg,
+                Spacing.xs,
+                Spacing.sm,
+                Spacing.xs,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Quick Log',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quick Log',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      Text(
+                        'Record a new entry to your ledger',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Close',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: Spacing.xs),
+            const SizedBox(height: Spacing.sm),
 
-            // Type Segmented Selector
+            // Type Segmented Selector (showSelectedIcon false to prevent text wrapping)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
               child: SegmentedButton<TransactionType>(
+                showSelectedIcon: false,
+                style: ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: Spacing.xs, vertical: Spacing.xs),
+                  ),
+                ),
                 segments: const [
                   ButtonSegment(
                     value: TransactionType.expense,
-                    label: Text('Expense'),
+                    label: Text(
+                      'Expense',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
                     icon: Icon(Icons.arrow_downward_rounded, size: 16),
                   ),
                   ButtonSegment(
                     value: TransactionType.income,
-                    label: Text('Income'),
+                    label: Text(
+                      'Income',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
                     icon: Icon(Icons.arrow_upward_rounded, size: 16),
                   ),
                   ButtonSegment(
                     value: TransactionType.transfer,
-                    label: Text('Transfer'),
+                    label: Text(
+                      'Transfer',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    ),
                     icon: Icon(Icons.swap_horiz_rounded, size: 16),
                   ),
                 ],
@@ -243,7 +290,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             // Hero Amount Display (Centrally Highlighted)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-              padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+              padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -253,19 +300,19 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   Text(
                     '₱',
                     style: moneyStyle(
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: FontWeight.w600,
-                      color: displayColor.withValues(alpha: 0.8),
+                      color: displayColor.withValues(alpha: 0.75),
                     ),
                   ),
-                  const SizedBox(width: Spacing.xs),
+                  const SizedBox(width: Spacing.sm),
                   Text(
                     _amountString,
                     style: moneyStyle(
-                      fontSize: 44,
+                      fontSize: 42,
                       fontWeight: FontWeight.w700,
                       color: displayColor,
-                      letterSpacing: -1.0,
+                      letterSpacing: -0.5,
                     ),
                   ),
                 ],
@@ -290,59 +337,8 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   ),
                   const SizedBox(height: Spacing.md),
 
-                  // Account Selector
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: _selectedAccount?.id,
-                          decoration: const InputDecoration(
-                            labelText: 'Source Account',
-                            prefixIcon: Icon(Icons.account_balance_wallet_rounded),
-                          ),
-                          items: accounts.map((acc) {
-                            return DropdownMenuItem(
-                              value: acc.id,
-                              child: Text(acc.name),
-                            );
-                          }).toList(),
-                          onChanged: (id) {
-                            if (id != null) {
-                              setState(() {
-                                _selectedAccount = accounts.firstWhere((a) => a.id == id);
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      if (_type == TransactionType.transfer) ...[
-                        const SizedBox(width: Spacing.sm),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _selectedDestinationAccount?.id,
-                            decoration: const InputDecoration(
-                              labelText: 'Destination Account',
-                              prefixIcon: Icon(Icons.arrow_forward_rounded),
-                            ),
-                            items: accounts.map((acc) {
-                              return DropdownMenuItem(
-                                value: acc.id,
-                                child: Text(acc.name),
-                              );
-                            }).toList(),
-                            onChanged: (id) {
-                              if (id != null) {
-                                setState(() {
-                                  _selectedDestinationAccount =
-                                      accounts.firstWhere((a) => a.id == id);
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+                  // Custom Tailored Account Selector (Zero native dropdowns, zero overflow)
+                  _buildAccountSection(theme, accounts),
                   const SizedBox(height: Spacing.md),
 
                   // Category Selector (if not transfer)
@@ -442,6 +438,486 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           },
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildAccountSection(ThemeData theme, List<AccountModel> accounts) {
+    final account = _selectedAccount ?? (accounts.isNotEmpty ? accounts.first : null);
+    final destination = _selectedDestinationAccount;
+
+    if (_type == TransactionType.transfer) {
+      return Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Column(
+          children: [
+            // FROM Row
+            InkWell(
+              onTap: () => _openAccountPicker(context, accounts, isDestination: false),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: (account?.color ?? theme.colorScheme.primary).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        account?.icon ?? Icons.account_balance_wallet_rounded,
+                        size: 18,
+                        color: account?.color ?? theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'FROM SOURCE',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            account?.name ?? 'Select Source',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (account != null)
+                      Text(
+                        CurrencyFormatter.format(account.balance),
+                        style: moneyStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    const SizedBox(width: Spacing.xs),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Divider with interactive Swap Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.25),
+                      height: 1,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() {
+                        final temp = _selectedAccount;
+                        _selectedAccount = _selectedDestinationAccount;
+                        _selectedDestinationAccount = temp;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.swap_vert_rounded,
+                        size: 16,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.25),
+                      height: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // TO Row
+            InkWell(
+              onTap: () => _openAccountPicker(context, accounts, isDestination: true),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: (destination?.color ?? theme.colorScheme.secondary).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        destination?.icon ?? Icons.arrow_downward_rounded,
+                        size: 18,
+                        color: destination?.color ?? theme.colorScheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'TO DESTINATION',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            destination?.name ?? 'Select Destination Account',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: destination == null
+                                  ? theme.colorScheme.onSurfaceVariant
+                                  : theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (destination != null)
+                      Text(
+                        CurrencyFormatter.format(destination.balance),
+                        style: moneyStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    const SizedBox(width: Spacing.xs),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Expense & Income Single Account Tile
+    return InkWell(
+      onTap: () => _openAccountPicker(context, accounts, isDestination: false),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: (account?.color ?? theme.colorScheme.primary).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                account?.icon ?? Icons.account_balance_wallet_rounded,
+                size: 20,
+                color: account?.color ?? theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ACCOUNT',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    account?.name ?? 'Select Account',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (account != null) ...[
+              Text(
+                CurrencyFormatter.format(account.balance),
+                style: moneyStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: Spacing.xs),
+            ],
+            Icon(
+              Icons.unfold_more_rounded,
+              size: 20,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openAccountPicker(
+    BuildContext context,
+    List<AccountModel> accounts, {
+    required bool isDestination,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final selectedId = isDestination
+            ? _selectedDestinationAccount?.id
+            : _selectedAccount?.id;
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Spacing.lg,
+              Spacing.xs,
+              Spacing.lg,
+              Spacing.xl,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(Spacing.sm),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.account_balance_wallet_rounded,
+                        size: 20,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isDestination
+                                ? 'Select Destination Account'
+                                : 'Select Account',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            isDestination
+                                ? 'Funds will be deposited to this account'
+                                : 'Funds will be drawn from this account',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Spacing.md),
+                ...accounts.map((acc) {
+                  final isSelected = acc.id == selectedId;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: Spacing.xs),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          setState(() {
+                            if (isDestination) {
+                              _selectedDestinationAccount = acc;
+                            } else {
+                              _selectedAccount = acc;
+                            }
+                          });
+                          Navigator.of(ctx).pop();
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.md,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? theme.colorScheme.primary.withValues(alpha: 0.08)
+                                : theme.colorScheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.outlineVariant
+                                      .withValues(alpha: 0.3),
+                              width: isSelected ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: acc.color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  acc.icon,
+                                  size: 20,
+                                  color: acc.color,
+                                ),
+                              ),
+                              const SizedBox(width: Spacing.md),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      acc.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        color: isSelected
+                                            ? theme.colorScheme.primary
+                                            : theme.colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    if (acc.institution != null && acc.institution!.isNotEmpty)
+                                      Text(
+                                        acc.institution!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.colorScheme.onSurfaceVariant,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    CurrencyFormatter.format(acc.balance),
+                                    style: moneyStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Balance',
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      fontSize: 10,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (isSelected) ...[
+                                const SizedBox(width: Spacing.sm),
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 18,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

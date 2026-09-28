@@ -8,7 +8,7 @@
 
 ## 1. Design Philosophy: "Calm Finance"
 
-The app feels like a **trusted financial advisor's desk** — clean, organized, confident, and never overwhelming. Inspired by the sleek polish of Tarsi and Apple Human Interface Guidelines, but adapted strictly for Material Design 3 and Samsung AMOLED displays.
+The app feels like a **trusted financial advisor's desk** — clean, organized, confident, and never overwhelming. Inspired by the bespoke craftsmanship of the Hermanos-Stash design philosophy and Apple Human Interface Guidelines, tailored strictly for Material Design 3 and Samsung AMOLED displays.
 
 ### 1.1 Core Principles
 
@@ -20,55 +20,60 @@ The app feels like a **trusted financial advisor's desk** — clean, organized, 
 | 4 | **Purposeful motion** | Every transition and count-up animation communicates state change. Zero frivolous animations. |
 | 5 | **Calm over flashy** | Harmonious M3 tonal palettes, muted semantic accents, zero gamified badges or confetti. |
 | 6 | **Thumb-zone aware** | Primary actions in the bottom third of the screen; viewing in the top two-thirds. |
+| 7 | **Zero native UI** | Every control is bespoke and tailored — no stock Android dialogs, dropdowns, toasts, or checkboxes. |
 
 ### 1.2 Design Priorities (Ordered)
 1. **Speed of input** — Frictionless logging in under 3 taps
 2. **Clarity of data** — Instant scannability of balances, charts, and lists
 3. **Visual comfort** — Dark mode by default with true black AMOLED option
 4. **Microinteractions** — Haptic feedback, count-ups, and smooth card transitions
-5. **Consistency** — Strictly Material Design 3 tokens and components
+5. **Consistency** — Custom-tailored Hermanos-Stash design tokens and components
 
 ---
 
-## 2. Color System
+## 2. Color System (Hermanos-Stash Palette)
 
-Based on Material Design 3 dynamic color generated with a **custom seed color**.
+Based on Material Design 3 dynamic color generated with a **custom teal seed color** aligned with the Hermanos-Stash desktop app design tokens.
 
-### 2.1 Brand Seed Color
+### 2.1 Brand Seed & Accent
 
 ```
-Primary Seed: #2E7D32 (Forest Green — finance, growth, stability)
+Primary Seed:   #00897B (Teal 700 — stability, calm, precision)
+Primary Accent: #7FB8AE (Stash Teal — hero accents, selection pips, interactive highlights)
 ```
 
-The entire M3 tonal palette is generated from this seed using `ColorScheme.fromSeed(seedColor: Color(0xFF2E7D32))`.
+The entire M3 tonal palette is generated from this seed using `ColorScheme.fromSeed(seedColor: Color(0xFF00897B))`.
 
-### 2.2 Semantic Colors (Finance Specific)
+### 2.2 Hermanos-Stash Surface & Token Hierarchy
+
+| Level | Token | Hex Color | Usage |
+|---|---|---|---|
+| **Base** | `StashColors.bgBase` | `#08090D` | Deepest foundation background |
+| **Shell** | `StashColors.bgShell` | `#0B0D13` | Main scaffold surface in dark mode |
+| **Surface** | `StashColors.bgSurface` | `#12151E` | Primary cards, list containers (`surfaceContainer`) |
+| **Raised** | `StashColors.bgRaised` | `#1A1F2B` | Elevated cards, input fields, quick action buttons |
+| **Overlay** | `StashColors.bgOverlay` | `#212736` | Modal bottom sheets, selection dialogs |
+| **Border Soft** | `StashColors.lineSoft` | `#232A38` | Subtle card borders, navigation bar delimiters |
+| **Border Active** | `StashColors.lineMedium`| `#354055` | Focused inputs, selected card borders |
+| **Text Ink** | `StashColors.ink` | `#ECEEF4` | High-contrast body & header typography |
+| **Text Dim** | `StashColors.dim` | `#9BA5BA` | Subtitles, captions, timestamps, secondary labels |
+
+**AMOLED Mode Rule:** When AMOLED mode is enabled, `bgBase` and `bgShell` are set to `#000000` (true black for Samsung AMOLED power saving), and card container levels shift to ultra-deep glass tones.
+
+### 2.3 Semantic Colors (Finance Specific)
 
 | Role | Light Mode | Dark Mode | Usage |
 |---|---|---|---|
-| **Income** | `#2E7D32` (Green 800) | `#81C784` (Green 300) | Income amounts, positive cashflow indicators |
-| **Expense** | `#C62828` (Red 800) | `#EF9A9A` (Red 200) | Expense amounts, negative cashflow indicators |
-| **Transfer** | `#1565C0` (Blue 800) | `#64B5F6` (Blue 300) | Account transfers, balance adjustments |
-| **Warning / Due** | `#E65100` (Orange 900) | `#FFB74D` (Orange 300) | Approaching budget, upcoming debt dues |
-| **Budget Safe (<75%)** | `#2E7D32` | `#66BB6A` | Normal spending on track |
-| **Budget Caution (75-100%)** | `#EF6C00` | `#FFA726` | Approaching limit |
-| **Budget Over (>100%)** | `#C62828` | `#EF5350` | Over-budget alert |
-
-### 2.3 Surface Tones (Dark Mode Hierarchy)
-
-Rather than raw black, M3 dark mode uses tonal surfaces to create natural depth:
-
-| Level | Token | Usage |
-|---|---|---|
-| **Base** | `surface` | Main scaffold background (`#111411` approx) |
-| **Level 1** | `surfaceContainer` | Standard cards, transaction list items |
-| **Level 2** | `surfaceContainerHigh` | Elevated cards, action dialogues |
-| **Level 3** | `surfaceContainerHighest` | Bottom sheets, popover menus |
-
-**AMOLED Mode Rule:** When AMOLED mode is enabled, `surface` is overridden with `#000000` (true black for Samsung AMOLED power saving), and container levels shift down by 1 step.
+| **Income / Status OK** | `#2E7D32` | `#7FC08D` (Stash Ok) | Income amounts, positive cashflow indicators |
+| **Expense / Danger** | `#C62828` | `#E08373` (Stash Danger) | Expense amounts, negative cashflow indicators |
+| **Transfer / Steel** | `#1565C0` | `#7FA3C4` (Stash Steel) | Account transfers, balance adjustments |
+| **Warning / Due** | `#E65100` | `#D9BD72` (Stash Warn) | Approaching budget, upcoming debt dues |
+| **Budget Safe (<75%)** | `#2E7D32` | `#7FC08D` | Normal spending on track |
+| **Budget Caution (75-100%)** | `#EF6C00` | `#D9BD72` | Approaching limit |
+| **Budget Over (>100%)** | `#C62828` | `#E08373` | Over-budget alert |
 
 ### 2.4 Color Usage Rules
-- ❌ Never use raw `Colors.red` or `Colors.green` — always use defined semantic tokens.
+- ❌ Never use raw `Colors.red` or `Colors.green` — always use defined semantic tokens (`SemanticColors`).
 - ❌ Maximum 3 accent colors per screen to prevent visual fatigue.
 - ✅ Always pair colored indicators with text or icons for color-blind accessibility.
 
@@ -256,3 +261,27 @@ Using Material 3 `NavigationBar`:
 
 All UI components, tokens, and layouts must adhere to the detailed implementation guide in:
 👉 [`.agents/skills/flutter-m3-premium-design/SKILL.md`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/.agents/skills/flutter-m3-premium-design/SKILL.md)
+
+---
+
+## 11. Zero Stock Android Native UI Component Standards
+
+To guarantee a bespoke, premium aesthetic aligned with the Hermanos-Stash design philosophy, **no default Android native UI widgets or system dialogues may be rendered**. Every interactive selection, alert, modal, or feedback surface must be custom-tailored:
+
+### 11.1 Component Replacement Rules
+
+| Android Native Widget | Status | Tailored Hermanos-Ledgr Replacement |
+|---|---|---|
+| `AlertDialog` / `SimpleDialog` | ❌ Banned | Custom `showModalBottomSheet` or styled overlay cards with 24-28dp corner radii, Stash container backgrounds (`#212736`), and bespoke header/action tiles (e.g. `_showThemeSheet`). |
+| `DropdownButton` / `DropdownButtonFormField` | ❌ Banned | Interactive selection tiles (`_buildAccountSection`) triggering custom bottom sheets (`_openAccountPicker`) with colored icon containers, balance subtotals, and check indicators. |
+| `PopupMenuButton` / `MenuAnchor` | ❌ Banned | Custom slide-up sheets or action pill buttons. |
+| `SnackBar` (raw) / System `Toast` | ❌ Banned | `UndoSnackbar` (`.show()`, `.error()`, `.info()`) — floating pill cards with 12dp radii, Stash raised background (`#1A1F2B`), custom semantic status icons, and teal action buttons. |
+| `Checkbox` (native) | ❌ Banned | Custom `AnimatedContainer` check pill (24×24dp, 7dp radius, outline `#354055`, filled with Stash Teal `#7FB8AE` and white check icon on select). |
+| `Radio` / `RadioListTile` | ❌ Banned | Custom selection cards with teal ring borders and filled center indicator pips. |
+| `Switch` / `SwitchListTile` | ❌ Banned | Custom-tailored animated toggle pills with Stash teal track and thumb glow. |
+| `showDatePicker` / `showTimePicker` | ❌ Banned | Custom modal bottom sheet date picker or inline wheel selector styled with Hermanos-Stash tokens. |
+
+### 11.2 Design Rationale
+- Standard Android components exhibit platform-dependent styling, harsh sharp edges, and unpredictable layout metrics that easily cause overflows on narrow viewports (e.g. Samsung Galaxy A-series width ~384–412dp).
+- Custom-tailored components provide consistent, cohesive branding across light, dark, and Samsung AMOLED modes with fluid micro-animations (180ms cubic ease).
+
