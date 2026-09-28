@@ -6,7 +6,7 @@
 *Crafted for Android & optimized for Samsung Galaxy Super AMOLED displays.*
 
 [![Platform](https://img.shields.io/badge/Platform-Android%2012%2B%20(API%2031%2B)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
-[![Target Device](https://img.shields.io/badge/Target-Samsung%20Galaxy%20A57%205G-1428A0?style=flat-square&logo=samsung&logoColor=white)](https://samsung.com)
+[![Target Device](https://img.shields.io/badge/Target-Samsung%20Galaxy%20A36%205G-1428A0?style=flat-square&logo=samsung&logoColor=white)](https://samsung.com)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Design](https://img.shields.io/badge/Design-Material%20Design%203-2E7D32?style=flat-square)](DESIGN.md)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20On--Device%20(Zero%20Cloud)-brightgreen?style=flat-square)](#privacy--security)

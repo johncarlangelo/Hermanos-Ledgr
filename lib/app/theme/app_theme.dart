@@ -25,7 +25,7 @@ class AppTheme {
     brightness: Brightness.dark,
   );
 
-  // AMOLED Color Scheme (True Black for Samsung A57 AMOLED display)
+  // AMOLED Color Scheme (True Black for Samsung A36 AMOLED display)
   static final ColorScheme amoledScheme = darkScheme.copyWith(
     surface: const Color(0xFF000000),
     surfaceContainerLowest: const Color(0xFF000000),

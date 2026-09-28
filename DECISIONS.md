@@ -69,13 +69,13 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 ### D-004: flutter_llama for On-Device LLM
 **Date:** 2026-09-28
 **Status:** Accepted
-**Context:** Need to run LLM inference locally on Samsung A57 (Exynos 1680, 8-12GB RAM) for natural language transaction parsing.
+**Context:** Need to run LLM inference locally on Samsung A36 (Snapdragon 6 Gen 3, 6-8GB RAM) for natural language transaction parsing.
 **Decision:** Use `flutter_llama` (llama.cpp wrapper) with GGUF models.
 **Alternatives Considered:**
 - `llamadart` — good but less mature
 - LiteRT-LM (Google) — better hardware optimization but more complex setup
 - Cloud API (Gemini/GPT) — requires internet, defeats offline-first principle
-**Rationale:** `flutter_llama` is the most popular, production-ready Flutter wrapper for llama.cpp. Supports Vulkan GPU acceleration on Android, GGUF format, and token streaming. The Samsung A57's Exynos 1680 with Xclipse 550 GPU should handle inference well.
+**Rationale:** `flutter_llama` is the most popular, production-ready Flutter wrapper for llama.cpp. Supports Vulkan and OpenCL GPU acceleration on Android, GGUF format, and token streaming. The Samsung A36's Snapdragon 6 Gen 3 with Adreno GPU handles mobile inference efficiently.
 
 ---
 
@@ -88,7 +88,7 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - Larger models (3B+) — too much RAM, too slow
 - Smaller models (<1B) — insufficient for reliable JSON output
 - Phi-3 mini — good but less tested on mobile
-**Rationale:** Samsung A57 has 8-12GB RAM; Android + background apps use ~3-4GB, leaving 4-8GB for the app. A 1.7B Q4_K_M model uses ~1.2GB RAM during inference, well within budget. Qwen 3 is currently among the most capable small models for structured output.
+**Rationale:** Samsung A36 has 6-8GB RAM; Android + background apps use ~3GB, leaving 3-5GB for the app. A 1.7B Q4_K_M model uses ~1.1-1.2GB RAM during inference, well within budget. Qwen 3 (or SmolLM 2 1.7B / Gemma 1B) fits comfortably.
 
 ---
 

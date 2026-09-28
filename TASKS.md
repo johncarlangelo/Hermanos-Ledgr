@@ -193,7 +193,7 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 9.13 | Implement daily summary generation | 🟡 | 9.3, 3.3 | ⬜ TODO |
 | 9.14 | Implement insights/pattern analysis | 🟡 | 9.3, 3.3 | ⬜ TODO |
 | 9.15 | Chat history persistence (load on screen open) | 🟢 | 9.7, 1.4 | ⬜ TODO |
-| 9.16 | Test with various NL inputs on Samsung A57 | 🟡 | 9.10 | ⬜ TODO |
+| 9.16 | Test with various NL inputs on Samsung A36 | 🟡 | 9.10 | ⬜ TODO |
 
 ---
 
@@ -250,7 +250,7 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 13.1 | Add screen transition animations (shared axis) | 🟡 | All screens | ⬜ TODO |
 | 13.2 | Add micro-animations (card taps, list item add/remove) | 🟡 | All screens | ⬜ TODO |
 | 13.3 | Add empty state illustrations for all lists | 🟡 | All screens | ⬜ TODO |
-| 13.4 | Performance audit on Samsung A57 (profiling) | 🟡 | All features | ⬜ TODO |
+| 13.4 | Performance audit on Samsung A36 (profiling) | 🟡 | All features | ⬜ TODO |
 | 13.5 | Fix any janky scrolling or frame drops | 🟡 | 13.4 | ⬜ TODO |
 | 13.6 | Edge case testing (no accounts, no transactions, etc.) | 🟡 | All features | ⬜ TODO |
 | 13.7 | Memory leak testing (especially LLM lifecycle) | 🟡 | 9.3 | ⬜ TODO |

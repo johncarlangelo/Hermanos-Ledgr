@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-**Hermanos Ledgr** is a personal-use Android budget tracking app inspired by [Tarsi Budget Tracker](https://www.tarsi.cloud/features). It recreates Tarsi's core financial tracking capabilities without the paywall, cloud dependency, or social features. The app runs entirely offline on a **Samsung Galaxy A57 5G** (Exynos 1680, 8–12 GB RAM, Android 16).
+**Hermanos Ledgr** is a personal-use Android budget tracking app inspired by [Tarsi Budget Tracker](https://www.tarsi.cloud/features). It recreates Tarsi's core financial tracking capabilities without the paywall, cloud dependency, or social features. The app runs entirely offline on a **Samsung Galaxy A36 5G** (Snapdragon 6 Gen 3, 6–8 GB RAM, Android 15/16).
 
 ### 1.1 Why Rebuild?
 
@@ -19,7 +19,7 @@ Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) b
 | Principle | Detail |
 |---|---|
 | **No Paywall** | Every feature is unlocked from day one |
-| **Android Only** | Target: Samsung Galaxy A57 5G (Exynos 1680) |
+| **Android Only** | Target: Samsung Galaxy A36 5G (Snapdragon 6 Gen 3) |
 | **Offline First** | All data lives on-device; no account/login required |
 | **Local LLM** | On-device AI via `flutter_llama` + GGUF models (Qwen 3 1.7B or SmolLM 2 1.7B) |
 | **Data Portability** | Export/import JSON/CSV for backup and phone migration |
@@ -135,12 +135,12 @@ Tarsi locks its best features (AI chat logging, forecasting, advanced budgets) b
 
 | Spec | Value |
 |---|---|
-| **Phone** | Samsung Galaxy A57 5G |
-| **Processor** | Exynos 1680 (4nm, octa-core, Xclipse 550 GPU) |
-| **RAM** | 8–12 GB |
-| **Storage** | 128–512 GB (no microSD) |
-| **OS** | Android 16, One UI 8.5 |
-| **Display** | 6.7" Super AMOLED+, 120Hz, HDR10+ |
+| **Phone** | Samsung Galaxy A36 5G |
+| **Processor** | Snapdragon 6 Gen 3 (4nm, octa-core, Adreno GPU) |
+| **RAM** | 6–8 GB |
+| **Storage** | 128–256 GB (microSD expandable) |
+| **OS** | Android 15 / 16, One UI |
+| **Display** | 6.6" Super AMOLED, 120Hz |
 | **Min Android SDK** | API 31 (Android 12) for future-proofing |
 
 ---

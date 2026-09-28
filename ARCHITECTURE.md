@@ -641,5 +641,5 @@ If you cannot parse the input, respond with:
 | **Data** | Unit tests for repository implementations with in-memory Drift DB |
 | **Providers** | Unit tests with Riverpod container overrides |
 | **Widgets** | Widget tests for critical components (transaction card, budget progress) |
-| **Integration** | Manual testing on Samsung A57 device |
+| **Integration** | Manual testing on Samsung A36 device |
 | **LLM** | Manual testing with various natural language inputs |

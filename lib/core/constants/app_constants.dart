@@ -8,5 +8,5 @@ class AppConstants {
   static const String defaultProfileName = 'John C.';
 
   // Target device info
-  static const String targetDevice = 'Samsung Galaxy A57 5G';
+  static const String targetDevice = 'Samsung Galaxy A36 5G';
 }

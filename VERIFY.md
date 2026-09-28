@@ -22,7 +22,7 @@ After completing each task or feature, run through the relevant verification sec
 - [ ] Drift code generation runs without errors
 - [ ] Riverpod code generation runs without errors
 - [ ] App builds and runs on Android emulator
-- [ ] App builds and runs on Samsung A57 device
+- [ ] App builds and runs on Samsung A36 device
 - [ ] Material Design 3 theme applied (light + dark)
 - [ ] Inter font loads correctly from Google Fonts
 - [ ] Bottom navigation bar renders with all 5 tabs
@@ -153,7 +153,7 @@ After completing each task or feature, run through the relevant verification sec
 - [ ] Voice input works (speech-to-text → LLM)
 - [ ] Daily summary generates correctly
 - [ ] Inference runs in background (UI stays responsive)
-- [ ] LLM responds in < 5 seconds on Samsung A57
+- [ ] LLM responds in < 5 seconds on Samsung A36
 - [ ] Chat history persists across sessions
 
 ### 3.10 Receipt Scanner
@@ -208,7 +208,7 @@ After completing each task or feature, run through the relevant verification sec
 
 ## 5. Performance Verification
 
-- [ ] App cold start < 2 seconds on Samsung A57
+- [ ] App cold start < 2 seconds on Samsung A36
 - [ ] Tab switching < 200ms
 - [ ] Transaction list scrolling smooth at 60fps with 1000+ items
 - [ ] LLM model load time < 10 seconds
