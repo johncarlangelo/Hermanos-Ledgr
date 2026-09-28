@@ -1,0 +1,49 @@
+name: hermanos_ledgr
+description: "Hermanos Ledgr — Private on-device AI budget tracker"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+
+  # Local Database (enable after UI testing)
+  # isar_community: ^3.3.2
+  # isar_community_flutter_libs: ^3.3.2
+
+  # Google Auth & Drive Sync (enable after UI testing)
+  # google_sign_in: ^7.0.1
+  # googleapis: ^15.0.0
+  # http: ^1.3.0
+
+  # Networking & Connectivity
+  # connectivity_plus: ^7.1.1
+
+  # On-Device AI (enable for Android build)
+  # flutter_gemma: ^1.0.2
+  # flutter_gemma_litertlm: ^1.0.2
+
+  # UI & Charts
+  fl_chart: ^0.70.2
+  google_fonts: ^6.2.1
+
+  # Utilities
+  # path_provider: ^2.1.5
+  # uuid: ^4.5.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # isar_community_generator: ^3.3.2
+  # build_runner: ^2.4.15
+
+flutter:
+  uses-material-design: true

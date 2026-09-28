@@ -1,0 +1,237 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Hermanos Ledgr - Chat Advisor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .extruded {
+            box-shadow: -5px -5px 10px #FFFFFF, 5px 5px 10px #BEBEBE;
+        }
+        
+        .sunken {
+            box-shadow: inset 5px 5px 10px #BEBEBE, inset -5px -5px 10px #FFFFFF;
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#F0F0F3",
+                      "surface": "#f9f9fc",
+                      "primary-container": "#478151",
+                      "on-primary": "#ffffff",
+                      "surface-dark-shadow": "#BEBEBE",
+                      "on-surface-variant": "#414940",
+                      "inverse-primary": "#98d59d",
+                      "on-error-container": "#93000a",
+                      "on-surface": "#1a1c1e",
+                      "tertiary-fixed-dim": "#ffb1c4",
+                      "surface-container-high": "#e8e8eb",
+                      "on-background": "#1a1c1e",
+                      "on-primary-fixed-variant": "#165127",
+                      "secondary-container": "#dce2f3",
+                      "tertiary-fixed": "#ffd9e0",
+                      "on-tertiary-fixed": "#3c051a",
+                      "on-secondary-fixed-variant": "#404754",
+                      "primary-fixed-dim": "#98d59d",
+                      "error": "#ba1a1a",
+                      "text-charcoal": "#2D2D2D",
+                      "surface-tint": "#316a3c",
+                      "surface-container-low": "#f3f3f6",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#fffbff",
+                      "secondary-fixed": "#dce2f3",
+                      "outline-variant": "#c0c9bd",
+                      "surface-bright": "#f9f9fc",
+                      "surface-dim": "#d9dadd",
+                      "primary-fixed": "#b3f2b8",
+                      "primary": "#2e673a",
+                      "surface-variant": "#e2e2e5",
+                      "on-tertiary-fixed-variant": "#733145",
+                      "surface-container-highest": "#e2e2e5",
+                      "tertiary-container": "#aa5d72",
+                      "on-primary-fixed": "#002109",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#f7fff3",
+                      "secondary": "#585f6c",
+                      "outline": "#71796f",
+                      "tertiary": "#8c455a",
+                      "on-secondary-fixed": "#151c27",
+                      "surface-container": "#edeef1",
+                      "surface-light-shadow": "#FFFFFF",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#c0c7d6",
+                      "error-container": "#ffdad6",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#f0f0f3",
+                      "on-secondary-container": "#5e6572",
+                      "inverse-surface": "#2f3133"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "margin-mobile": "20px",
+                      "base": "4px",
+                      "gutter-md": "16px",
+                      "stack-lg": "24px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "numeric-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "label-caps": ["Plus Jakarta Sans"],
+                      "body-lg": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "numeric-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="w-full top-0 px-margin-mobile pt-stack-lg bg-background hidden md:flex"><div class="flex items-center justify-between px-margin-mobile py-4 w-full top-0 sticky bg-background dark:bg-on-background shadow-[5px_5px_10px_#BEBEBE,-5px_-5px_10px_#FFFFFF]"><button class="text-primary dark:text-primary-fixed-dim hover:scale-95 transition-transform active:shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF] transition-all duration-200 p-2 flex items-center justify-center"><span class="material-symbols-outlined">menu</span></button><h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Hermanos Ledgr</h1><button class="text-primary dark:text-primary-fixed-dim hover:scale-95 transition-transform active:shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF] transition-all duration-200 p-2 flex items-center justify-center"><span class="material-symbols-outlined">settings</span></button></div></header>
+<!-- Chat Header (Mobile Context / Specific Screen Header) -->
+<div class="w-full px-margin-mobile pt-stack-lg pb-stack-sm md:pt-stack-sm md:pb-0 z-10 sticky top-0 bg-background bg-opacity-90 backdrop-blur-sm">
+<div class="flex items-center justify-between rounded-[20px] p-gutter-md bg-background shadow-[-8px_-8px_16px_#FFFFFF,8px_8px_16px_#BEBEBE]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center sunken">
+<span class="material-symbols-outlined text-primary" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">AI Financial Advisor</h2>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Offline</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full extruded flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF]">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Chat Content -->
+<main class="flex-1 overflow-y-auto px-margin-mobile py-stack-lg flex flex-col gap-stack-lg no-scrollbar pb-[180px]">
+<!-- Timestamp -->
+<div class="text-center w-full">
+<span class="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1 rounded-full sunken inline-block">Today, 10:42 AM</span>
+</div>
+<!-- AI Message -->
+<div class="flex w-full justify-start max-w-[85%] md:max-w-[70%]">
+<div class="rounded-[24px] rounded-tl-sm p-gutter-md bg-background text-on-surface font-body-md text-body-md shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF]">
+                Hello! I've analyzed your recent spending patterns. It looks like your dining out expenses are 15% higher this month compared to last. Would you like me to suggest a budget adjustment?
+            </div>
+</div>
+<!-- User Message -->
+<div class="flex w-full justify-end ml-auto max-w-[85%] md:max-w-[70%]">
+<div class="rounded-[24px] rounded-tr-sm p-gutter-md bg-background text-on-surface font-body-md text-body-md shadow-[-8px_-8px_16px_#FFFFFF,8px_8px_16px_#BEBEBE]">
+                Yes, that would be helpful. I didn't realize I spent that much. Can we aim to save $50 next month?
+            </div>
+</div>
+<!-- AI Message -->
+<div class="flex w-full justify-start max-w-[85%] md:max-w-[70%]">
+<div class="rounded-[24px] rounded-tl-sm p-gutter-md bg-background text-on-surface font-body-md text-body-md flex flex-col gap-3 shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF]">
+<p class="">Absolutely. To save $50 next month on dining, I recommend setting a weekly limit of $45 for restaurants and takeout.</p>
+<div class="p-3 rounded-lg flex items-center gap-3 mt-1 shadow-[-8px_-8px_16px_#FFFFFF,8px_8px_16px_#BEBEBE]">
+<div class="w-8 h-8 rounded-full flex items-center justify-center bg-background shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF]">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="restaurant">restaurant</span>
+</div>
+<div class="flex-1">
+<div class="font-body-md text-body-md font-semibold">Dining Budget Proposal</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">$45 / week limit</div>
+</div>
+<button class="sunken px-3 py-1 rounded-full text-primary font-label-caps text-label-caps hover:bg-surface-tint hover:text-white transition-colors">Apply</button>
+</div>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex w-full justify-end ml-auto max-w-[85%] md:max-w-[70%]">
+<div class="rounded-[24px] rounded-tr-sm p-gutter-md bg-background text-on-surface font-body-md text-body-md shadow-[-8px_-8px_16px_#FFFFFF,8px_8px_16px_#BEBEBE]">
+                Sounds like a plan. Apply that to my main budget.
+            </div>
+</div>
+<!-- AI Message -->
+<div class="flex w-full justify-start max-w-[85%] md:max-w-[70%] mb-4">
+<div class="rounded-[24px] rounded-tl-sm p-gutter-md bg-background text-on-surface font-body-md text-body-md shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF]">
+                Budget updated successfully. You are now tracking towards a $50 saving for next month. Keep it up!
+            </div>
+</div>
+</main>
+<!-- Input Area -->
+<div class="fixed bottom-0 left-0 w-full px-margin-mobile pb-[104px] md:pb-stack-lg pt-stack-sm bg-background bg-opacity-90 backdrop-blur-sm z-30">
+<div class="flex items-center gap-3">
+<div class="flex-1 relative pl-[68px]">
+<input class="w-full bg-background sunken rounded-[24px] py-4 pl-4 pr-12 text-on-surface font-body-md text-body-md placeholder-on-surface-variant border-none focus:ring-0 focus:outline-none" placeholder="Ask about your budget..." type="text">
+</div>
+<button class="w-14 h-14 rounded-full extruded bg-background flex items-center justify-center hover:opacity-80 active:shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF] transition-all flex-shrink-0 text-[#508a59]">
+<span class="material-symbols-outlined" data-icon="send" data-weight="fill" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- Floating AI Advisor Button -->
+<button class="fixed bottom-[112px] left-margin-mobile w-14 h-14 rounded-full bg-background flex items-center justify-center text-primary z-40 md:hidden active:shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF] transition-all shadow-[-8px_-8px_16px_#FFFFFF,8px_8px_16px_#BEBEBE]"><span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span></button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-background dark:bg-on-background rounded-t-xl shadow-[0px_-5px_10px_#BEBEBE]"><a href="#" class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim p-2 hover:opacity-80 font-label-caps text-label-caps"><span class="material-symbols-outlined">grid_view</span><span class="">Hub</span></a><a href="#" class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim p-2 hover:opacity-80 font-label-caps text-label-caps"><span class="material-symbols-outlined">trending_up</span><span class="">Trends</span></a><div class="relative flex justify-center items-center"><button class="w-16 h-16 rounded-full bg-background shadow-[5px_5px_10px_#BEBEBE,-5px_-5px_10px_#FFFFFF] flex items-center justify-center text-primary dark:text-primary-fixed-dim active:shadow-[inset_5px_5px_10px_#BEBEBE,inset_-5px_-5px_10px_#FFFFFF] transition-all hover:opacity-80"><span class="material-symbols-outlined text-[32px]">add</span></button></div><a href="#" class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim p-2 hover:opacity-80 font-label-caps text-label-caps"><span class="material-symbols-outlined">history</span><span class="">History</span></a><a href="#" class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim p-2 hover:opacity-80 font-label-caps text-label-caps"><span class="material-symbols-outlined">person</span><span class="">Profile</span></a></nav>
+<script>
+        // Simple auto-scroll to bottom functionality for demo purposes
+        document.addEventListener("DOMContentLoaded", () => {
+            const main = document.querySelector('main');
+            main.scrollTop = main.scrollHeight;
+        });
+    </script>
+
+
+
+
+</body></html>
