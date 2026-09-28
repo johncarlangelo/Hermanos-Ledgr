@@ -17,7 +17,7 @@
 
 ## 📖 Overview
 
-**Hermanos Ledgr** is a personal-use Android finance tracker inspired by [Tarsi](https://www.tarsi.cloud/features). It delivers the sleekness and intelligence of top-tier finance apps without monthly subscriptions, account logins, cloud dependencies, or tracking.
+**Hermanos Ledgr** is a personal-use Android finance tracker. It delivers the sleekness and intelligence of top-tier finance apps without monthly subscriptions, account logins, cloud dependencies, or tracking.
 
 The app is built around the **"Calm Finance"** philosophy: an uncluttered, high-craft interface where numbers are clear heroes, typography is stabilized with tabular figures, and repetitive actions take under 3 seconds.
 
@@ -28,7 +28,7 @@ The app is built around the **"Calm Finance"** philosophy: an uncluttered, high-
 | Principle | Detail |
 |---|---|
 | **Zero-Cloud Privacy** | All database tables, preferences, and backups live strictly on your device. Zero telemetry, zero analytics, zero external network requests. |
-| **On-Device Local AI** | Natural language logging powered by local GGUF models (`Qwen 3 1.7B` or `SmolLM 2 1.7B`) running on-chip via `flutter_llama` (llama.cpp FFI). |
+| **On-Device Local AI** | Natural language logging powered by a cascaded hybrid pipeline (Tier 1 fast classifier < 30 MB + Tier 2 Sub-1B Light LLM `Qwen 2.5 0.5B` ~350 MB) running on-chip via `flutter_llama` (llama.cpp FFI). |
 | **Optimized for Samsung AMOLED** | Dedicated **AMOLED Black** mode (`#000000`) designed specifically for Samsung Galaxy Super AMOLED displays to maximize battery life, alongside modern M3 tonal dark and light modes. |
 | **Philippine-Centric Presets** | Hardcoded Philippine Peso (`₱`) formatting and native presets for Philippine financial accounts: **GCash**, **Maya**, **BDO Unibank**, **BPI**, and cash wallets. |
 | **No Paywalls or Subscriptions** | Every feature—unlimited transaction logging, cashflow forecasting, custom budgets, and AI parsing—is unlocked from day one. |
@@ -190,30 +190,6 @@ flutter analyze
 # Run unit and widget tests
 flutter test
 ```
-
----
-
-## 🗺️ Roadmap & Phases
-
-- [x] **Phase 0: Project Scaffolding & Front-End Setup**
-  - M3 Calm Finance theme (Light, Dark, AMOLED)
-  - First-time onboarding flow with preferences persistence
-  - GoRouter shell with 5 interactive tab destinations
-  - Custom amount keypad, bottom sheet, and 5s undo toast
-- [ ] **Phase 1: Database Foundation**
-  - Drift (SQLite) tables, DAOs, reactive streams, and seed data
-- [ ] **Phase 2: Account Management**
-  - Full CRUD for bank accounts, e-wallets, credit cards, and templates
-- [ ] **Phase 3: Transaction CRUD Engine**
-  - Persistent SQLite storage, balance calculation rollback, attachment support
-- [ ] **Phase 4: Dashboard Integration**
-  - Real-time aggregation of Drift streams into the dashboard
-- [ ] **Phase 5: Budget & Goal Engines**
-  - Monthly budget calculations, overspend warnings, savings goal contributions
-- [ ] **Phase 9: Cascaded Hybrid AI Engine**
-  - Tier 1 Fast Classifier (< 30 MB, < 20 ms) + Tier 2 Sub-1B Light LLM (`Qwen 2.5 0.5B` ~350 MB GGUF) via `flutter_llama`
-
-See [`PROGRESS.md`](PROGRESS.md) and [`TASKS.md`](TASKS.md) for detailed task tracking.
 
 ---
 
