@@ -46,7 +46,6 @@ app.*.map.json
 
 # Local AI / Agent files
 .agent/
-.agents/
 
 # Environment and secret files
 .env
