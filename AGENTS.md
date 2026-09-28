@@ -2,6 +2,7 @@
 ## Hermanos Ledgr
 
 > **Last Updated:** 2026-09-28
+> **Companion Skill:** `.agents/skills/flutter-m3-premium-design/SKILL.md`
 
 ---
 
@@ -20,6 +21,24 @@
 - **OCR:** Google ML Kit (on-device)
 - **Charts:** `fl_chart`
 - **Design:** Material Design 3 with `ColorScheme.fromSeed(seedColor: Color(0xFF2E7D32))`
+
+---
+
+## Mandatory Design System & Skill Usage
+
+> [!IMPORTANT]
+> **Before creating or modifying any UI widget or screen**, agents MUST read and follow the specifications in:
+> [`.agents/skills/flutter-m3-premium-design/SKILL.md`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/.agents/skills/flutter-m3-premium-design/SKILL.md) and [`DESIGN.md`](file:///d:/Comsci%20things/Hermanos%20Ledgr%20-%20Budget%20Tracking%20app/hermanos-ledgr/DESIGN.md).
+
+### Core UI Rules for Agents:
+1. **Cards:** Corner radius must be **16dp**, elevation **0**, background `surfaceContainer`.
+2. **Numbers:** All money amounts MUST use `fontFeatures: [FontFeature.tabularFigures()]` so digits do not jump or jitter.
+3. **Colors:** Never use raw `Colors.green` or `Colors.red`. Always use semantic color tokens from `SemanticColors` or `colorScheme`.
+4. **Loading States:** Always use **shimmer skeleton cards** (not circular spinners) for data screens.
+5. **Empty States:** Every empty view must have an icon (48dp, 40% opacity), descriptive message, and CTA button.
+6. **Undo Toast:** Show a 5-second SnackBar with an `[Undo]` button after adding, editing, or deleting transactions.
+7. **Hero Numbers:** Net worth and balances place the label *above* the number and use count-up animations (300ms easeOutCubic).
+8. **Motion:** Use staggered card cascades (50ms delay) when lists or dashboards load.
 
 ---
 
@@ -95,18 +114,18 @@ Shared code goes in `lib/core/` (database, models, utils) or `lib/shared/` (reus
 
 ---
 
-## Design System
+## Design System Tokens Summary
 
 - **Theme:** Material Design 3 with `useMaterial3: true`
 - **Seed Color:** `#2E7D32` (Forest Green)
-- **Font:** Google Fonts — Inter (fallback: Roboto)
+- **Font:** Google Fonts — Inter with tabular figures
 - **Dark Mode:** Default; follows system preference
-- **AMOLED Mode:** True black option for Samsung displays
+- **AMOLED Mode:** True black (`#000000`) option for Samsung displays
 - **Currency:** Philippine Peso (₱) — hardcoded for personal use
-- **Spacing:** 4dp grid system (xs=4, sm=8, md=12, lg=16, xl=24, xxl=32)
-- **Corner Radius:** Cards=12dp, Sheets=28dp, Chips=8dp, Buttons=full rounded
+- **Spacing:** 4dp grid system (xs=4, sm=8, md=12, lg=16, xl=24, xxl=32, xxxl=48)
+- **Corner Radius:** Cards=16dp, Sheets=28dp, Chips=8dp, Keypad buttons=12dp
 
-See `DESIGN.md` for full design specification.
+See `DESIGN.md` and `.agents/skills/flutter-m3-premium-design/SKILL.md` for complete details.
 
 ---
 
@@ -141,7 +160,9 @@ flutter build apk --release
 - ❌ Do not add analytics or telemetry
 - ❌ Do not target iOS, web, or desktop
 - ❌ Do not add stocks/crypto features (out of scope for v1)
-- ❌ Do not add streaks or achievement systems
+- ❌ Do not add streaks or gamification systems
 - ❌ Do not bundle the LLM model in the APK (download on first use)
 - ❌ Do not use `setState` for state management (use Riverpod)
+- ❌ Do not use bare circular spinners for page loading (use shimmer)
+- ❌ Do not use raw colors (`Colors.red`, `Colors.green`)
 - ❌ Do not store sensitive data unencrypted (though this is a personal app, be sensible)

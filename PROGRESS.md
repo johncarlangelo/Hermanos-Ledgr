@@ -2,14 +2,14 @@
 ## Hermanos Ledgr
 
 > **Last Updated:** 2026-09-28
-> **Overall Status:** 🟡 Planning Phase
+> **Overall Status:** 🟢 Planning Phase Complete · Ready for Phase 0
 
 ---
 
 ## Current Sprint
 
-**Phase:** Pre-build Planning
-**Focus:** Creating project documentation and planning artifacts
+**Phase:** Pre-build Planning -> Phase 0: Project Scaffolding
+**Focus:** Project scaffolding and initialization
 
 ---
 
@@ -17,8 +17,8 @@
 
 | Phase | Status | Progress | Notes |
 |---|---|---|---|
-| **Planning** | 🟡 In Progress | ████████░░ 80% | Creating docs |
-| **Phase 0: Scaffolding** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
+| **Planning** | 🟢 Complete | ██████████ 100% | All 8 MD docs created, M3 design skill configured |
+| **Phase 0: Scaffolding** | ⬜ Next Up | ░░░░░░░░░░ 0% | Ready to start |
 | **Phase 1: Database** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 2: Accounts** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 3: Transactions** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
@@ -52,6 +52,9 @@
 | Date | Phase | Task(s) | Notes |
 |---|---|---|---|
 | 2026-09-28 | Planning | — | Created PRD, DESIGN, ARCHITECTURE, AGENTS, VERIFY, TASKS, PROGRESS, DECISIONS docs |
+| 2026-09-28 | Planning | — | Created `.agents/skills/flutter-m3-premium-design/SKILL.md` custom skill |
+| 2026-09-28 | Planning | — | Cleaned legacy workspace artifacts and moved docs/.agents into git repo |
+| 2026-09-28 | Planning | — | Synchronized DESIGN.md (v2.0), AGENTS.md, and DECISIONS.md (D-012) with design skill |
 
 ---
 

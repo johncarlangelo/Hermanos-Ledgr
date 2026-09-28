@@ -165,4 +165,17 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 
 ---
 
+### D-012: Material Design 3 + "Calm Finance" Design System with Custom Skill
+**Date:** 2026-09-28
+**Status:** Accepted
+**Context:** Need a premium, high-craft mobile UI/UX design standard for Android that feels Apple-quality while adhering to native Material 3 and optimizing for Samsung AMOLED screens.
+**Decision:** Adopt a "Calm Finance" design system with customized tokens (16dp cards, 0 elevation + tonal surface containers, Inter with tabular figures, 6dp thin budget bars, 50ms staggered animations, shimmer loaders, and 5-second undo toast pattern), documented in a dedicated `.agents/skills/flutter-m3-premium-design/SKILL.md` skill.
+**Alternatives Considered:**
+- Standard out-of-the-box M3 defaults — functional but feels generic/material-boilerplate
+- Heavy glassmorphism / skeuomorphism throughout — reduces contrast and battery life on mobile
+- Ad-hoc styling per screen — leads to inconsistency across features
+**Rationale:** Standardizing tokens in `DESIGN.md` and a dedicated skill ensures consistent implementation across all phases. The "Calm Finance" philosophy emphasizes speed of input and tabular clarity over flashy gamification, perfectly matching the personal finance use-case.
+
+---
+
 *Add new decisions below this line.*
