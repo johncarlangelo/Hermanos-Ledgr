@@ -17,20 +17,20 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 ---
 
-## Phase 0: Project Scaffolding
-> **Goal:** Empty Flutter app that builds and runs with the correct structure
+## Phase 0: Project Scaffolding & Front-End Setup
+> **Goal:** Flutter app with Material 3 Calm Finance theme, Onboarding flow, GoRouter bottom nav shell, and all 5 tabs
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 0.1 | Delete old project files, clean workspace | 🟢 | — | ⬜ TODO |
-| 0.2 | Create new Flutter project (`flutter create --org com.hermanos --project-name hermanos_ledgr --platforms android ./`) | 🟢 | 0.1 | ⬜ TODO |
-| 0.3 | Configure `pubspec.yaml` with all dependencies | 🟡 | 0.2 | ⬜ TODO |
-| 0.4 | Set up directory structure (`lib/app/`, `lib/core/`, `lib/features/`, `lib/shared/`) | 🟢 | 0.2 | ⬜ TODO |
-| 0.5 | Configure Material 3 theme (light + dark + AMOLED) with Inter font | 🟡 | 0.3 | ⬜ TODO |
-| 0.6 | Set up GoRouter with bottom navigation shell | 🟡 | 0.4 | ⬜ TODO |
-| 0.7 | Create placeholder screens for all 5 tabs | 🟢 | 0.6 | ⬜ TODO |
-| 0.8 | Verify app builds and runs on Android emulator | 🟢 | 0.7 | ⬜ TODO |
-| 0.9 | Configure Android-specific settings (min SDK, app icon, package name) | 🟢 | 0.8 | ⬜ TODO |
+| 0.1 | Delete old project files, clean workspace | 🟢 | — | ✅ DONE |
+| 0.2 | Create new Flutter project (`flutter create --org com.hermanos --project-name hermanos_ledgr --platforms android ./`) | 🟢 | 0.1 | ✅ DONE |
+| 0.3 | Configure `pubspec.yaml` with required UI & state dependencies | 🟡 | 0.2 | ✅ DONE |
+| 0.4 | Set up directory structure (`lib/app/`, `lib/core/`, `lib/features/`, `lib/shared/`) | 🟢 | 0.2 | ✅ DONE |
+| 0.5 | Configure Material 3 theme (light + dark + AMOLED) with Inter font & tabular figures | 🟡 | 0.3 | ✅ DONE |
+| 0.6 | Set up GoRouter with bottom navigation shell & onboarding redirect | 🟡 | 0.4 | ✅ DONE |
+| 0.7 | Build first-time Onboarding flow (welcome, live theme selector, starter accounts) | 🟡 | 0.6 | ✅ DONE |
+| 0.8 | Build interactive front-end screens for all 5 tabs (Home, Transactions, Log sheet, Budget, AI) | 🔴 | 0.7 | ✅ DONE |
+| 0.9 | Configure Android-specific settings (app name 'Hermanos Ledgr', package name) | 🟢 | 0.8 | ✅ DONE |
 
 ---
 

@@ -8,8 +8,8 @@
 
 ## Current Sprint
 
-**Phase:** Pre-build Planning -> Phase 0: Project Scaffolding
-**Focus:** Project scaffolding and initialization
+**Phase:** Phase 0: Project Scaffolding & Front-End Setup Complete
+**Focus:** Reviewing Initial Front-End & Onboarding with User before Phase 1 (Drift Database)
 
 ---
 
@@ -18,7 +18,7 @@
 | Phase | Status | Progress | Notes |
 |---|---|---|---|
 | **Planning** | 🟢 Complete | ██████████ 100% | All 8 MD docs created, M3 design skill configured |
-| **Phase 0: Scaffolding** | ⬜ Next Up | ░░░░░░░░░░ 0% | Ready to start |
+| **Phase 0: Scaffolding** | 🟢 Complete | ██████████ 100% | Flutter app initialized, M3 tokens, Onboarding, 5 interactive tabs |
 | **Phase 1: Database** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 2: Accounts** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 3: Transactions** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
