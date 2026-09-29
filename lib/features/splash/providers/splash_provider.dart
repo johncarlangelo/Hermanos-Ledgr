@@ -9,19 +9,23 @@ final GlobalKey onboardingBrandEmblemKey = GlobalKey();
 class SplashState {
   final bool isVisible;
   final bool isFlightActive;
+  final bool isEmblemRevealed;
 
   const SplashState({
     required this.isVisible,
     required this.isFlightActive,
+    this.isEmblemRevealed = false,
   });
 
   SplashState copyWith({
     bool? isVisible,
     bool? isFlightActive,
+    bool? isEmblemRevealed,
   }) {
     return SplashState(
       isVisible: isVisible ?? this.isVisible,
       isFlightActive: isFlightActive ?? this.isFlightActive,
+      isEmblemRevealed: isEmblemRevealed ?? this.isEmblemRevealed,
     );
   }
 }
@@ -32,6 +36,7 @@ class SplashNotifier extends Notifier<SplashState> {
     return const SplashState(
       isVisible: true,
       isFlightActive: false,
+      isEmblemRevealed: false,
     );
   }
 
@@ -39,10 +44,15 @@ class SplashNotifier extends Notifier<SplashState> {
     state = state.copyWith(isFlightActive: true);
   }
 
+  void revealDestinationEmblem() {
+    state = state.copyWith(isEmblemRevealed: true);
+  }
+
   void complete() {
     state = const SplashState(
       isVisible: false,
       isFlightActive: false,
+      isEmblemRevealed: true,
     );
   }
 
@@ -50,6 +60,7 @@ class SplashNotifier extends Notifier<SplashState> {
     state = const SplashState(
       isVisible: true,
       isFlightActive: false,
+      isEmblemRevealed: false,
     );
   }
 }

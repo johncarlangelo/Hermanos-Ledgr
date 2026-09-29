@@ -57,22 +57,22 @@ class ShellScaffold extends ConsumerWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            Opacity(
-              opacity: splashState.isVisible ? 0.0 : 1.0,
-              child: Hero(
-                tag: 'app_brand_emblem',
-                child: Container(
-                  key: shellBrandEmblemKey,
-                  padding: const EdgeInsets.all(Spacing.xs),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.account_balance_wallet_rounded,
-                    size: 18,
-                    color: theme.colorScheme.primary,
-                  ),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              opacity:
+                  splashState.isEmblemRevealed || !splashState.isVisible ? 1.0 : 0.0,
+              child: Container(
+                key: shellBrandEmblemKey,
+                padding: const EdgeInsets.all(Spacing.xs),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.account_balance_wallet_rounded,
+                  size: 18,
+                  color: theme.colorScheme.primary,
                 ),
               ),
             ),

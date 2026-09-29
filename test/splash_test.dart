@@ -31,8 +31,8 @@ void main() {
     expect(find.text(AppConstants.appName.toUpperCase()), findsOneWidget);
     expect(find.text('SOVEREIGN PERSONAL LEDGER'), findsOneWidget);
 
-    // Verify hero emblem exists
-    expect(find.byType(Hero), findsOneWidget);
+    // Verify brand emblem icon exists
+    expect(find.byIcon(Icons.account_balance_wallet_rounded), findsOneWidget);
 
     // Advance through intro and flight animation
     await tester.pump(const Duration(milliseconds: 1000));
