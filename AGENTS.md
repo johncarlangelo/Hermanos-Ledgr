@@ -131,6 +131,26 @@ Shared code goes in `lib/core/` (database, models, utils) or `lib/shared/` (reus
 
 ---
 
+## Command Execution & Safety Protocol (Strict Rule)
+
+The user has Antigravity configured for automatic command execution. Because commands execute without an interactive CLI prompt, agents MUST exercise strict safety boundaries and **NEVER run dangerous, system-modifying, environment-altering, or remote-altering commands without explicit user permission**.
+
+### Strictly Prohibited Without Explicit User Request:
+1. **System & Global Git Configs:**
+   - ❌ Never run `git config --global`, `gh auth setup-git`, or change system credential helpers.
+   - ❌ Never change, rename, or touch git remotes (`git remote set-url`, `git remote add`, `git remote remove`) without asking.
+   - ❌ Never touch user global SSH, GPG, or `.gitconfig` settings.
+2. **Pushing & Remote Mutating:**
+   - ❌ Never run `git push`, `git push --force`, or publish commits unless the user explicitly requests it (e.g., "you may push now", "push to main").
+3. **Destructive Git & Filesystem Actions:**
+   - ❌ Never run `git reset --hard`, `git clean -fd`, `git restore .`, `git rebase`, or delete branches.
+   - ❌ Never delete databases, drop SQLite tables, or run destructive file deletions without asking.
+4. **Safe to Run Autonomously:**
+   - Read-only diagnostics: `git status`, `git diff`, `git log`.
+   - Local validation & builds: `flutter pub get`, `dart run build_runner build`, `flutter analyze`, `flutter test`.
+
+---
+
 ## Design System Tokens Summary
 
 - **Theme:** Material Design 3 with `useMaterial3: true`
@@ -215,4 +235,6 @@ flutter build apk --release
 - ❌ Do not use raw colors (`Colors.red`, `Colors.green`)
 - ❌ Do not use stock Android native UI components (`AlertDialog`, `DropdownButton`, `PopupMenuButton`, raw `SnackBar`, `Toast`, `Checkbox`, `Radio`, `Switch`) — everything must be custom-tailored
 - ❌ Do not write multi-line, paragraphed, or bulleted commit messages (strictly 1-liner conventional commits only)
+- ❌ Do not run dangerous, environment-modifying, or system configuration commands (`git config --global`, `gh auth`, changing remotes, destructive git commands) without explicit user permission
+- ❌ Do not run `git push` unless the user explicitly commands to push
 - ❌ Do not store sensitive data unencrypted (though this is a personal app, be sensible)
