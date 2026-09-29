@@ -4,18 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hermanos_ledgr/app/theme/app_theme.dart';
 import 'package:hermanos_ledgr/core/constants/app_constants.dart';
 import 'package:hermanos_ledgr/features/splash/presentation/screens/splash_screen.dart';
+import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 
 void main() {
-  testWidgets('SplashScreen mounts and renders brand typography and hero emblem', (tester) async {
+  testWidgets('SplashScreen mounts, renders brand typography, and executes flight', (tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
+    final container = ProviderContainer();
+
     await tester.pumpWidget(
-      ProviderScope(
+      UncontrolledProviderScope(
+        container: container,
         child: MaterialApp(
           theme: AppTheme.dark(),
-          home: const SplashScreen(),
+          home: const Scaffold(body: SplashScreen()),
         ),
       ),
     );
@@ -28,11 +32,14 @@ void main() {
     expect(find.text('SOVEREIGN PERSONAL LEDGER'), findsOneWidget);
 
     // Verify hero emblem exists
-    expect(find.byKey(const Key('app_brand_emblem')), findsNothing); // find by type
     expect(find.byType(Hero), findsOneWidget);
 
-    // Advance animation partially
-    await tester.pump(const Duration(milliseconds: 500));
+    // Advance through intro and flight animation
     await tester.pump(const Duration(milliseconds: 1000));
+    await tester.pump(const Duration(milliseconds: 1000));
+    await tester.pump(const Duration(milliseconds: 1000));
+
+    // Verify splash state completed
+    expect(container.read(splashProvider).isVisible, isFalse);
   });
 }

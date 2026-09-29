@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
+import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 
 class ShellScaffold extends ConsumerWidget {
@@ -50,23 +51,28 @@ class ShellScaffold extends ConsumerWidget {
 
     final selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
+    final splashState = ref.watch(splashProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Row(
           children: [
-            Hero(
-              tag: 'app_brand_emblem',
-              child: Container(
-                padding: const EdgeInsets.all(Spacing.xs),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_rounded,
-                  size: 18,
-                  color: theme.colorScheme.primary,
+            Opacity(
+              opacity: splashState.isVisible ? 0.0 : 1.0,
+              child: Hero(
+                tag: 'app_brand_emblem',
+                child: Container(
+                  key: shellBrandEmblemKey,
+                  padding: const EdgeInsets.all(Spacing.xs),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet_rounded,
+                    size: 18,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
             ),

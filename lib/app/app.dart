@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/app/router.dart';
 import 'package:hermanos_ledgr/core/providers/theme_provider.dart';
+import 'package:hermanos_ledgr/features/splash/presentation/widgets/splash_gateway.dart';
 
 class HermanosLedgrApp extends ConsumerWidget {
   const HermanosLedgrApp({super.key});
@@ -16,6 +17,9 @@ class HermanosLedgrApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: themeData,
       routerConfig: router,
+      builder: (context, child) {
+        return SplashGateway(child: child ?? const SizedBox.shrink());
+      },
     );
   }
 }

@@ -7,19 +7,16 @@ import 'package:hermanos_ledgr/features/budget/presentation/screens/budget_scree
 import 'package:hermanos_ledgr/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:hermanos_ledgr/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/screens/settings_screen.dart';
-import 'package:hermanos_ledgr/features/splash/presentation/screens/splash_screen.dart';
+import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/screens/transactions_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final onboardingState = ref.watch(onboardingProvider);
 
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/',
     redirect: (context, state) {
       if (onboardingState.isLoading) return null;
-
-      final isSplash = state.matchedLocation == '/splash';
-      if (isSplash) return null;
 
       final isGoingToOnboarding = state.matchedLocation == '/onboarding';
 
@@ -27,12 +24,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/onboarding';
       }
 
+      if (onboardingState.isCompleted && isGoingToOnboarding) {
+        return '/';
+      }
+
       return null;
     },
     routes: [
       GoRoute(
         path: '/splash',
-        builder: (context, state) => const SplashScreen(),
+        redirect: (context, state) {
+          ref.read(splashProvider.notifier).replay();
+          return '/';
+        },
       ),
       GoRoute(
         path: '/onboarding',

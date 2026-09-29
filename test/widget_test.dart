@@ -10,10 +10,15 @@ void main() {
       ),
     );
 
-    // Initial pump
+    // Initial pump with splash screen mounted
+    await tester.pump();
+    expect(find.text('HERMANOS LEDGR'), findsOneWidget);
+
+    // Settle through splash animation into main shell
+    await tester.pump(const Duration(milliseconds: 3000));
     await tester.pumpAndSettle();
 
-    // Verify brand title exists
-    expect(find.text('HERMANOS LEDGR'), findsOneWidget);
+    // Verify app shell title exists
+    expect(find.text('Hermanos Ledgr'), findsOneWidget);
   });
 }
