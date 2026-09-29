@@ -88,15 +88,20 @@ class AccountCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  CurrencyFormatter.format(account.balance),
-                  style: moneyStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: balanceColor,
+                Expanded(
+                  child: Text(
+                    CurrencyFormatter.format(account.balance),
+                    style: moneyStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: balanceColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (account.monthlyChange != 0)
+                if (account.monthlyChange != 0) ...[
+                  const SizedBox(width: Spacing.xs),
                   Text(
                     account.monthlyChange >= 0
                         ? '+₱${account.monthlyChange.toInt()}'
@@ -109,6 +114,7 @@ class AccountCard extends StatelessWidget {
                           : SemanticColors.expense(isDark),
                     ),
                   ),
+                ],
               ],
             ),
           ],

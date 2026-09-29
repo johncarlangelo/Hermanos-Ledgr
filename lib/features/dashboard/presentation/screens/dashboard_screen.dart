@@ -15,7 +15,6 @@ import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/hero_amount_display.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
-import 'package:hermanos_ledgr/shared/widgets/version_pill.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -52,30 +51,29 @@ class DashboardScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$greeting, $userName',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              'Personal Ledger',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$greeting, $userName',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            const SizedBox(width: Spacing.sm),
-                            const VersionPill(),
-                          ],
-                        ),
-                      ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Personal Ledger',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: Spacing.md),
                     Row(
                       children: [
                         IconButton.filledTonal(

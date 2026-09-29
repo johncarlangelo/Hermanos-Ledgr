@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
-import 'package:hermanos_ledgr/shared/widgets/theme_selection_sheet.dart';
 
 class ShellScaffold extends ConsumerWidget {
   final Widget child;
@@ -74,12 +73,6 @@ class ShellScaffold extends ConsumerWidget {
           ],
         ),
         actions: [
-          // Theme Switcher Button
-          IconButton(
-            icon: const Icon(Icons.palette_outlined, size: 22),
-            tooltip: 'Change Theme',
-            onPressed: () => ThemeSelectionSheet.show(context),
-          ),
           // Settings Button
           IconButton(
             icon: const Icon(Icons.settings_outlined, size: 22),

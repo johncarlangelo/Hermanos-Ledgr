@@ -59,57 +59,70 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final currentThemeMode = ref.watch(themeProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Top Bar with Skip Button
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Spacing.lg,
-                vertical: Spacing.sm,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Brand micro tag
-                  Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxHeight < 200 || constraints.maxWidth < 150) {
+              return const SizedBox.shrink();
+            }
+
+            return Column(
+              children: [
+                // Top Bar with Skip Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Spacing.lg,
+                    vertical: Spacing.sm,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(Spacing.xs + 2),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.account_balance_wallet_rounded,
-                          size: 18,
-                          color: theme.colorScheme.primary,
+                      // Brand micro tag
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(Spacing.xs + 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.account_balance_wallet_rounded,
+                                size: 18,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(width: Spacing.sm),
+                            Flexible(
+                              child: Text(
+                                'HERMANOS LEDGR',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: Spacing.sm),
-                      Text(
-                        'HERMANOS LEDGR',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                          color: theme.colorScheme.primary,
+                      if (_currentPage < _totalPages - 1)
+                        TextButton(
+                          onPressed: _finish,
+                          child: Text(
+                            'Skip',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                         ),
-                      ),
                     ],
                   ),
-                  if (_currentPage < _totalPages - 1)
-                    TextButton(
-                      onPressed: _finish,
-                      child: Text(
-                        'Skip',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+                ),
 
             // Page View
             Expanded(
@@ -179,7 +192,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

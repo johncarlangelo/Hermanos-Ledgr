@@ -63,17 +63,15 @@ class BudgetProgressCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Text(
-                          '${CurrencyFormatter.format(budget.spentAmount, includeDecimals: false)} / ${CurrencyFormatter.format(budget.limitAmount, includeDecimals: false)}',
-                          style: moneyStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      '${CurrencyFormatter.format(budget.spentAmount, includeDecimals: false)} / ${CurrencyFormatter.format(budget.limitAmount, includeDecimals: false)}',
+                      style: moneyStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -134,17 +132,22 @@ class BudgetProgressCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                budget.isOverBudget
-                    ? 'Over by ${CurrencyFormatter.format(budget.spentAmount - budget.limitAmount)}'
-                    : '${CurrencyFormatter.format(budget.remainingAmount)} remaining',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: budget.isOverBudget
-                      ? statusColor
-                      : theme.colorScheme.onSurfaceVariant,
+              Expanded(
+                child: Text(
+                  budget.isOverBudget
+                      ? 'Over by ${CurrencyFormatter.format(budget.spentAmount - budget.limitAmount)}'
+                      : '${CurrencyFormatter.format(budget.remainingAmount)} remaining',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: budget.isOverBudget
+                        ? statusColor
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: Spacing.xs),
               Text(
                 '${budget.daysLeft} days left',
                 style: theme.textTheme.bodySmall?.copyWith(

@@ -142,10 +142,13 @@ The user has Antigravity configured for automatic command execution. Because com
    - ❌ Never touch user global SSH, GPG, or `.gitconfig` settings.
 2. **Pushing & Remote Mutating:**
    - ❌ Never run `git push`, `git push --force`, or publish commits unless the user explicitly requests it (e.g., "you may push now", "push to main").
-3. **Destructive Git & Filesystem Actions:**
+3. **GitHub Account Switching & Verification:**
+   - ⚠️ If the agent runs `gh auth status` or detects that the active GitHub account is the user's work account (`john-supy-io`), the agent MUST NOT attempt to change credentials or force workarounds autonomously.
+   - The agent MUST immediately pause and notify the user to switch to their personal account (`gh auth switch` → `johncarlangelo`).
+4. **Destructive Git & Filesystem Actions:**
    - ❌ Never run `git reset --hard`, `git clean -fd`, `git restore .`, `git rebase`, or delete branches.
    - ❌ Never delete databases, drop SQLite tables, or run destructive file deletions without asking.
-4. **Safe to Run Autonomously:**
+5. **Safe to Run Autonomously:**
    - Read-only diagnostics: `git status`, `git diff`, `git log`.
    - Local validation & builds: `flutter pub get`, `dart run build_runner build`, `flutter analyze`, `flutter test`.
 
