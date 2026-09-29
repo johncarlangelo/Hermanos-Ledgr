@@ -76,10 +76,20 @@ class DashboardScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    IconButton.filledTonal(
-                      icon: const Icon(Icons.flash_on_rounded, size: 20),
-                      tooltip: 'Quick Log',
-                      onPressed: () => AddTransactionSheet.show(context),
+                    Row(
+                      children: [
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.flash_on_rounded, size: 20),
+                          tooltip: 'Quick Log',
+                          onPressed: () => AddTransactionSheet.show(context),
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        IconButton.filledTonal(
+                          icon: const Icon(Icons.settings_outlined, size: 20),
+                          tooltip: 'Settings',
+                          onPressed: () => context.push('/settings'),
+                        ),
+                      ],
                     ),
                   ],
                 ),

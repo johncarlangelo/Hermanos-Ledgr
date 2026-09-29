@@ -55,8 +55,13 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     }
   }
 
-  void setUserName(String name) {
-    state = state.copyWith(userName: name.trim().isEmpty ? 'John C.' : name.trim());
+  Future<void> setUserName(String name) async {
+    final trimmed = name.trim().isEmpty ? 'John C.' : name.trim();
+    state = state.copyWith(userName: trimmed);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kUserNameKey, trimmed);
+    } catch (_) {}
   }
 
   void toggleStarterAccount(String account) {

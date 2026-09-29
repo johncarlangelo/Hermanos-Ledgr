@@ -6,6 +6,7 @@ import 'package:hermanos_ledgr/features/ai_assistant/presentation/screens/ai_ass
 import 'package:hermanos_ledgr/features/budget/presentation/screens/budget_screen.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:hermanos_ledgr/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:hermanos_ledgr/features/settings/presentation/screens/settings_screen.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/screens/transactions_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -28,6 +29,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),

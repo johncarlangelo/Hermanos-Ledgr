@@ -152,6 +152,10 @@ class TransactionsNotifier extends Notifier<List<TransactionModel>> {
   void restoreTransaction(TransactionModel tx) {
     addTransaction(tx);
   }
+
+  void clearAll() {
+    state = [];
+  }
 }
 
 final transactionsProvider =
