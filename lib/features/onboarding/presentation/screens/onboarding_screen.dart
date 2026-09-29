@@ -54,6 +54,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.sizeOf(context);
+    if (media.width <= 10 || media.height <= 10) {
+      return const SizedBox.shrink();
+    }
+
     final theme = Theme.of(context);
     final onboardingState = ref.watch(onboardingProvider);
     final currentThemeMode = ref.watch(themeProvider);

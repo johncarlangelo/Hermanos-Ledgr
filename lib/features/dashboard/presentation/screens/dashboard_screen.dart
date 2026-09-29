@@ -48,46 +48,21 @@ class DashboardScreen extends ConsumerWidget {
               // Header Greeting & Date
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '$greeting, $userName',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Personal Ledger',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      '$greeting, $userName',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(width: Spacing.md),
-                    Row(
-                      children: [
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.flash_on_rounded, size: 20),
-                          tooltip: 'Quick Log',
-                          onPressed: () => AddTransactionSheet.show(context),
-                        ),
-                        const SizedBox(width: Spacing.xs),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.settings_outlined, size: 20),
-                          tooltip: 'Settings',
-                          onPressed: () => context.push('/settings'),
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    Text(
+                      'Personal Ledger',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),

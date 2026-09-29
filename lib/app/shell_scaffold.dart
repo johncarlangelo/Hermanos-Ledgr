@@ -43,6 +43,11 @@ class ShellScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final media = MediaQuery.sizeOf(context);
+    if (media.width <= 10 || media.height <= 10) {
+      return const SizedBox.shrink();
+    }
+
     final selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
 
