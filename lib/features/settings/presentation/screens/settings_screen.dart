@@ -551,17 +551,21 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_rounded,
-                  size: 22,
-                  color: theme.colorScheme.primary,
+              InkWell(
+                onTap: () => context.push('/splash'),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet_rounded,
+                    size: 22,
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(width: Spacing.md),

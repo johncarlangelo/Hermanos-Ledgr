@@ -88,16 +88,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(Spacing.xs + 2),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.account_balance_wallet_rounded,
-                                size: 18,
-                                color: theme.colorScheme.primary,
+                            Hero(
+                              tag: 'app_brand_emblem',
+                              child: Container(
+                                padding: const EdgeInsets.all(Spacing.xs + 2),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.account_balance_wallet_rounded,
+                                  size: 18,
+                                  color: theme.colorScheme.primary,
+                                ),
                               ),
                             ),
                             const SizedBox(width: Spacing.sm),
