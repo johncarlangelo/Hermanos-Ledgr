@@ -153,15 +153,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
     ref.read(transactionsProvider.notifier).addTransaction(tx);
     Navigator.of(context).pop();
-
-    // 5-second undo toast
-    UndoSnackbar.show(
-      context,
-      message: 'Logged ${CurrencyFormatter.format(tx.amount)} (${tx.title})',
-      onUndo: () {
-        ref.read(transactionsProvider.notifier).deleteTransaction(tx.id);
-      },
-    );
   }
 
   @override

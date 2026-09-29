@@ -7,7 +7,6 @@ import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
-import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 class ChatMessage {
   final String id;
@@ -214,14 +213,6 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     setState(() {
       _messages[messageIndex] = _messages[messageIndex].copyWith(isConfirmed: true);
     });
-
-    UndoSnackbar.show(
-      context,
-      message: 'Committed ${CurrencyFormatter.format(tx.amount)} (${tx.title})',
-      onUndo: () {
-        ref.read(transactionsProvider.notifier).deleteTransaction(tx.id);
-      },
-    );
   }
 
   void _scrollToBottom() {

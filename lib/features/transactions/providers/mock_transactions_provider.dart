@@ -150,7 +150,22 @@ class TransactionsNotifier extends Notifier<List<TransactionModel>> {
   }
 
   void restoreTransaction(TransactionModel tx) {
-    addTransaction(tx);
+    final list = [...state, tx];
+    list.sort((a, b) => b.date.compareTo(a.date));
+    state = list;
+
+    // Re-apply balance
+    final accountsNotifier = ref.read(accountsProvider.notifier);
+    if (tx.type == TransactionType.expense) {
+      accountsNotifier.updateBalance(tx.accountId, -tx.amount);
+    } else if (tx.type == TransactionType.income) {
+      accountsNotifier.updateBalance(tx.accountId, tx.amount);
+    } else if (tx.type == TransactionType.transfer) {
+      accountsNotifier.updateBalance(tx.accountId, -tx.amount);
+      if (tx.destinationAccountId != null) {
+        accountsNotifier.updateBalance(tx.destinationAccountId!, tx.amount);
+      }
+    }
   }
 
   void clearAll() {

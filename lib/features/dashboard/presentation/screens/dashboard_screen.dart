@@ -14,7 +14,6 @@ import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/hero_amount_display.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
-import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -260,20 +259,7 @@ class DashboardScreen extends ConsumerWidget {
                           padding: const EdgeInsets.only(bottom: Spacing.sm),
                           child: TransactionCard(
                             transaction: tx,
-                            onDelete: () {
-                              final deleted = ref
-                                  .read(transactionsProvider.notifier)
-                                  .deleteTransaction(tx.id);
-                              if (deleted != null) {
-                                UndoSnackbar.show(
-                                  context,
-                                  message: 'Deleted "${deleted.title}"',
-                                  onUndo: () => ref
-                                      .read(transactionsProvider.notifier)
-                                      .restoreTransaction(deleted),
-                                );
-                              }
-                            },
+                            onTap: () => context.go('/transactions'),
                           ),
                         ),
                       ],
