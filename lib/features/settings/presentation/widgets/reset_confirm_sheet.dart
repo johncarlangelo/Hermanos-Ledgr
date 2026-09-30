@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
+import 'package:hermanos_ledgr/core/providers/database_provider.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
-import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 /// Custom bottom sheet for confirming data reset operations.
@@ -134,11 +134,13 @@ class ResetConfirmSheet extends ConsumerWidget {
                     onPressed: () async {
                       Navigator.of(context).pop();
                       if (isFullReset) {
-                        ref.read(transactionsProvider.notifier).clearAll();
-                        UndoSnackbar.info(
-                          context,
-                          message: 'All ledger data has been reset',
-                        );
+                        await ref.read(databaseProvider).clearAndReseed();
+                        if (context.mounted) {
+                          UndoSnackbar.info(
+                            context,
+                            message: 'All ledger data has been reset to defaults',
+                          );
+                        }
                       } else {
                         await ref.read(onboardingProvider.notifier).resetOnboarding();
                         if (context.mounted) {

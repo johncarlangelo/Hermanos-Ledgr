@@ -5,6 +5,8 @@ import 'package:hermanos_ledgr/app/theme/app_theme.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/core/providers/theme_provider.dart';
+import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 
@@ -18,6 +20,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _customAccountController = TextEditingController();
   int _currentPage = 0;
   static const int _totalPages = 4;
 
@@ -31,6 +34,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
+    _customAccountController.dispose();
     super.dispose();
   }
 
@@ -47,6 +51,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _finish() async {
     ref.read(onboardingProvider.notifier).setUserName(_nameController.text);
+
+    final onboardingState = ref.read(onboardingProvider);
+    if (onboardingState.selectedStarterAccounts.contains('Other / Custom')) {
+      final customName = _customAccountController.text.trim().isEmpty
+          ? (onboardingState.customAccountName.trim().isEmpty
+              ? 'Custom Account'
+              : onboardingState.customAccountName.trim())
+          : _customAccountController.text.trim();
+      final isEWallet = onboardingState.customAccountType == 'eWallet';
+      final isCash = onboardingState.customAccountType == 'cash';
+      final accType = isEWallet
+          ? AccountType.eWallet
+          : (isCash ? AccountType.cash : AccountType.bank);
+      final icon = isEWallet
+          ? Icons.account_balance_wallet_rounded
+          : (isCash ? Icons.payments_rounded : Icons.account_balance_rounded);
+
+      final newAcc = AccountModel(
+        id: 'acc_${DateTime.now().millisecondsSinceEpoch}',
+        name: customName,
+        type: accType,
+        balance: 0.0,
+        icon: icon,
+        color: const Color(0xFF00897B),
+        institution: customName,
+        monthlyChange: 0.0,
+      );
+      ref.read(accountsProvider.notifier).addAccount(newAcc);
+    }
+
     await ref.read(onboardingProvider.notifier).completeOnboarding();
     if (mounted) {
       context.go('/');
@@ -449,6 +483,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       {'name': 'BDO Savings', 'icon': Icons.account_balance_rounded, 'subtitle': 'Bank Account'},
       {'name': 'Maya', 'icon': Icons.wallet_rounded, 'subtitle': 'E-Wallet'},
       {'name': 'BPI Platinum Card', 'icon': Icons.credit_card_rounded, 'subtitle': 'Credit Card'},
+      {'name': 'Other / Custom', 'icon': Icons.add_circle_outline_rounded, 'subtitle': 'Custom bank, e-wallet, or cash'},
     ];
 
     return SingleChildScrollView(
@@ -576,33 +611,183 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
             ),
+            if (acc['name'] == 'Other / Custom' &&
+                state.selectedStarterAccounts.contains('Other / Custom')) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: Spacing.md),
+                child: M3Card(
+                  padding: const EdgeInsets.all(Spacing.md),
+                  color: theme.colorScheme.surfaceContainerHigh,
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.edit_note_rounded,
+                            size: 18,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: Spacing.xs),
+                          Text(
+                            'Custom Account Details',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Spacing.sm),
+                      TextField(
+                        controller: _customAccountController,
+                        decoration: const InputDecoration(
+                          labelText: 'Account / Provider Name',
+                          hintText: 'e.g. GoTyme, SeaBank, UnionBank, PayPal',
+                          prefixIcon: Icon(Icons.account_balance_outlined, size: 20),
+                          isDense: true,
+                        ),
+                        onChanged: (val) => ref
+                            .read(onboardingProvider.notifier)
+                            .setCustomAccountName(val),
+                      ),
+                      const SizedBox(height: Spacing.md),
+                      Text(
+                        'Account Type',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: Spacing.xs),
+                      Row(
+                        children: [
+                          _buildAccountTypeChip(
+                            theme,
+                            label: 'Bank',
+                            icon: Icons.account_balance_rounded,
+                            isSelected: state.customAccountType == 'bank',
+                            onTap: () => ref
+                                .read(onboardingProvider.notifier)
+                                .setCustomAccountType('bank'),
+                          ),
+                          const SizedBox(width: Spacing.xs),
+                          _buildAccountTypeChip(
+                            theme,
+                            label: 'E-Wallet',
+                            icon: Icons.wallet_rounded,
+                            isSelected: state.customAccountType == 'eWallet',
+                            onTap: () => ref
+                                .read(onboardingProvider.notifier)
+                                .setCustomAccountType('eWallet'),
+                          ),
+                          const SizedBox(width: Spacing.xs),
+                          _buildAccountTypeChip(
+                            theme,
+                            label: 'Cash / Other',
+                            icon: Icons.payments_rounded,
+                            isSelected: state.customAccountType == 'cash',
+                            onTap: () => ref
+                                .read(onboardingProvider.notifier)
+                                .setCustomAccountType('cash'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ],
       ),
     );
   }
 
+  Widget _buildAccountTypeChip(
+    ThemeData theme, {
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(
+            vertical: Spacing.sm,
+            horizontal: Spacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? theme.colorScheme.primaryContainer
+                : theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? theme.colorScheme.onPrimaryContainer
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildReadyPage(ThemeData theme, OnboardingState state) {
+    final isDark = theme.brightness == Brightness.dark;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(Spacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: Spacing.xxl),
+          const SizedBox(height: Spacing.xl),
           Container(
-            width: 80,
-            height: 80,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               color: theme.colorScheme.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.check_rounded,
-              size: 48,
+              size: 40,
               color: theme.colorScheme.primary,
             ),
           ),
-          const SizedBox(height: Spacing.xl),
+          const SizedBox(height: Spacing.lg),
           Text(
             'Ready to Begin',
             textAlign: TextAlign.center,
@@ -619,88 +804,174 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               height: 1.4,
             ),
           ),
-          const SizedBox(height: Spacing.xxl),
+          const SizedBox(height: Spacing.xl),
 
-          // Privacy Guarantee Card
+          // Setup Summary Card
           M3Card(
             padding: const EdgeInsets.all(Spacing.lg),
-            color: theme.colorScheme.surfaceContainerHigh,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Icon(
-                      Icons.verified_user_rounded,
+                      Icons.tune_rounded,
                       color: theme.colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: Spacing.sm),
                     Text(
-                      'Zero-Cloud Guarantee',
+                      'Configuration Summary',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.primary,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: Spacing.sm),
-                Text(
-                  'Your financial records never leave this Samsung Galaxy device. No telemetry, no background network calls, and no monthly fees. You are in total control.',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    height: 1.4,
-                  ),
+                const SizedBox(height: Spacing.md),
+                Divider(
+                  height: 1,
+                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: Spacing.md),
+
+                // Profile row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Ledger Owner',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      state.userName,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Spacing.md),
+
+                // Starting accounts row
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Starting Accounts',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.xs),
+                    Wrap(
+                      spacing: Spacing.xs,
+                      runSpacing: Spacing.xs,
+                      children: state.selectedStarterAccounts.map((accName) {
+                        final typeLabel = state.customAccountType == 'eWallet'
+                            ? 'E-Wallet'
+                            : (state.customAccountType == 'cash'
+                                ? 'Cash'
+                                : 'Bank');
+                        final displayName = accName == 'Other / Custom'
+                            ? (state.customAccountName.trim().isEmpty
+                                ? 'Custom ($typeLabel)'
+                                : '${state.customAccountName.trim()} ($typeLabel)')
+                            : accName;
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: Spacing.sm,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? StashColors.raised
+                                : theme.colorScheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            displayName,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Spacing.md),
+
+                // Storage mode row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Storage Engine',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lock_outline_rounded,
+                          size: 14,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'On-Device SQLite',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: Spacing.xl),
+          const SizedBox(height: Spacing.lg),
 
-          // Quick Start Tips
-          Row(
-            children: [
-              Expanded(
-                child: M3Card(
-                  padding: const EdgeInsets.all(Spacing.md),
-                  child: Column(
-                    children: [
-                      Icon(Icons.flash_on_rounded,
-                          color: theme.colorScheme.secondary),
-                      const SizedBox(height: Spacing.xs),
-                      Text('Sub-3s Logging',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w600)),
-                      Text('Custom Keypad',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 10)),
-                    ],
+          // Privacy Assurance Banner
+          Container(
+            padding: const EdgeInsets.all(Spacing.md),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? StashColors.raised.withValues(alpha: 0.5)
+                  : theme.colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.shield_outlined,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: Spacing.sm),
+                Expanded(
+                  child: Text(
+                    'Your data stays completely private and never leaves this device.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: Spacing.sm),
-              Expanded(
-                child: M3Card(
-                  padding: const EdgeInsets.all(Spacing.md),
-                  child: Column(
-                    children: [
-                      Icon(Icons.undo_rounded,
-                          color: theme.colorScheme.secondary),
-                      const SizedBox(height: Spacing.xs),
-                      Text('5s Undo Toast',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w600)),
-                      Text('Safety Net',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 10)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

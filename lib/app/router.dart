@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/shell_scaffold.dart';
@@ -10,12 +11,28 @@ import 'package:hermanos_ledgr/features/settings/presentation/screens/settings_s
 import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/screens/transactions_screen.dart';
 
+class _OnboardingRefreshNotifier extends ChangeNotifier {
+  _OnboardingRefreshNotifier(Ref ref) {
+    ref.listen<bool>(
+      onboardingProvider.select((s) => s.isCompleted),
+      (previous, current) => notifyListeners(),
+    );
+    ref.listen<bool>(
+      onboardingProvider.select((s) => s.isLoading),
+      (previous, current) => notifyListeners(),
+    );
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final onboardingState = ref.watch(onboardingProvider);
+  final refreshNotifier = _OnboardingRefreshNotifier(ref);
+  ref.onDispose(refreshNotifier.dispose);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      final onboardingState = ref.read(onboardingProvider);
       if (onboardingState.isLoading) return null;
 
       final isGoingToOnboarding = state.matchedLocation == '/onboarding';

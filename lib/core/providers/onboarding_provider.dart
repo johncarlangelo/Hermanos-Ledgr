@@ -9,12 +9,16 @@ class OnboardingState {
   final bool isLoading;
   final String userName;
   final List<String> selectedStarterAccounts;
+  final String customAccountName;
+  final String customAccountType;
 
   const OnboardingState({
     required this.isCompleted,
     this.isLoading = true,
     this.userName = 'John C.',
     this.selectedStarterAccounts = const ['GCash', 'Cash Wallet', 'BDO Savings'],
+    this.customAccountName = '',
+    this.customAccountType = 'bank',
   });
 
   OnboardingState copyWith({
@@ -22,6 +26,8 @@ class OnboardingState {
     bool? isLoading,
     String? userName,
     List<String>? selectedStarterAccounts,
+    String? customAccountName,
+    String? customAccountType,
   }) {
     return OnboardingState(
       isCompleted: isCompleted ?? this.isCompleted,
@@ -29,6 +35,8 @@ class OnboardingState {
       userName: userName ?? this.userName,
       selectedStarterAccounts:
           selectedStarterAccounts ?? this.selectedStarterAccounts,
+      customAccountName: customAccountName ?? this.customAccountName,
+      customAccountType: customAccountType ?? this.customAccountType,
     );
   }
 }
@@ -74,6 +82,14 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       list.add(account);
     }
     state = state.copyWith(selectedStarterAccounts: list);
+  }
+
+  void setCustomAccountName(String name) {
+    state = state.copyWith(customAccountName: name);
+  }
+
+  void setCustomAccountType(String type) {
+    state = state.copyWith(customAccountType: type);
   }
 
   Future<void> completeOnboarding() async {
