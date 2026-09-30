@@ -3,9 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/app_theme.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
+import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/constants/app_constants.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/core/providers/theme_provider.dart';
+import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
+import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
+import 'package:hermanos_ledgr/features/accounts/presentation/widgets/add_account_sheet.dart';
+import 'package:hermanos_ledgr/features/accounts/presentation/widgets/delete_account_sheet.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/export_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_edit_sheet.dart';
@@ -29,7 +34,7 @@ class SettingsScreen extends ConsumerWidget {
     'Transactions',
     'Quick Log',
     'Budget',
-    'AI Assistant',
+    'Hermano',
   ];
 
   static const _tabIcons = [
@@ -88,7 +93,34 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: Spacing.xl),
 
-          // 2. Preferences & Appearance
+          // 2. Accounts & Wallets Management
+          _buildSectionHeader(theme, 'ACCOUNTS & WALLETS'),
+          const SizedBox(height: Spacing.sm),
+          _buildCardGroup(
+            theme: theme,
+            children: [
+              for (int i = 0; i < accounts.length; i++) ...[
+                _buildAccountTile(
+                  context: context,
+                  theme: theme,
+                  isDark: isDark,
+                  account: accounts[i],
+                  accountsCount: accounts.length,
+                  showDivider: true,
+                ),
+              ],
+              SettingsTile(
+                icon: Icons.add_circle_outline_rounded,
+                title: 'Add Account or Wallet',
+                subtitle: 'Link another bank, e-wallet, or cash envelope',
+                showDivider: false,
+                onTap: () => AddAccountSheet.show(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xl),
+
+          // 3. Preferences & Appearance
           _buildSectionHeader(theme, 'APPEARANCE & DISPLAY'),
           const SizedBox(height: Spacing.sm),
           _buildCardGroup(
@@ -129,7 +161,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: Spacing.xl),
 
-          // 3. Tactile & Haptics
+          // 4. Tactile & Haptics
           _buildSectionHeader(theme, 'SOUND & TACTILE'),
           const SizedBox(height: Spacing.sm),
           _buildCardGroup(
@@ -153,8 +185,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: Spacing.xl),
 
-          // 4. Local AI Intelligence
-          _buildSectionHeader(theme, 'LOCAL AI INTELLIGENCE'),
+          // 5. Hermano AI Intelligence
+          _buildSectionHeader(theme, 'HERMANO AI INTELLIGENCE'),
           const SizedBox(height: Spacing.sm),
           _buildAiCard(context, theme, isDark),
           const SizedBox(height: Spacing.xl),
@@ -210,6 +242,106 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: Spacing.xxl),
         ],
       ),
+    );
+  }
+
+  // --- Accounts & Wallets Management Tile ---
+  Widget _buildAccountTile({
+    required BuildContext context,
+    required ThemeData theme,
+    required bool isDark,
+    required AccountModel account,
+    required int accountsCount,
+    required bool showDivider,
+  }) {
+    final dangerColor = SemanticColors.expense(isDark);
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.sm + 2,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: account.color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  account.icon,
+                  size: 20,
+                  color: account.color,
+                ),
+              ),
+              const SizedBox(width: Spacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      account.name,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${account.institution} • ${account.typeLabel}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    CurrencyFormatter.format(account.balance),
+                    style: moneyStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: account.balance < 0
+                          ? dangerColor
+                          : theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: Spacing.xs),
+              IconButton(
+                icon: Icon(
+                  Icons.delete_outline_rounded,
+                  size: 20,
+                  color: accountsCount > 1
+                      ? dangerColor
+                      : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                ),
+                tooltip: accountsCount > 1
+                    ? 'Delete ${account.name}'
+                    : 'Cannot delete the only remaining account',
+                onPressed: () {
+                  DeleteAccountSheet.show(context, account);
+                },
+              ),
+            ],
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            indent: Spacing.lg + 38,
+            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+          ),
+      ],
     );
   }
 

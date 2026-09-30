@@ -6,6 +6,8 @@ import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/widgets/budget_progress_card.dart';
 import 'package:hermanos_ledgr/features/budget/providers/mock_budgets_provider.dart';
+import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
+import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 
 class BudgetScreen extends ConsumerStatefulWidget {
@@ -94,7 +96,9 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(3),
                   child: LinearProgressIndicator(
-                    value: (totalSpent / totalLimit).clamp(0.0, 1.0),
+                    value: totalLimit > 0
+                        ? (totalSpent / totalLimit).clamp(0.0, 1.0)
+                        : 0.0,
                     minHeight: 6,
                     backgroundColor: theme.colorScheme.surfaceContainerHigh,
                     valueColor: AlwaysStoppedAnimation<Color>(
@@ -118,11 +122,15 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                       ),
                     ),
                     Text(
-                      '${CurrencyFormatter.format(totalLimit - totalSpent)} left',
+                      totalLimit >= totalSpent
+                          ? '${CurrencyFormatter.format(totalLimit - totalSpent)} left'
+                          : '${CurrencyFormatter.format(totalSpent - totalLimit)} over',
                       style: moneyStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: SemanticColors.income(isDark),
+                        color: totalLimit >= totalSpent
+                            ? SemanticColors.income(isDark)
+                            : SemanticColors.expense(isDark),
                       ),
                     ),
                   ],
@@ -145,50 +153,75 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                   ),
                 ),
                 const SizedBox(height: Spacing.lg),
-                SizedBox(
-                  height: 180,
-                  child: PieChart(
-                    PieChartData(
-                      pieTouchData: PieTouchData(
-                        touchCallback: (event, pieTouchResponse) {
-                          setState(() {
-                            if (!event.isInterestedForInteractions ||
-                                pieTouchResponse == null ||
-                                pieTouchResponse.touchedSection == null) {
-                              _touchedSectionIndex = -1;
-                              return;
-                            }
-                            _touchedSectionIndex = pieTouchResponse
-                                .touchedSection!.touchedSectionIndex;
-                          });
-                        },
-                      ),
-                      borderData: FlBorderData(show: false),
-                      sectionsSpace: 3,
-                      centerSpaceRadius: 46,
-                      sections: budgets.asMap().entries.map((entry) {
-                        final i = entry.key;
-                        final b = entry.value;
-                        final isTouched = i == _touchedSectionIndex;
-                        final radius = isTouched ? 42.0 : 36.0;
-
-                        return PieChartSectionData(
-                          color: b.categoryColor,
-                          value: b.spentAmount,
-                          title: isTouched
-                              ? CurrencyFormatter.formatCompact(b.spentAmount)
-                              : '',
-                          radius: radius,
-                          titleStyle: moneyStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                if (budgets.isEmpty || totalSpent == 0)
+                  SizedBox(
+                    height: 120,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.pie_chart_outline_rounded,
+                            size: 32,
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.4),
                           ),
-                        );
-                      }).toList(),
+                          const SizedBox(height: Spacing.xs),
+                          Text(
+                            'No category expenses logged yet',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    height: 180,
+                    child: PieChart(
+                      PieChartData(
+                        pieTouchData: PieTouchData(
+                          touchCallback: (event, pieTouchResponse) {
+                            setState(() {
+                              if (!event.isInterestedForInteractions ||
+                                  pieTouchResponse == null ||
+                                  pieTouchResponse.touchedSection == null) {
+                                _touchedSectionIndex = -1;
+                                return;
+                              }
+                              _touchedSectionIndex = pieTouchResponse
+                                  .touchedSection!.touchedSectionIndex;
+                            });
+                          },
+                        ),
+                        borderData: FlBorderData(show: false),
+                        sectionsSpace: 3,
+                        centerSpaceRadius: 46,
+                        sections: budgets.asMap().entries.map((entry) {
+                          final i = entry.key;
+                          final b = entry.value;
+                          final isTouched = i == _touchedSectionIndex;
+                          final radius = isTouched ? 42.0 : 36.0;
+
+                          return PieChartSectionData(
+                            color: b.categoryColor,
+                            value: b.spentAmount,
+                            title: isTouched
+                                ? CurrencyFormatter.formatCompact(b.spentAmount)
+                                : '',
+                            radius: radius,
+                            titleStyle: moneyStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -203,12 +236,25 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
           ),
           const SizedBox(height: Spacing.sm),
 
-          for (final budget in budgets) ...[
+          if (budgets.isEmpty)
             Padding(
-              padding: const EdgeInsets.only(bottom: Spacing.sm),
-              child: BudgetProgressCard(budget: budget),
-            ),
-          ],
+              padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+              child: EmptyStateView(
+                icon: Icons.track_changes_rounded,
+                title: 'No category budgets active',
+                subtitle:
+                    'Budgets and category spending will appear as you log transactions.',
+                actionLabel: 'Log Expense',
+                onAction: () => AddTransactionSheet.show(context),
+              ),
+            )
+          else
+            for (final budget in budgets) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: Spacing.sm),
+                child: BudgetProgressCard(budget: budget),
+              ),
+            ],
 
           const SizedBox(height: Spacing.xl),
 

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hermanos_ledgr/app/app.dart';
 import 'package:hermanos_ledgr/core/database/app_database.dart';
 import 'package:hermanos_ledgr/core/providers/database_provider.dart';
+import 'package:hermanos_ledgr/core/providers/shared_preferences_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -27,9 +28,12 @@ void main() {
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
+    final prefs = await SharedPreferences.getInstance();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
           databaseProvider.overrideWithValue(db),
         ],
         child: const HermanosLedgrApp(),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
+import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
@@ -54,41 +55,21 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   @override
   void initState() {
     super.initState();
-    _messages.addAll([
+    _initFreshChat();
+  }
+
+  void _initFreshChat() {
+    final userName = ref.read(onboardingProvider).userName.split(' ').first;
+    _messages.clear();
+    _messages.add(
       ChatMessage(
         id: 'msg_welcome',
         text:
-            'Hello John! I am your on-device AI assistant. You can log expenses, income, or transfers using natural language — all parsed privately on your device.',
+            'Hello $userName! I am Hermano, your on-device personal financial assistant. You can log expenses, income, or transfers using natural language — completely private and offline.\n\nTry typing something like "Coffee 150 GCash" or "Salary 40k BDO" below.',
         isUser: false,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+        timestamp: DateTime.now(),
       ),
-      ChatMessage(
-        id: 'msg_sample_user',
-        text: 'Starbucks iced latte 240 from GCash',
-        isUser: true,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
-      ),
-      ChatMessage(
-        id: 'msg_sample_bot',
-        text: 'I parsed this transaction for you. Please confirm to commit it to your ledger:',
-        isUser: false,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
-        parsedTransaction: TransactionModel(
-          id: 'tx_ai_${DateTime.now().millisecondsSinceEpoch}',
-          title: 'Starbucks iced latte',
-          amount: 240.00,
-          type: TransactionType.expense,
-          categoryId: 'food',
-          categoryName: 'Food & Dining',
-          categoryIcon: Icons.restaurant_rounded,
-          categoryColor: const Color(0xFFF57C00),
-          accountId: 'acc_gcash',
-          accountName: 'GCash',
-          date: DateTime.now(),
-          note: 'Parsed via local LLM',
-        ),
-      ),
-    ]);
+    );
   }
 
   @override
@@ -236,7 +217,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text('Hermanos AI'),
+            const Text('Hermano'),
             const SizedBox(width: Spacing.sm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -269,6 +250,17 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Clear Chat',
+            onPressed: () {
+              setState(() {
+                _initFreshChat();
+              });
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

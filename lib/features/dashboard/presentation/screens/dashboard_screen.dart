@@ -31,7 +31,16 @@ class DashboardScreen extends ConsumerWidget {
     final transactions = ref.watch(transactionsProvider);
     final recentTransactions = transactions.take(5).toList();
 
-    final hour = DateTime.now().hour;
+    final now = DateTime.now();
+    final monthlyNetChange = transactions
+        .where((t) => t.date.year == now.year && t.date.month == now.month)
+        .fold<double>(0.0, (sum, t) {
+      if (t.type == TransactionType.income) return sum + t.amount;
+      if (t.type == TransactionType.expense) return sum - t.amount;
+      return sum;
+    });
+
+    final hour = now.hour;
     final greeting = hour < 12
         ? 'Good morning'
         : (hour < 17 ? 'Good afternoon' : 'Good evening');
@@ -80,7 +89,7 @@ class DashboardScreen extends ConsumerWidget {
                       HeroAmountDisplay(
                         label: 'Net Worth',
                         amount: netWorth,
-                        changeAmount: 14450.00,
+                        changeAmount: monthlyNetChange,
                         changeLabel: 'this month',
                       ),
                       const SizedBox(height: Spacing.lg),

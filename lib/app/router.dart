@@ -17,10 +17,6 @@ class _OnboardingRefreshNotifier extends ChangeNotifier {
       onboardingProvider.select((s) => s.isCompleted),
       (previous, current) => notifyListeners(),
     );
-    ref.listen<bool>(
-      onboardingProvider.select((s) => s.isLoading),
-      (previous, current) => notifyListeners(),
-    );
   }
 }
 
@@ -33,8 +29,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
       final onboardingState = ref.read(onboardingProvider);
-      if (onboardingState.isLoading) return null;
-
       final isGoingToOnboarding = state.matchedLocation == '/onboarding';
 
       if (!onboardingState.isCompleted && !isGoingToOnboarding) {

@@ -134,7 +134,7 @@ class ShellScaffold extends ConsumerWidget {
             NavigationDestination(
               icon: Icon(Icons.smart_toy_outlined),
               selectedIcon: Icon(Icons.smart_toy_rounded),
-              label: 'AI',
+              label: 'Hermano',
             ),
           ],
         ),

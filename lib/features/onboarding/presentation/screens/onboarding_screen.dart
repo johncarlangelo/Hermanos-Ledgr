@@ -53,6 +53,67 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ref.read(onboardingProvider.notifier).setUserName(_nameController.text);
 
     final onboardingState = ref.read(onboardingProvider);
+    final accountsNotifier = ref.read(accountsProvider.notifier);
+
+    const templates = {
+      'GCash': AccountModel(
+        id: 'acc_gcash',
+        name: 'GCash',
+        type: AccountType.eWallet,
+        balance: 0.0,
+        icon: Icons.account_balance_wallet_rounded,
+        color: Color(0xFF005CEE),
+        institution: 'Mynt',
+        monthlyChange: 0.0,
+      ),
+      'Cash Wallet': AccountModel(
+        id: 'acc_cash',
+        name: 'Cash Wallet',
+        type: AccountType.cash,
+        balance: 0.0,
+        icon: Icons.payments_rounded,
+        color: Color(0xFF00897B),
+        institution: 'Cash',
+        monthlyChange: 0.0,
+      ),
+      'BDO Savings': AccountModel(
+        id: 'acc_bdo',
+        name: 'BDO Savings',
+        type: AccountType.bank,
+        balance: 0.0,
+        icon: Icons.account_balance_rounded,
+        color: Color(0xFF0038A8),
+        institution: 'BDO Unibank',
+        monthlyChange: 0.0,
+      ),
+      'Maya': AccountModel(
+        id: 'acc_maya',
+        name: 'Maya',
+        type: AccountType.eWallet,
+        balance: 0.0,
+        icon: Icons.wallet_rounded,
+        color: Color(0xFF00D166),
+        institution: 'Maya Philippines',
+        monthlyChange: 0.0,
+      ),
+      'BPI Platinum Card': AccountModel(
+        id: 'acc_bpi_cc',
+        name: 'BPI Platinum Card',
+        type: AccountType.creditCard,
+        balance: 0.0,
+        icon: Icons.credit_card_rounded,
+        color: Color(0xFFB71C1C),
+        institution: 'Bank of the Philippine Islands',
+        monthlyChange: 0.0,
+      ),
+    };
+
+    for (final selected in onboardingState.selectedStarterAccounts) {
+      if (templates.containsKey(selected)) {
+        accountsNotifier.addAccount(templates[selected]!);
+      }
+    }
+
     if (onboardingState.selectedStarterAccounts.contains('Other / Custom')) {
       final customName = _customAccountController.text.trim().isEmpty
           ? (onboardingState.customAccountName.trim().isEmpty
@@ -78,7 +139,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         institution: customName,
         monthlyChange: 0.0,
       );
-      ref.read(accountsProvider.notifier).addAccount(newAcc);
+      accountsNotifier.addAccount(newAcc);
     }
 
     await ref.read(onboardingProvider.notifier).completeOnboarding();

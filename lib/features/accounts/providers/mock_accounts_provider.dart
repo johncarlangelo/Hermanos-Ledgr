@@ -7,56 +7,37 @@ import 'package:hermanos_ledgr/core/database/database_mappers.dart';
 import 'package:hermanos_ledgr/core/providers/database_provider.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 
-const List<AccountModel> _defaultAccounts = [
+/// Clean starter accounts with zero balances for initial setup.
+const List<AccountModel> starterCleanAccounts = [
   AccountModel(
     id: 'acc_gcash',
     name: 'GCash',
     type: AccountType.eWallet,
-    balance: 14850.50,
+    balance: 0.0,
     icon: Icons.account_balance_wallet_rounded,
-    color: Color(0xFF005CEE), // GCash Blue
+    color: Color(0xFF005CEE),
     institution: 'Mynt',
-    monthlyChange: 1200.0,
-  ),
-  AccountModel(
-    id: 'acc_bdo',
-    name: 'BDO Savings',
-    type: AccountType.bank,
-    balance: 85420.00,
-    icon: Icons.account_balance_rounded,
-    color: Color(0xFF0038A8), // BDO Blue
-    institution: 'BDO Unibank',
-    monthlyChange: 15000.0,
+    monthlyChange: 0.0,
   ),
   AccountModel(
     id: 'acc_cash',
     name: 'Cash Wallet',
     type: AccountType.cash,
-    balance: 4350.00,
+    balance: 0.0,
     icon: Icons.payments_rounded,
     color: Color(0xFF00897B),
     institution: 'Cash',
-    monthlyChange: -450.0,
+    monthlyChange: 0.0,
   ),
   AccountModel(
-    id: 'acc_maya',
-    name: 'Maya',
-    type: AccountType.eWallet,
-    balance: 12600.25,
-    icon: Icons.wallet_rounded,
-    color: Color(0xFF00D166), // Maya Green
-    institution: 'Maya Philippines',
-    monthlyChange: 800.0,
-  ),
-  AccountModel(
-    id: 'acc_bpi_cc',
-    name: 'BPI Platinum Card',
-    type: AccountType.creditCard,
-    balance: -8450.00,
-    icon: Icons.credit_card_rounded,
-    color: Color(0xFFB71C1C), // BPI Red
-    institution: 'Bank of the Philippine Islands',
-    monthlyChange: -2100.0,
+    id: 'acc_bdo',
+    name: 'BDO Savings',
+    type: AccountType.bank,
+    balance: 0.0,
+    icon: Icons.account_balance_rounded,
+    color: Color(0xFF0038A8),
+    institution: 'BDO Unibank',
+    monthlyChange: 0.0,
   ),
 ];
 
@@ -66,15 +47,39 @@ class AccountsNotifier extends Notifier<List<AccountModel>> {
   @override
   List<AccountModel> build() {
     final db = ref.watch(databaseProvider);
+
     _sub?.cancel();
-    _sub = db.select(db.accountsTable).watch().listen((rows) {
-      if (rows.isNotEmpty) {
-        state = rows.map(DatabaseMappers.accountFromDrift).toList();
+    _sub = db.select(db.accountsTable).watch().listen((rows) async {
+      if (rows.isEmpty) {
+        // Auto-seed clean starter accounts with 0.0 balance if table is completely empty
+        await _seedInitialAccounts(db);
+      } else {
+        final accounts = rows.map(DatabaseMappers.accountFromDrift).toList();
+        final anyTx = await (db.select(db.transactionsTable)..limit(1)).get();
+        if (anyTx.isEmpty) {
+          for (final acc in accounts) {
+            if (acc.balance != 0.0 && starterCleanAccounts.any((s) => s.id == acc.id)) {
+              await (db.update(db.accountsTable)..where((t) => t.id.equals(acc.id))).write(
+                const AccountsTableCompanion(balance: Value(0.0), monthlyChange: Value(0.0)),
+              );
+            }
+          }
+        }
+        state = accounts;
       }
     });
     ref.onDispose(() => _sub?.cancel());
 
-    return _defaultAccounts;
+    return const [];
+  }
+
+  Future<void> _seedInitialAccounts(AppDatabase db) async {
+    for (final acc in starterCleanAccounts) {
+      await db.into(db.accountsTable).insert(
+        DatabaseMappers.accountToCompanion(acc),
+        mode: InsertMode.insertOrIgnore,
+      );
+    }
   }
 
   void updateBalance(String accountId, double delta) {
@@ -102,6 +107,19 @@ class AccountsNotifier extends Notifier<List<AccountModel>> {
       DatabaseMappers.accountToCompanion(newAccount),
       mode: InsertMode.insertOrReplace,
     );
+  }
+
+  Future<void> deleteAccount(String accountId) async {
+    state = state.where((a) => a.id != accountId).toList();
+    final db = ref.read(databaseProvider);
+    // Purge associated transactions first to maintain database integrity
+    await (db.delete(db.transactionsTable)
+          ..where((t) =>
+              t.accountId.equals(accountId) |
+              t.destinationAccountId.equals(accountId)))
+        .go();
+    // Delete account record
+    await (db.delete(db.accountsTable)..where((t) => t.id.equals(accountId))).go();
   }
 }
 
