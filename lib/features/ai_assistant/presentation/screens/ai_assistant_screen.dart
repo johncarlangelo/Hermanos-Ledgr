@@ -5,6 +5,7 @@ import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
@@ -50,6 +51,7 @@ class AiAssistantScreen extends ConsumerStatefulWidget {
 class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
   final List<ChatMessage> _messages = [];
 
   @override
@@ -65,7 +67,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
       ChatMessage(
         id: 'msg_welcome',
         text:
-            'Hello $userName! I am Hermano, your on-device personal financial assistant. You can log expenses, income, or transfers using natural language — completely private and offline.\n\nTry typing something like "Coffee 150 GCash" or "Salary 40k BDO" below.',
+            'Hello $userName! I am Hermano, your on-device personal financial assistant. You can log expenses, income, or transfers using natural language — completely private and offline.\n\nTry tapping one of the quick suggestions below or type your own.',
         isUser: false,
         timestamp: DateTime.now(),
       ),
@@ -76,6 +78,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   void dispose() {
     _inputController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -98,14 +101,12 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     _scrollToBottom();
 
     // Simulate fast local LLM parsing response
-    Future.delayed(const Duration(milliseconds: 400), () {
+    Future.delayed(const Duration(milliseconds: 350), () {
       if (!mounted) return;
-      final parsedTx = _parseSimulatedInput(text);
+      final (parsedTx, replyText) = _analyzeInput(text);
       final botMsg = ChatMessage(
         id: 'msg_${DateTime.now().millisecondsSinceEpoch + 1}',
-        text: parsedTx != null
-            ? 'Parsed this from your input:'
-            : "I couldn't quite extract the amount and category. Try something like 'Dinner 450 GCash'.",
+        text: replyText,
         isUser: false,
         timestamp: DateTime.now(),
         parsedTransaction: parsedTx,
@@ -116,6 +117,43 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
       });
       _scrollToBottom();
     });
+  }
+
+  (TransactionModel?, String) _analyzeInput(String input) {
+    final lower = input.toLowerCase();
+
+    // Financial inquiries handling
+    if (lower.contains('how much') || lower.contains('spent') || lower.contains('total expense')) {
+      final transactions = ref.read(transactionsProvider);
+      final expenseTxs = transactions.where((t) => t.type == TransactionType.expense).toList();
+      final totalSpent = expenseTxs.fold<double>(0.0, (sum, t) => sum + t.amount);
+      if (expenseTxs.isEmpty) {
+        return (null, "You haven't logged any expenses yet this month. Everything is calm!");
+      }
+      return (
+        null,
+        "You've logged ${expenseTxs.length} expense${expenseTxs.length == 1 ? '' : 's'} totaling ${CurrencyFormatter.format(totalSpent)} this month."
+      );
+    }
+
+    if (lower.contains('balance') || lower.contains('net worth') || lower.contains('how much do i have')) {
+      final accounts = ref.read(accountsProvider);
+      final totalBal = accounts.fold<double>(0.0, (sum, a) => sum + a.balance);
+      return (
+        null,
+        "Your total balance across ${accounts.length} account${accounts.length == 1 ? '' : 's'} is ${CurrencyFormatter.format(totalBal)}."
+      );
+    }
+
+    final parsedTx = _parseSimulatedInput(input);
+    if (parsedTx != null) {
+      return (parsedTx, 'Parsed this from your input:');
+    }
+
+    return (
+      null,
+      "I couldn't quite extract the amount and category. Try something like 'Coffee 150 GCash' or 'Salary 40k BDO'."
+    );
   }
 
   TransactionModel? _parseSimulatedInput(String input) {
@@ -287,12 +325,18 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
             child: Row(
               children: [
                 _buildPromptChip('☕ Starbucks 250 GCash'),
-                const SizedBox(width: Spacing.sm),
+                const SizedBox(width: Spacing.xs),
+                _buildPromptChip('🍱 Lunch 280 Maya'),
+                const SizedBox(width: Spacing.xs),
                 _buildPromptChip('💰 Salary 35k BDO'),
-                const SizedBox(width: Spacing.sm),
-                _buildPromptChip('💡 Paid electric 3400 Maya'),
-                const SizedBox(width: Spacing.sm),
-                _buildPromptChip('🍔 Dinner 420 Cash'),
+                const SizedBox(width: Spacing.xs),
+                _buildPromptChip('⚡ Meralco 3500 BDO'),
+                const SizedBox(width: Spacing.xs),
+                _buildPromptChip('🛒 Groceries 1850 GCash'),
+                const SizedBox(width: Spacing.xs),
+                _buildPromptChip('📊 How much spent this month?'),
+                const SizedBox(width: Spacing.xs),
+                _buildPromptChip('💳 What is my balance?'),
               ],
             ),
           ),
@@ -315,6 +359,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                   Expanded(
                     child: TextField(
                       controller: _inputController,
+                      focusNode: _focusNode,
                       decoration: InputDecoration(
                         hintText: 'Type: "Coffee 180 GCash" or "Salary 40k"...',
                         border: OutlineInputBorder(
@@ -345,15 +390,47 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
 
   Widget _buildPromptChip(String text) {
     final theme = Theme.of(context);
-    return ActionChip(
-      label: Text(text),
-      labelStyle: theme.textTheme.labelSmall?.copyWith(
-        color: theme.colorScheme.onSurfaceVariant,
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() {
+            _inputController.text = text;
+            _inputController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _inputController.text.length),
+            );
+          });
+          _focusNode.requestFocus();
+          _scrollToBottom();
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.xs + 2,
+          ),
+          decoration: BoxDecoration(
+            color: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isDark
+                  ? StashColors.line.withValues(alpha: 0.8)
+                  : theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Text(
+            text,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: isDark ? StashColors.dim : theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+          ),
+        ),
       ),
-      backgroundColor: theme.colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      side: BorderSide.none,
-      onPressed: () => _handleSend(text),
     );
   }
 
