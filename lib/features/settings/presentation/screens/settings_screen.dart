@@ -13,6 +13,7 @@ import 'package:hermanos_ledgr/features/accounts/presentation/widgets/add_accoun
 import 'package:hermanos_ledgr/features/accounts/presentation/widgets/delete_account_sheet.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/export_dialog_sheet.dart';
+import 'package:hermanos_ledgr/features/settings/presentation/widgets/import_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_edit_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/reset_confirm_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/settings_tile.dart';
@@ -202,6 +203,12 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Export Ledger',
                 subtitle: 'Generate and copy CSV or structured JSON backup',
                 onTap: () => ExportDialogSheet.show(context),
+              ),
+              SettingsTile(
+                icon: Icons.file_upload_outlined,
+                title: 'Restore Ledger',
+                subtitle: 'Import structured JSON backup and restore records',
+                onTap: () => ImportDialogSheet.show(context),
               ),
               SettingsTile(
                 icon: Icons.auto_stories_outlined,

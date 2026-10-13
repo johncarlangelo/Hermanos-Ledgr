@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
+import 'package:hermanos_ledgr/core/constants/app_constants.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
@@ -34,6 +36,7 @@ class ExportDialogSheet extends ConsumerWidget {
 
   String _generateJson(WidgetRef ref) {
     final transactions = ref.read(transactionsProvider);
+    final accounts = ref.read(accountsProvider);
     final list = transactions
         .map((tx) => {
               'id': tx.id,
@@ -42,18 +45,37 @@ class ExportDialogSheet extends ConsumerWidget {
               'type': tx.type.name,
               'categoryId': tx.categoryId,
               'categoryName': tx.categoryName,
+              'categoryIconCode': tx.categoryIcon.codePoint,
+              'categoryColorValue': tx.categoryColor.toARGB32(),
               'accountId': tx.accountId,
               'accountName': tx.accountName,
+              'destinationAccountId': tx.destinationAccountId,
+              'destinationAccountName': tx.destinationAccountName,
               'date': tx.date.toIso8601String(),
               'note': tx.note,
             })
         .toList();
 
+    final accList = accounts
+        .map((a) => {
+              'id': a.id,
+              'name': a.name,
+              'type': a.type.name,
+              'balance': a.balance,
+              'iconCode': a.icon.codePoint,
+              'colorValue': a.color.toARGB32(),
+              'institution': a.institution,
+              'monthlyChange': a.monthlyChange,
+            })
+        .toList();
+
     return const JsonEncoder.withIndent('  ').convert({
       'exportDate': DateTime.now().toIso8601String(),
-      'app': 'Hermanos Ledgr',
-      'version': '0.2.0-alpha',
+      'app': AppConstants.appName,
+      'version': AppConstants.appVersionDisplay,
       'transactionsCount': list.length,
+      'accountsCount': accList.length,
+      'accounts': accList,
       'transactions': list,
     });
   }
