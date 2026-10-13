@@ -103,6 +103,50 @@ class TransactionsNotifier extends Notifier<List<TransactionModel>> {
     );
   }
 
+  void updateTransaction(TransactionModel updatedTx) {
+    final oldIndex = state.indexWhere((t) => t.id == updatedTx.id);
+    if (oldIndex == -1) return;
+    final oldTx = state[oldIndex];
+
+    final accountsNotifier = ref.read(accountsProvider.notifier);
+
+    // 1. Revert previous transaction amount from account balances
+    if (oldTx.type == TransactionType.expense) {
+      accountsNotifier.updateBalance(oldTx.accountId, oldTx.amount);
+    } else if (oldTx.type == TransactionType.income) {
+      accountsNotifier.updateBalance(oldTx.accountId, -oldTx.amount);
+    } else if (oldTx.type == TransactionType.transfer) {
+      accountsNotifier.updateBalance(oldTx.accountId, oldTx.amount);
+      if (oldTx.destinationAccountId != null) {
+        accountsNotifier.updateBalance(oldTx.destinationAccountId!, -oldTx.amount);
+      }
+    }
+
+    // 2. Apply new transaction amount to account balances
+    if (updatedTx.type == TransactionType.expense) {
+      accountsNotifier.updateBalance(updatedTx.accountId, -updatedTx.amount);
+    } else if (updatedTx.type == TransactionType.income) {
+      accountsNotifier.updateBalance(updatedTx.accountId, updatedTx.amount);
+    } else if (updatedTx.type == TransactionType.transfer) {
+      accountsNotifier.updateBalance(updatedTx.accountId, -updatedTx.amount);
+      if (updatedTx.destinationAccountId != null) {
+        accountsNotifier.updateBalance(updatedTx.destinationAccountId!, updatedTx.amount);
+      }
+    }
+
+    // 3. Update in-memory state
+    state = [
+      for (final t in state)
+        if (t.id == updatedTx.id) updatedTx else t
+    ];
+
+    // 4. Update Drift SQLite record
+    final db = ref.read(databaseProvider);
+    (db.update(db.transactionsTable)..where((t) => t.id.equals(updatedTx.id))).write(
+      DatabaseMappers.transactionToCompanion(updatedTx),
+    );
+  }
+
   void clearAll() {
     state = [];
     final db = ref.read(databaseProvider);
@@ -125,6 +169,16 @@ final transactionFilterTypeProvider =
     NotifierProvider<TransactionFilterNotifier, TransactionType?>(
         TransactionFilterNotifier.new);
 
+class TransactionAccountFilterNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void setFilter(String? accountId) => state = accountId;
+}
+
+final transactionAccountFilterProvider =
+    NotifierProvider<TransactionAccountFilterNotifier, String?>(
+        TransactionAccountFilterNotifier.new);
+
 class TransactionSearchNotifier extends Notifier<String> {
   @override
   String build() => '';
@@ -138,10 +192,16 @@ final transactionSearchQueryProvider =
 final filteredTransactionsProvider = Provider<List<TransactionModel>>((ref) {
   final all = ref.watch(transactionsProvider);
   final filterType = ref.watch(transactionFilterTypeProvider);
+  final accountFilter = ref.watch(transactionAccountFilterProvider);
   final query = ref.watch(transactionSearchQueryProvider).toLowerCase();
 
   return all.where((t) {
     if (filterType != null && t.type != filterType) return false;
+    if (accountFilter != null &&
+        t.accountId != accountFilter &&
+        t.destinationAccountId != accountFilter) {
+      return false;
+    }
     if (query.isNotEmpty) {
       final matchesTitle = t.title.toLowerCase().contains(query);
       final matchesNote = t.note?.toLowerCase().contains(query) ?? false;

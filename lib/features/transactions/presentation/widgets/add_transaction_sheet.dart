@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/constants/category_defaults.dart';
@@ -14,19 +15,28 @@ import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
   final TransactionType initialType;
+  final TransactionModel? existingTransaction;
 
   const AddTransactionSheet({
     super.key,
     this.initialType = TransactionType.expense,
+    this.existingTransaction,
   });
 
-  static Future<void> show(BuildContext context, {TransactionType initialType = TransactionType.expense}) {
+  static Future<void> show(
+    BuildContext context, {
+    TransactionType initialType = TransactionType.expense,
+    TransactionModel? existingTransaction,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-      builder: (_) => AddTransactionSheet(initialType: initialType),
+      builder: (_) => AddTransactionSheet(
+        initialType: initialType,
+        existingTransaction: existingTransaction,
+      ),
     );
   }
 
@@ -42,16 +52,31 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   AccountModel? _selectedDestinationAccount;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+  late DateTime _selectedDate;
   bool _showKeypad = true;
+
+  bool get _isEditing => widget.existingTransaction != null;
 
   @override
   void initState() {
     super.initState();
-    _type = widget.initialType;
-    _selectedCategory = CategoryDefaults.defaultCategories.firstWhere(
-      (c) => c.isExpense == (_type == TransactionType.expense),
-      orElse: () => CategoryDefaults.defaultCategories.first,
-    );
+    final existing = widget.existingTransaction;
+    if (existing != null) {
+      _type = existing.type;
+      final isInt = existing.amount.truncateToDouble() == existing.amount;
+      _amountString = existing.amount.toStringAsFixed(isInt ? 0 : 2);
+      _titleController.text = existing.title;
+      _noteController.text = existing.note ?? '';
+      _selectedDate = existing.date;
+      _selectedCategory = CategoryDefaults.findById(existing.categoryId);
+    } else {
+      _type = widget.initialType;
+      _selectedDate = DateTime.now();
+      _selectedCategory = CategoryDefaults.defaultCategories.firstWhere(
+        (c) => c.isExpense == (_type == TransactionType.expense),
+        orElse: () => CategoryDefaults.defaultCategories.first,
+      );
+    }
   }
 
   @override
@@ -134,25 +159,64 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             : _selectedCategory.name)
         : _titleController.text.trim();
 
-    final tx = TransactionModel(
-      id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
-      title: title,
-      amount: amount,
-      type: _type,
-      categoryId: _selectedCategory.id,
-      categoryName: _selectedCategory.name,
-      categoryIcon: _selectedCategory.icon,
-      categoryColor: _selectedCategory.color,
-      accountId: account.id,
-      accountName: account.name,
-      destinationAccountId: _selectedDestinationAccount?.id,
-      destinationAccountName: _selectedDestinationAccount?.name,
-      date: DateTime.now(),
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-    );
+    if (_isEditing) {
+      final updatedTx = widget.existingTransaction!.copyWith(
+        title: title,
+        amount: amount,
+        type: _type,
+        categoryId: _selectedCategory.id,
+        categoryName: _selectedCategory.name,
+        categoryIcon: _selectedCategory.icon,
+        categoryColor: _selectedCategory.color,
+        accountId: account.id,
+        accountName: account.name,
+        destinationAccountId: _selectedDestinationAccount?.id,
+        destinationAccountName: _selectedDestinationAccount?.name,
+        date: _selectedDate,
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      );
 
-    ref.read(transactionsProvider.notifier).addTransaction(tx);
-    Navigator.of(context).pop();
+      ref.read(transactionsProvider.notifier).updateTransaction(updatedTx);
+      Navigator.of(context).pop();
+
+      UndoSnackbar.show(
+        context,
+        message: 'Updated "${updatedTx.title}"',
+        onUndo: () {
+          ref
+              .read(transactionsProvider.notifier)
+              .updateTransaction(widget.existingTransaction!);
+        },
+      );
+    } else {
+      final tx = TransactionModel(
+        id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
+        title: title,
+        amount: amount,
+        type: _type,
+        categoryId: _selectedCategory.id,
+        categoryName: _selectedCategory.name,
+        categoryIcon: _selectedCategory.icon,
+        categoryColor: _selectedCategory.color,
+        accountId: account.id,
+        accountName: account.name,
+        destinationAccountId: _selectedDestinationAccount?.id,
+        destinationAccountName: _selectedDestinationAccount?.name,
+        date: _selectedDate,
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      );
+
+      ref.read(transactionsProvider.notifier).addTransaction(tx);
+      Navigator.of(context).pop();
+
+      UndoSnackbar.show(
+        context,
+        message: 'Logged "${tx.title}" (${CurrencyFormatter.format(tx.amount)})',
+        onUndo: () {
+          ref.read(transactionsProvider.notifier).deleteTransaction(tx.id);
+        },
+      );
+    }
   }
 
   @override
@@ -161,7 +225,18 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     final isDark = theme.brightness == Brightness.dark;
     final accounts = ref.watch(accountsProvider);
 
+    if (_selectedAccount == null && widget.existingTransaction != null) {
+      _selectedAccount = accounts
+          .where((a) => a.id == widget.existingTransaction!.accountId)
+          .firstOrNull;
+    }
     _selectedAccount ??= accounts.isNotEmpty ? accounts.first : null;
+    if (_selectedDestinationAccount == null &&
+        widget.existingTransaction?.destinationAccountId != null) {
+      _selectedDestinationAccount = accounts
+          .where((a) => a.id == widget.existingTransaction!.destinationAccountId)
+          .firstOrNull;
+    }
     if (_selectedDestinationAccount == null && accounts.length > 1) {
       _selectedDestinationAccount = accounts[1];
     }
@@ -195,14 +270,16 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quick Log',
+                        _isEditing ? 'Edit Transaction' : 'Quick Log',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.2,
                         ),
                       ),
                       Text(
-                        'Record a new entry to your ledger',
+                        _isEditing
+                            ? 'Update transaction details and balances'
+                            : 'Record a new entry to your ledger',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -332,6 +409,10 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   _buildAccountSection(theme, accounts),
                   const SizedBox(height: Spacing.md),
 
+                  // Custom Tailored Date Selector (Zero native pickers)
+                  _buildDateSection(theme),
+                  const SizedBox(height: Spacing.md),
+
                   // Category Selector (if not transfer)
                   if (_type != TransactionType.transfer) ...[
                     Text(
@@ -382,7 +463,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   FilledButton(
                     onPressed: _save,
                     child: Text(
-                      'Save ${_type == TransactionType.expense ? "Expense" : _type == TransactionType.income ? "Income" : "Transfer"}',
+                      _isEditing
+                          ? 'Save Changes'
+                          : 'Save ${_type == TransactionType.expense ? "Expense" : _type == TransactionType.income ? "Income" : "Transfer"}',
                     ),
                   ),
                   const SizedBox(height: Spacing.xxl),
@@ -907,6 +990,298 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Widget _buildDateSection(ThemeData theme) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final isToday = _isSameDay(_selectedDate, now);
+    final isYesterday = _isSameDay(_selectedDate, yesterday);
+    final isCustom = !isToday && !isYesterday;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Date',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: Spacing.xs),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildDateChip(
+                theme,
+                label: 'Today',
+                selected: isToday,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedDate = DateTime.now());
+                },
+              ),
+              const SizedBox(width: Spacing.sm),
+              _buildDateChip(
+                theme,
+                label: 'Yesterday',
+                selected: isYesterday,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedDate = yesterday);
+                },
+              ),
+              const SizedBox(width: Spacing.sm),
+              _buildDateChip(
+                theme,
+                label: isCustom
+                    ? DateFormat('MMM d, yyyy').format(_selectedDate)
+                    : 'Other Date',
+                icon: Icons.calendar_today_rounded,
+                selected: isCustom,
+                onTap: () => _openCustomDatePicker(context),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateChip(
+    ThemeData theme, {
+    required String label,
+    IconData? icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: selected
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outlineVariant.withValues(alpha: 0.25),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14,
+                color: selected
+                    ? theme.colorScheme.onPrimaryContainer
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: Spacing.xs),
+            ],
+            Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: selected
+                    ? theme.colorScheme.onPrimaryContainer
+                    : theme.colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openCustomDatePicker(BuildContext context) {
+    final now = DateTime.now();
+    DateTime displayedMonth =
+        DateTime(_selectedDate.year, _selectedDate.month, 1);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final theme = Theme.of(ctx);
+            final daysInMonth =
+                DateTime(displayedMonth.year, displayedMonth.month + 1, 0).day;
+            final firstWeekday = displayedMonth.weekday; // 1 = Mon, 7 = Sun
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Spacing.lg,
+                Spacing.sm,
+                Spacing.lg,
+                Spacing.xl,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.md),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left_rounded),
+                        onPressed: () {
+                          setSheetState(() {
+                            displayedMonth = DateTime(
+                              displayedMonth.year,
+                              displayedMonth.month - 1,
+                              1,
+                            );
+                          });
+                        },
+                      ),
+                      Text(
+                        DateFormat('MMMM yyyy').format(displayedMonth),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right_rounded),
+                        onPressed: () {
+                          setSheetState(() {
+                            displayedMonth = DateTime(
+                              displayedMonth.year,
+                              displayedMonth.month + 1,
+                              1,
+                            );
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+                        .map(
+                          (d) => SizedBox(
+                            width: 36,
+                            child: Center(
+                              child: Text(
+                                d,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: Spacing.xs),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      childAspectRatio: 1.1,
+                    ),
+                    itemCount: (firstWeekday - 1) + daysInMonth,
+                    itemBuilder: (context, index) {
+                      if (index < firstWeekday - 1) {
+                        return const SizedBox.shrink();
+                      }
+                      final day = index - (firstWeekday - 1) + 1;
+                      final dayDate = DateTime(
+                        displayedMonth.year,
+                        displayedMonth.month,
+                        day,
+                      );
+                      final isSelected = _isSameDay(dayDate, _selectedDate);
+                      final isToday = _isSameDay(dayDate, now);
+
+                      return InkWell(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _selectedDate = dayDate;
+                          });
+                          Navigator.of(ctx).pop();
+                        },
+                        borderRadius: BorderRadius.circular(18),
+                        child: Center(
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                  : (isToday
+                                      ? theme.colorScheme.primaryContainer
+                                          .withValues(alpha: 0.35)
+                                      : Colors.transparent),
+                              shape: BoxShape.circle,
+                              border: isToday && !isSelected
+                                  ? Border.all(
+                                      color: theme.colorScheme.primary,
+                                      width: 1.5,
+                                    )
+                                  : null,
+                            ),
+                            child: Text(
+                              '$day',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: isSelected
+                                    ? theme.colorScheme.onPrimary
+                                    : theme.colorScheme.onSurface,
+                                fontWeight: isSelected || isToday
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: Spacing.sm),
+                ],
+              ),
+            );
+          },
         );
       },
     );

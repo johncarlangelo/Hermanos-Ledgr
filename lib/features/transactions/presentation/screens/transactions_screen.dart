@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/transaction_card.dart';
@@ -45,6 +46,15 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final theme = Theme.of(context);
     final transactions = ref.watch(filteredTransactionsProvider);
     final currentFilter = ref.watch(transactionFilterTypeProvider);
+    final currentAccountFilter = ref.watch(transactionAccountFilterProvider);
+    final accounts = ref.watch(accountsProvider);
+
+    final filteredAccountName = currentAccountFilter != null
+        ? accounts
+            .where((a) => a.id == currentAccountFilter)
+            .map((a) => a.name)
+            .firstOrNull
+        : null;
 
     // Group transactions by date string
     final Map<String, List<TransactionModel>> grouped = {};
@@ -107,6 +117,24 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             ),
             child: Row(
               children: [
+                if (filteredAccountName != null) ...[
+                  InputChip(
+                    avatar: const Icon(Icons.account_balance_wallet_rounded, size: 16),
+                    label: Text(filteredAccountName),
+                    selected: true,
+                    onDeleted: () {
+                      ref
+                          .read(transactionAccountFilterProvider.notifier)
+                          .setFilter(null);
+                    },
+                    deleteIcon: const Icon(Icons.close_rounded, size: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    selectedColor: theme.colorScheme.primaryContainer,
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                ],
                 _buildFilterChip('All', null, currentFilter),
                 const SizedBox(width: Spacing.sm),
                 _buildFilterChip('Expense', TransactionType.expense, currentFilter),
@@ -160,6 +188,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   const EdgeInsets.only(bottom: Spacing.sm),
                               child: TransactionCard(
                                 transaction: tx,
+                                onTap: () => AddTransactionSheet.show(
+                                  context,
+                                  existingTransaction: tx,
+                                ),
                                 onDelete: () {
                                   final deleted = ref
                                       .read(transactionsProvider.notifier)

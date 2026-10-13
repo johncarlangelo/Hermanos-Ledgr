@@ -49,7 +49,9 @@ class DashboardScreen extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await Future.delayed(const Duration(milliseconds: 400));
+            ref.invalidate(accountsProvider);
+            ref.invalidate(transactionsProvider);
+            await Future.delayed(const Duration(milliseconds: 300));
           },
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: Spacing.md),
@@ -264,7 +266,15 @@ class DashboardScreen extends ConsumerWidget {
                     if (index == accounts.length) {
                       return _buildAddAccountCard(context, theme);
                     }
-                    return AccountCard(account: accounts[index]);
+                    return AccountCard(
+                      account: accounts[index],
+                      onTap: () {
+                        ref
+                            .read(transactionAccountFilterProvider.notifier)
+                            .setFilter(accounts[index].id);
+                        context.go('/transactions');
+                      },
+                    );
                   },
                 ),
               ),
@@ -309,7 +319,10 @@ class DashboardScreen extends ConsumerWidget {
                           padding: const EdgeInsets.only(bottom: Spacing.sm),
                           child: TransactionCard(
                             transaction: tx,
-                            onTap: () => context.go('/transactions'),
+                            onTap: () => AddTransactionSheet.show(
+                              context,
+                              existingTransaction: tx,
+                            ),
                           ),
                         ),
                       ],
