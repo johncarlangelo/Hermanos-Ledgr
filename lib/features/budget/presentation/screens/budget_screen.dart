@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
@@ -58,7 +59,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                       ),
                     ),
                     Text(
-                      'September 2026',
+                      DateFormat('MMMM yyyy').format(DateTime.now()),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -258,7 +259,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
 
           const SizedBox(height: Spacing.xl),
 
-          // 4. Savings Goals Preview Card
+          // 4. Savings Goals Teaser
           M3Card(
             padding: const EdgeInsets.all(Spacing.md),
             child: Row(
@@ -270,7 +271,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
-                    Icons.flag_rounded,
+                    Icons.flag_outlined,
                     color: theme.colorScheme.primary,
                   ),
                 ),
@@ -280,26 +281,36 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Emergency Fund Goal',
+                        'Savings Goals',
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
-                        '₱125,000 / ₱200,000 (62%)',
-                        style: moneyStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                        'Set targets and track contribution progress (Roadmap Phase 6)',
+                        style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 11.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: theme.colorScheme.onSurfaceVariant,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Soon',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               ],
             ),
