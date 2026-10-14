@@ -39,16 +39,16 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 1.1 | Define all Drift table classes in `lib/core/database/tables/` | 🔴 | 0.3 | ⬜ TODO |
-| 1.2 | Define `AppDatabase` class with all tables and DAOs | 🟡 | 1.1 | ⬜ TODO |
-| 1.3 | Run Drift code generation | 🟢 | 1.2 | ⬜ TODO |
-| 1.4 | Create database provider (Riverpod) | 🟢 | 1.3 | ⬜ TODO |
-| 1.5 | Seed default profile on first launch | 🟢 | 1.4 | ⬜ TODO |
-| 1.6 | Seed default categories (Philippine-relevant) with icons and colors | 🟡 | 1.5 | ⬜ TODO |
-| 1.7 | Create `Result<T>` sealed class for error handling | 🟢 | 0.4 | ⬜ TODO |
-| 1.8 | Create core value objects (`Money`, `DateRange`) | 🟢 | 0.4 | ⬜ TODO |
-| 1.9 | Create currency formatter and date formatter utilities | 🟢 | 1.8 | ⬜ TODO |
-| 1.10 | Write unit tests for database CRUD operations | 🟡 | 1.6 | ⬜ TODO |
+| 1.1 | Define all Drift table classes in `lib/core/database/tables/` | 🔴 | 0.3 | ✅ DONE |
+| 1.2 | Define `AppDatabase` class with all tables and DAOs | 🟡 | 1.1 | ✅ DONE |
+| 1.3 | Run Drift code generation | 🟢 | 1.2 | ✅ DONE |
+| 1.4 | Create database provider (Riverpod) | 🟢 | 1.3 | ✅ DONE |
+| 1.5 | Seed default profile on first launch | 🟢 | 1.4 | ✅ DONE |
+| 1.6 | Seed default categories (Philippine-relevant) with icons and colors | 🟡 | 1.5 | ✅ DONE |
+| 1.7 | Create `Result<T>` sealed class for error handling | 🟢 | 0.4 | ✅ DONE |
+| 1.8 | Create core value objects (`Money`, `DateRange`) | 🟢 | 0.4 | ✅ DONE |
+| 1.9 | Create currency formatter and date formatter utilities | 🟢 | 1.8 | ✅ DONE |
+| 1.10 | Write unit tests for database CRUD operations | 🟡 | 1.6 | ✅ DONE |
 
 ---
 

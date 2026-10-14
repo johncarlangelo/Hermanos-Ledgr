@@ -1,19 +1,39 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:hermanos_ledgr/core/constants/category_defaults.dart';
+import 'package:hermanos_ledgr/core/database/daos/accounts_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/budgets_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/categories_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/goals_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/transactions_dao.dart';
 import 'package:hermanos_ledgr/core/database/tables/accounts_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/budgets_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/categories_table.dart';
+import 'package:hermanos_ledgr/core/database/tables/debts_table.dart';
+import 'package:hermanos_ledgr/core/database/tables/goals_table.dart';
+import 'package:hermanos_ledgr/core/database/tables/recurring_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/transactions_table.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [
-  AccountsTable,
-  TransactionsTable,
-  BudgetsTable,
-  CategoriesTable,
-])
+@DriftDatabase(
+  tables: [
+    AccountsTable,
+    TransactionsTable,
+    BudgetsTable,
+    CategoriesTable,
+    GoalsTable,
+    DebtsTable,
+    RecurringTransactionsTable,
+  ],
+  daos: [
+    AccountsDao,
+    TransactionsDao,
+    BudgetsDao,
+    CategoriesDao,
+    GoalsDao,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e])
       : super(e ??
@@ -77,6 +97,9 @@ class AppDatabase extends _$AppDatabase {
     await delete(transactionsTable).go();
     await delete(accountsTable).go();
     await delete(budgetsTable).go();
+    await delete(goalsTable).go();
+    await delete(debtsTable).go();
+    await delete(recurringTransactionsTable).go();
     await delete(categoriesTable).go();
     await seedCategories();
   }

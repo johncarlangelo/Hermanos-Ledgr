@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,5 +147,45 @@ void main() {
     expect(dbRows.length, 1);
     expect(dbRows.first.title, 'Iced Spanish Latte');
     expect(dbRows.first.amount, 190.0);
+  });
+
+  test('DAOs perform queries and operations correctly', () async {
+    // AccountsDao
+    await db.accountsDao.insertOrUpdateAccount(
+      const AccountsTableCompanion(
+        id: Value('acc_test_bpi'),
+        name: Value('BPI Express'),
+        type: Value('bank'),
+        balance: Value(5000.0),
+        iconCode: Value(0),
+        colorValue: Value(0xFFB71C1C),
+        institution: Value('BPI'),
+      ),
+    );
+    final acc = await db.accountsDao.getAccountById('acc_test_bpi');
+    expect(acc, isNotNull);
+    expect(acc!.balance, 5000.0);
+
+    await db.accountsDao.updateBalance('acc_test_bpi', -500.0);
+    final updatedAcc = await db.accountsDao.getAccountById('acc_test_bpi');
+    expect(updatedAcc!.balance, 4500.0);
+
+    // GoalsDao
+    await db.goalsDao.insertOrUpdateGoal(
+      const GoalsTableCompanion(
+        id: Value('goal_emergency'),
+        name: Value('Emergency Fund'),
+        targetAmount: Value(100000.0),
+        currentAmount: Value(20000.0),
+      ),
+    );
+    final goal = await db.goalsDao.getGoalById('goal_emergency');
+    expect(goal, isNotNull);
+    expect(goal!.currentAmount, 20000.0);
+
+    await db.goalsDao.addContribution('goal_emergency', 10000.0);
+    final updatedGoal = await db.goalsDao.getGoalById('goal_emergency');
+    expect(updatedGoal!.currentAmount, 30000.0);
+    expect(updatedGoal.isCompleted, isFalse);
   });
 }

@@ -8,8 +8,8 @@
 
 ## Current Sprint
 
-**Phase:** Phase 0: Project Scaffolding & Front-End Setup Complete
-**Focus:** Reviewing Initial Front-End & Onboarding with User before Phase 1 (Drift Database)
+**Phase:** Phase 1: Database Foundation Complete
+**Focus:** Drift SQLite Tables, DAOs, Value Objects & CRUD Tests
 
 ---
 
@@ -19,7 +19,7 @@
 |---|---|---|---|
 | **Planning** | 🟢 Complete | ██████████ 100% | All 8 MD docs created, M3 design skill configured |
 | **Phase 0: Scaffolding** | 🟢 Complete | ██████████ 100% | Flutter app initialized, M3 tokens, Onboarding, 5 interactive tabs |
-| **Phase 1: Database** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
+| **Phase 1: Database** | 🟢 Complete | ██████████ 100% | Drift SQLite tables, 5 DAOs, Money & DateRange value objects, CRUD tests |
 | **Phase 2: Accounts** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 3: Transactions** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 4: Dashboard** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
