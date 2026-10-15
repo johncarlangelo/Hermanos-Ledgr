@@ -144,9 +144,59 @@ class UndoSnackbar {
       ),
     );
   }
+
+  static void success(
+    BuildContext context, {
+    required String message,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.hideCurrentSnackBar();
+
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        elevation: 8,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(Spacing.lg, Spacing.sm, Spacing.lg, Spacing.lg),
+        padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
+        backgroundColor: isDark ? StashColors.raised : StashColors.overlay,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: StashColors.lineStrong, width: 1),
+        ),
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: StashColors.tealAccent.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check_circle_rounded, size: 16, color: StashColors.tealAccent),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: StashColors.ink,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: duration,
+      ),
+    );
+  }
 }
 
-class _UndoSnackbarContent extends StatefulWidget {
+class _UndoSnackbarContent extends StatelessWidget {
   final String message;
   final VoidCallback onUndo;
   final VoidCallback onDismiss;
@@ -160,71 +210,28 @@ class _UndoSnackbarContent extends StatefulWidget {
   });
 
   @override
-  State<_UndoSnackbarContent> createState() => _UndoSnackbarContentState();
-}
-
-class _UndoSnackbarContentState extends State<_UndoSnackbarContent>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    )..reverse(from: 1.0);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // 5-second circular countdown ring with second counter inside
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final progress = _controller.value;
-            final secondsLeft = (_controller.value * widget.duration.inSeconds).ceil().clamp(1, widget.duration.inSeconds);
-
-            return SizedBox(
-              width: 24,
-              height: 24,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 2.2,
-                    backgroundColor: StashColors.line,
-                    valueColor: const AlwaysStoppedAnimation<Color>(StashColors.tealAccent),
-                  ),
-                  Text(
-                    '$secondsLeft',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: StashColors.tealAccent,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+        // Calm Undo Icon badge (no ticking countdown ring)
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: StashColors.tealAccent.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.undo_rounded,
+            size: 16,
+            color: StashColors.tealAccent,
+          ),
         ),
         const SizedBox(width: Spacing.md),
 
         // Message
         Expanded(
           child: Text(
-            widget.message,
+            message,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -240,7 +247,7 @@ class _UndoSnackbarContentState extends State<_UndoSnackbarContent>
         Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: widget.onUndo,
+            onTap: onUndo,
             borderRadius: BorderRadius.circular(8),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -270,7 +277,7 @@ class _UndoSnackbarContentState extends State<_UndoSnackbarContent>
         Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: widget.onDismiss,
+            onTap: onDismiss,
             borderRadius: BorderRadius.circular(12),
             child: const Padding(
               padding: EdgeInsets.all(4),

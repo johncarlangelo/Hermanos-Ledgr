@@ -179,14 +179,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       ref.read(transactionsProvider.notifier).updateTransaction(updatedTx);
       Navigator.of(context).pop();
 
-      UndoSnackbar.show(
+      UndoSnackbar.success(
         context,
         message: 'Updated "${updatedTx.title}"',
-        onUndo: () {
-          ref
-              .read(transactionsProvider.notifier)
-              .updateTransaction(widget.existingTransaction!);
-        },
       );
     } else {
       final tx = TransactionModel(
@@ -209,12 +204,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       ref.read(transactionsProvider.notifier).addTransaction(tx);
       Navigator.of(context).pop();
 
-      UndoSnackbar.show(
+      UndoSnackbar.success(
         context,
         message: 'Logged "${tx.title}" (${CurrencyFormatter.format(tx.amount)})',
-        onUndo: () {
-          ref.read(transactionsProvider.notifier).deleteTransaction(tx.id);
-        },
       );
     }
   }
@@ -393,40 +385,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 controller: scrollController,
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
                 children: [
-                  // Title / Note input
-                  TextField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      hintText: _type == TransactionType.transfer
-                          ? 'Transfer note (optional)'
-                          : 'Description (e.g. Starbucks, Grocery)',
-                      prefixIcon: const Icon(Icons.edit_note_rounded),
-                    ),
-                  ),
-                  const SizedBox(height: Spacing.md),
-
-                  // Custom Tailored Account Selector (Zero native dropdowns, zero overflow)
-                  _buildAccountSection(theme, accounts),
-                  const SizedBox(height: Spacing.md),
-
-                  // Custom Tailored Date Selector (Zero native pickers)
-                  _buildDateSection(theme),
-                  const SizedBox(height: Spacing.md),
-
-                  // Category Selector (if not transfer)
-                  if (_type != TransactionType.transfer) ...[
-                    Text(
-                      'Category',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.sm),
-                    _buildCategoryGrid(theme),
-                    const SizedBox(height: Spacing.md),
-                  ],
-
-                  // Keypad Toggle / Section
+                  // 1. Amount Keypad (Prioritized at the top so user can type immediately)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -437,11 +396,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                         ),
                       ),
                       TextButton.icon(
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
+                        ),
                         icon: Icon(
                           _showKeypad
                               ? Icons.keyboard_hide_rounded
                               : Icons.dialpad_rounded,
-                          size: 18,
+                          size: 16,
                         ),
                         label: Text(_showKeypad ? 'Hide' : 'Show Keypad'),
                         onPressed: () =>
@@ -455,12 +418,58 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                       onDelete: _onDelete,
                       onQuickAdd: _onQuickAdd,
                     ),
+                    const SizedBox(height: Spacing.md),
                   ],
 
-                  const SizedBox(height: Spacing.xl),
+                  // 2. Category Selector (if not transfer)
+                  if (_type != TransactionType.transfer) ...[
+                    Text(
+                      'Category',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.sm),
+                    _buildCategoryGrid(theme),
+                    const SizedBox(height: Spacing.md),
+                  ],
 
-                  // Save Button
-                  FilledButton(
+                  // 3. Custom Tailored Account Selector (Zero native dropdowns, zero overflow)
+                  _buildAccountSection(theme, accounts),
+                  const SizedBox(height: Spacing.md),
+
+                  // 4. Custom Tailored Date Selector (Zero native pickers)
+                  _buildDateSection(theme),
+                  const SizedBox(height: Spacing.md),
+
+                  // 5. Title / Note input
+                  TextField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      hintText: _type == TransactionType.transfer
+                          ? 'Transfer note (optional)'
+                          : 'Description (e.g. Starbucks, Grocery)',
+                      prefixIcon: const Icon(Icons.edit_note_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: Spacing.lg),
+                ],
+              ),
+            ),
+
+            // Fixed Sticky Bottom Save Button (Immediate tap without scrolling)
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Spacing.lg,
+                  Spacing.xs,
+                  Spacing.lg,
+                  Spacing.md,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
                     onPressed: _save,
                     child: Text(
                       _isEditing
@@ -468,8 +477,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                           : 'Save ${_type == TransactionType.expense ? "Expense" : _type == TransactionType.income ? "Income" : "Transfer"}',
                     ),
                   ),
-                  const SizedBox(height: Spacing.xxl),
-                ],
+                ),
               ),
             ),
           ],

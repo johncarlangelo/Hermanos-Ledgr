@@ -22,7 +22,7 @@ class CustomKeypad extends StatelessWidget {
         // Quick amount chips
         if (onQuickAdd != null) ...[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+            padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -33,20 +33,20 @@ class CustomKeypad extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: Spacing.md),
+          const SizedBox(height: Spacing.sm),
         ],
 
         // 3x4 Keypad Grid
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
           child: Column(
             children: [
               _buildRow(context, ['1', '2', '3']),
-              const SizedBox(height: Spacing.sm),
+              const SizedBox(height: 6),
               _buildRow(context, ['4', '5', '6']),
-              const SizedBox(height: Spacing.sm),
+              const SizedBox(height: 6),
               _buildRow(context, ['7', '8', '9']),
-              const SizedBox(height: Spacing.sm),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   _buildButton(context, '.', isSpecial: true),
@@ -96,7 +96,7 @@ class CustomKeypad extends StatelessWidget {
     final theme = Theme.of(context);
     return Expanded(
       child: SizedBox(
-        height: 54,
+        height: 48,
         child: Material(
           color: isSpecial
               ? theme.colorScheme.surfaceContainer
@@ -127,7 +127,7 @@ class CustomKeypad extends StatelessWidget {
     final theme = Theme.of(context);
     return Expanded(
       child: SizedBox(
-        height: 54,
+        height: 48,
         child: Material(
           color: theme.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(12),
@@ -140,7 +140,7 @@ class CustomKeypad extends StatelessWidget {
             child: Center(
               child: Icon(
                 Icons.backspace_outlined,
-                size: 22,
+                size: 20,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),

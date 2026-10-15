@@ -44,15 +44,11 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
       return;
     }
 
-    final oldName = ref.read(onboardingProvider).userName;
     ref.read(onboardingProvider.notifier).setUserName(newName);
     Navigator.of(context).pop();
-    UndoSnackbar.show(
+    UndoSnackbar.success(
       context,
       message: 'Updated profile name to "$newName"',
-      onUndo: () {
-        ref.read(onboardingProvider.notifier).setUserName(oldName);
-      },
     );
   }
 
