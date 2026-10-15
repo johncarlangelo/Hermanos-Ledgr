@@ -117,13 +117,20 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
       AccountType.creditCard => Icons.credit_card_rounded,
     };
 
+    final defaultColor = switch (_selectedType) {
+      AccountType.bank => const Color(0xFF1E88E5),
+      AccountType.eWallet => const Color(0xFF00897B),
+      AccountType.cash => const Color(0xFF43A047),
+      AccountType.creditCard => const Color(0xFFE53935),
+    };
+
     final previewAccount = AccountModel(
       id: 'preview',
       name: name,
       type: _selectedType,
       balance: balance,
       icon: icon,
-      color: brand.gradient.colors.first,
+      color: brand != CardBrand.custom ? brand.gradient.colors.first : defaultColor,
       institution: name,
     );
 
@@ -205,6 +212,13 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                     _buildPresetChip('GCash', AccountType.eWallet),
                     _buildPresetChip('Maya', AccountType.eWallet),
                     _buildPresetChip('MariBank', AccountType.bank),
+                    _buildPresetChip('GrabPay', AccountType.eWallet),
+                    _buildPresetChip('ShopeePay', AccountType.eWallet),
+                    _buildPresetChip('Tonik', AccountType.bank),
+                    _buildPresetChip('CIMB', AccountType.bank),
+                    _buildPresetChip('Coins.ph', AccountType.eWallet),
+                    _buildPresetChip('Apple Cash', AccountType.eWallet),
+                    _buildPresetChip('Google Wallet', AccountType.eWallet),
                     _buildPresetChip('BDO', AccountType.bank),
                     _buildPresetChip('BPI', AccountType.bank),
                     _buildPresetChip('UnionBank', AccountType.bank),

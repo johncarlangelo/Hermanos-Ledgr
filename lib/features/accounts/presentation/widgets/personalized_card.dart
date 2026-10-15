@@ -29,6 +29,8 @@ class PersonalizedCard extends StatelessWidget {
     final isCash = brand == CardBrand.cash;
     final isWise = brand == CardBrand.wise;
     final isMaya = brand == CardBrand.maya;
+    final isAppleCash = brand == CardBrand.appleCash;
+    final isVirtualOnly = brand == CardBrand.appleCash || brand == CardBrand.googleWallet;
 
     return Container(
       width: width,
@@ -58,13 +60,17 @@ class PersonalizedCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: brand.gradient,
+              gradient: brand == CardBrand.custom
+                  ? CardBrand.customGradient(account.color)
+                  : brand.gradient,
               border: Border.all(
                 color: isMaya
                     ? const Color(0xFF00E676).withValues(alpha: 0.4)
-                    : isSelected
-                        ? StashColors.tealAccent
-                        : Colors.white.withValues(alpha: 0.12),
+                    : isAppleCash
+                        ? Colors.black.withValues(alpha: 0.12)
+                        : isSelected
+                            ? StashColors.tealAccent
+                            : Colors.white.withValues(alpha: 0.12),
                 width: isMaya ? 1.2 : isSelected ? 1.5 : 0.8,
               ),
             ),
@@ -94,7 +100,9 @@ class PersonalizedCard extends StatelessWidget {
                                 ContactlessWaveIcon(
                                   color: isWise
                                       ? const Color(0xFF163300).withValues(alpha: 0.7)
-                                      : Colors.white.withValues(alpha: 0.75),
+                                      : isAppleCash
+                                          ? const Color(0xFF1C1C1E).withValues(alpha: 0.6)
+                                          : Colors.white.withValues(alpha: 0.75),
                                   size: 15,
                                 ),
                                 const SizedBox(width: Spacing.xs),
@@ -107,35 +115,8 @@ class PersonalizedCard extends StatelessWidget {
                           ],
                         ),
 
-                        // Middle: EMV Smart Chip (except pure physical cash)
-                        if (!isCash) ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              EmvChipWidget(
-                                isGold: brand != CardBrand.wise && brand != CardBrand.venmo,
-                                width: 26,
-                                height: 18,
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  brand.defaultTag,
-                                  style: TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8,
-                                    color: brand.subtextColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else ...[
+                        // Middle: EMV Smart Chip vs Virtual NFC Badge vs Cash
+                        if (isCash) ...[
                           // Cash emblem
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -160,6 +141,92 @@ class PersonalizedCard extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'CASH WALLET',
+                                  style: TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.8,
+                                    color: brand.subtextColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else if (isVirtualOnly) ...[
+                          // Virtual / NFC Digital Emblem
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: isAppleCash
+                                      ? Colors.black.withValues(alpha: 0.08)
+                                      : Colors.white.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isAppleCash
+                                        ? Colors.black.withValues(alpha: 0.15)
+                                        : Colors.white.withValues(alpha: 0.2),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.nfc_rounded,
+                                      size: 12,
+                                      color: brand.textColor.withValues(alpha: 0.85),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      'VIRTUAL',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.8,
+                                        color: brand.textColor.withValues(alpha: 0.85),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  brand.defaultTag,
+                                  style: TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.8,
+                                    color: brand.subtextColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          // Standard Physical EMV Smart Chip
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              EmvChipWidget(
+                                isGold: brand != CardBrand.wise && brand != CardBrand.venmo,
+                                width: 26,
+                                height: 18,
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  brand.defaultTag,
                                   style: TextStyle(
                                     fontSize: 8.5,
                                     fontWeight: FontWeight.w800,
@@ -240,7 +307,7 @@ class PersonalizedCard extends StatelessWidget {
           bottom: -15,
           child: Opacity(
             opacity: 0.18,
-            child: Icon(
+            child: const Icon(
               Icons.sentiment_satisfied_alt_rounded,
               size: 110,
               color: Colors.white,
@@ -250,7 +317,7 @@ class PersonalizedCard extends StatelessWidget {
 
       case CardBrand.paypal:
         // Signature overlapping PP monogram watermark
-        return Positioned(
+        return const Positioned(
           right: 10,
           top: 15,
           child: Opacity(
@@ -318,6 +385,125 @@ class PersonalizedCard extends StatelessWidget {
               width: 140,
               height: 45,
               color: const Color(0xFF163300).withValues(alpha: 0.08),
+            ),
+          ),
+        );
+
+      case CardBrand.grabPay:
+        // Double concentric mobility ring watermark
+        return Positioned(
+          right: -25,
+          bottom: -25,
+          child: Opacity(
+            opacity: 0.12,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 8),
+              ),
+            ),
+          ),
+        );
+
+      case CardBrand.shopeePay:
+        // Subtle shopping bag watermark
+        return const Positioned(
+          right: -10,
+          bottom: -15,
+          child: Opacity(
+            opacity: 0.14,
+            child: Icon(
+              Icons.shopping_bag_rounded,
+              size: 100,
+              color: Colors.white,
+            ),
+          ),
+        );
+
+      case CardBrand.tonik:
+        // Glowing neon corner glow
+        return Positioned(
+          right: -15,
+          top: -15,
+          child: Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFFF007A).withValues(alpha: 0.35),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        );
+
+      case CardBrand.cimb:
+        // Forward arrow chevron watermark
+        return const Positioned(
+          right: -10,
+          bottom: -10,
+          child: Opacity(
+            opacity: 0.14,
+            child: Icon(
+              Icons.forward_rounded,
+              size: 90,
+              color: Colors.white,
+            ),
+          ),
+        );
+
+      case CardBrand.coins:
+        // Token coin watermark
+        return const Positioned(
+          right: -10,
+          bottom: -15,
+          child: Opacity(
+            opacity: 0.14,
+            child: Icon(
+              Icons.monetization_on_rounded,
+              size: 100,
+              color: Colors.white,
+            ),
+          ),
+        );
+
+      case CardBrand.appleCash:
+        // Apple Cash frosted titanium subtle glow
+        return Positioned(
+          right: -25,
+          bottom: -25,
+          child: Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFF5AC8FA).withValues(alpha: 0.22),
+                  const Color(0xFF4CD964).withValues(alpha: 0.14),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+          ),
+        );
+
+      case CardBrand.googleWallet:
+        // Google Wallet icon watermark
+        return const Positioned(
+          right: -15,
+          bottom: -15,
+          child: Opacity(
+            opacity: 0.12,
+            child: Icon(
+              Icons.account_balance_wallet_rounded,
+              size: 95,
+              color: Colors.white,
             ),
           ),
         );
@@ -520,6 +706,168 @@ class PersonalizedCard extends StatelessWidget {
             color: Colors.white,
             letterSpacing: -0.5,
           ),
+        );
+
+      case CardBrand.grabPay:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 15,
+              height: 15,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Icon(Icons.navigation_rounded, size: 10, color: Color(0xFF00B14F)),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              'GrabPay',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        );
+
+      case CardBrand.shopeePay:
+        return const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.shopping_bag_outlined, size: 14, color: Colors.white),
+            SizedBox(width: 4),
+            Text(
+              'ShopeePay',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        );
+
+      case CardBrand.tonik:
+        return const Text(
+          'tonik',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFFFF007A),
+            letterSpacing: -0.5,
+          ),
+        );
+
+      case CardBrand.cimb:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: const Text(
+                'CIMB',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFED1C24),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              'BANK',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        );
+
+      case CardBrand.coins:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              child: const Center(
+                child: Text(
+                  'C',
+                  style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Text(
+              'coins.ph',
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ],
+        );
+
+      case CardBrand.appleCash:
+        return const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.apple, size: 16, color: Color(0xFF1C1C1E)),
+            SizedBox(width: 2),
+            Text(
+              'Cash',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1C1C1E),
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
+        );
+
+      case CardBrand.googleWallet:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.account_balance_wallet_rounded, size: 14, color: Color(0xFF4285F4)),
+            const SizedBox(width: 4),
+            RichText(
+              text: const TextSpan(
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                children: [
+                  TextSpan(text: 'G', style: TextStyle(color: Color(0xFF4285F4))),
+                  TextSpan(text: 'o', style: TextStyle(color: Color(0xFFEA4335))),
+                  TextSpan(text: 'o', style: TextStyle(color: Color(0xFFFBBC05))),
+                  TextSpan(text: 'g', style: TextStyle(color: Color(0xFF4285F4))),
+                  TextSpan(text: 'l', style: TextStyle(color: Color(0xFF34A853))),
+                  TextSpan(text: 'e ', style: TextStyle(color: Color(0xFFEA4335))),
+                  TextSpan(text: 'Wallet', style: TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
+          ],
         );
 
       case CardBrand.cash:

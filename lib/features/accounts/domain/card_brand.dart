@@ -17,6 +17,13 @@ enum CardBrand {
   wise,
   paypal,
   venmo,
+  grabPay,
+  shopeePay,
+  tonik,
+  cimb,
+  coins,
+  appleCash,
+  googleWallet,
   cash,
   custom;
 
@@ -42,6 +49,20 @@ enum CardBrand {
         return 'PayPal';
       case CardBrand.venmo:
         return 'Venmo';
+      case CardBrand.grabPay:
+        return 'GrabPay';
+      case CardBrand.shopeePay:
+        return 'ShopeePay';
+      case CardBrand.tonik:
+        return 'Tonik Bank';
+      case CardBrand.cimb:
+        return 'CIMB Bank';
+      case CardBrand.coins:
+        return 'Coins.ph';
+      case CardBrand.appleCash:
+        return 'Apple Cash';
+      case CardBrand.googleWallet:
+        return 'Google Wallet';
       case CardBrand.cash:
         return 'Cash';
       case CardBrand.custom:
@@ -171,6 +192,90 @@ enum CardBrand {
           ],
         );
 
+      case CardBrand.grabPay:
+        // Grab Emerald Green
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF00B14F),
+            Color(0xFF00893C),
+            Color(0xFF005826),
+          ],
+        );
+
+      case CardBrand.shopeePay:
+        // Shopee Coral Orange-Red
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFEE4D2D),
+            Color(0xFFD03B1E),
+            Color(0xFF9E1F07),
+          ],
+        );
+
+      case CardBrand.tonik:
+        // Tonik Electric Purple
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF7928CA),
+            Color(0xFF5B1DA3),
+            Color(0xFF2C0A56),
+          ],
+        );
+
+      case CardBrand.cimb:
+        // CIMB Bold Bank Red
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFED1C24),
+            Color(0xFFB30E14),
+            Color(0xFF5E0307),
+          ],
+        );
+
+      case CardBrand.coins:
+        // Coins.ph Tech Cobalt
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0066FF),
+            Color(0xFF0044B3),
+            Color(0xFF002A73),
+          ],
+        );
+
+      case CardBrand.appleCash:
+        // Apple Cash Frosted Titanium / White
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFE8ECEF),
+            Color(0xFFCED4DA),
+            Color(0xFFADB5BD),
+          ],
+        );
+
+      case CardBrand.googleWallet:
+        // Google Wallet Dark Obsidian
+        return const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF20232A),
+            Color(0xFF16181D),
+            Color(0xFF0C0D10),
+          ],
+        );
+
       case CardBrand.cash:
         // Luxury Deep Emerald Banknote
         return const LinearGradient(
@@ -197,10 +302,25 @@ enum CardBrand {
     }
   }
 
+  /// Builds a dynamic personalized gradient from a custom account color.
+  static LinearGradient customGradient(Color baseColor) {
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        Color.lerp(baseColor, Colors.white, 0.12) ?? baseColor,
+        baseColor,
+        Color.lerp(baseColor, Colors.black, 0.55) ?? Colors.black,
+      ],
+    );
+  }
+
   Color get textColor {
     switch (this) {
       case CardBrand.wise:
         return const Color(0xFF163300); // Dark Forest Green on Neon Lime
+      case CardBrand.appleCash:
+        return const Color(0xFF1C1C1E); // Dark charcoal on silver titanium
       default:
         return Colors.white;
     }
@@ -210,6 +330,8 @@ enum CardBrand {
     switch (this) {
       case CardBrand.wise:
         return const Color(0xFF2E590A);
+      case CardBrand.appleCash:
+        return const Color(0xFF636366);
       case CardBrand.maya:
         return const Color(0xFF00E676); // Luminous Maya neon green
       default:
@@ -224,13 +346,20 @@ enum CardBrand {
       case CardBrand.wise:
       case CardBrand.paypal:
       case CardBrand.venmo:
+      case CardBrand.cimb:
+      case CardBrand.tonik:
         return CardNetwork.mastercard;
       case CardBrand.gcash:
       case CardBrand.maya:
       case CardBrand.bpi:
       case CardBrand.unionBank:
       case CardBrand.goTyme:
+      case CardBrand.grabPay:
+      case CardBrand.shopeePay:
         return CardNetwork.visa;
+      case CardBrand.appleCash:
+      case CardBrand.googleWallet:
+      case CardBrand.coins:
       case CardBrand.cash:
       case CardBrand.custom:
         return CardNetwork.none;
@@ -244,16 +373,27 @@ enum CardBrand {
       case CardBrand.gcash:
       case CardBrand.maya:
       case CardBrand.venmo:
+      case CardBrand.grabPay:
+      case CardBrand.shopeePay:
         return 'E-WALLET';
       case CardBrand.wise:
       case CardBrand.paypal:
         return 'GLOBAL';
+      case CardBrand.tonik:
+      case CardBrand.cimb:
+      case CardBrand.goTyme:
+        return 'DIGITAL';
+      case CardBrand.coins:
+        return 'CRYPTO';
+      case CardBrand.appleCash:
+      case CardBrand.googleWallet:
+        return 'VIRTUAL';
       default:
         return 'DEBIT';
     }
   }
 
-  /// Automatically detects the physical card brand based on account name or institution.
+  /// Automatically detects the physical or digital card brand based on account name or institution.
   static CardBrand detect(String name, [String? institution]) {
     final combined = '${name.toLowerCase()} ${institution?.toLowerCase() ?? ""}';
 
@@ -265,6 +405,27 @@ enum CardBrand {
     }
     if (combined.contains('maya') || combined.contains('paymaya')) {
       return CardBrand.maya;
+    }
+    if (combined.contains('grab') || combined.contains('grabpay')) {
+      return CardBrand.grabPay;
+    }
+    if (combined.contains('shopee') || combined.contains('shopeepay')) {
+      return CardBrand.shopeePay;
+    }
+    if (combined.contains('tonik')) {
+      return CardBrand.tonik;
+    }
+    if (combined.contains('cimb')) {
+      return CardBrand.cimb;
+    }
+    if (combined.contains('coins')) {
+      return CardBrand.coins;
+    }
+    if (combined.contains('apple') || combined.contains('apple cash') || combined.contains('apple pay')) {
+      return CardBrand.appleCash;
+    }
+    if (combined.contains('google') || combined.contains('gpay') || combined.contains('google wallet') || combined.contains('google pay')) {
+      return CardBrand.googleWallet;
     }
     if (combined.contains('bdo') || combined.contains('bdo unibank')) {
       return CardBrand.bdo;

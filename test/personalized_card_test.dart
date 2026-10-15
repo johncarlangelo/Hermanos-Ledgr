@@ -25,9 +25,26 @@ void main() {
       expect(CardBrand.detect('Venmo Card'), CardBrand.venmo);
     });
 
+    test('detects digital e-wallets correctly', () {
+      expect(CardBrand.detect('GrabPay Wallet'), CardBrand.grabPay);
+      expect(CardBrand.detect('ShopeePay Balance'), CardBrand.shopeePay);
+      expect(CardBrand.detect('Tonik Stash'), CardBrand.tonik);
+      expect(CardBrand.detect('CIMB GSave'), CardBrand.cimb);
+      expect(CardBrand.detect('Coins.ph BTC'), CardBrand.coins);
+      expect(CardBrand.detect('Apple Cash'), CardBrand.appleCash);
+      expect(CardBrand.detect('Google Wallet'), CardBrand.googleWallet);
+    });
+
     test('detects Cash and defaults correctly', () {
       expect(CardBrand.detect('Cash Wallet'), CardBrand.cash);
       expect(CardBrand.detect('Random Unknown Bank'), CardBrand.custom);
+    });
+
+    test('generates dynamic custom gradient from base color', () {
+      const base = Color(0xFF9C27B0);
+      final gradient = CardBrand.customGradient(base);
+      expect(gradient.colors.length, 3);
+      expect(gradient.colors[1], base);
     });
   });
 
@@ -82,6 +99,58 @@ void main() {
       expect(find.text('wise'), findsOneWidget);
       expect(find.text('GLOBAL'), findsOneWidget);
       expect(find.text('₱500.00'), findsOneWidget);
+    });
+
+    testWidgets('renders Apple Cash with virtual tag and frosted titanium styling', (tester) async {
+      const account = AccountModel(
+        id: 'acc_apple',
+        name: 'Apple Cash',
+        type: AccountType.eWallet,
+        balance: 2450.00,
+        icon: Icons.wallet_rounded,
+        color: Color(0xFFE8ECEF),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark(),
+          home: const Scaffold(
+            body: Center(
+              child: PersonalizedCard(account: account),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Cash'), findsOneWidget); // Apple Cash wordmark
+      expect(find.text('VIRTUAL'), findsNWidgets(2)); // Virtual chip badge + top tag
+      expect(find.text('₱2,450.00'), findsOneWidget);
+    });
+
+    testWidgets('renders GrabPay digital card with e-wallet tag', (tester) async {
+      const account = AccountModel(
+        id: 'acc_grab',
+        name: 'GrabPay',
+        type: AccountType.eWallet,
+        balance: 850.75,
+        icon: Icons.wallet_rounded,
+        color: Color(0xFF00B14F),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark(),
+          home: const Scaffold(
+            body: Center(
+              child: PersonalizedCard(account: account),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('GrabPay'), findsNWidgets(2));
+      expect(find.text('E-WALLET'), findsOneWidget);
+      expect(find.text('₱850.75'), findsOneWidget);
     });
   });
 }
