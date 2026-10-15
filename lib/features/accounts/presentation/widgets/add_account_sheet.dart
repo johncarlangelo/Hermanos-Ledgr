@@ -4,10 +4,12 @@ import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/constants/app_constants.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
+import 'package:hermanos_ledgr/features/accounts/domain/card_brand.dart';
+import 'package:hermanos_ledgr/features/accounts/presentation/widgets/personalized_card.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
-/// Custom bottom sheet for adding a new bank, e-wallet, or custom account.
+/// Custom bottom sheet for adding a new bank, e-wallet, or international account with live card preview.
 class AddAccountSheet extends ConsumerStatefulWidget {
   const AddAccountSheet({super.key});
 
@@ -33,7 +35,20 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
   AccountType _selectedType = AccountType.bank;
 
   @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_onTextChanged);
+    _balanceController.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    setState(() {});
+  }
+
+  @override
   void dispose() {
+    _nameController.removeListener(_onTextChanged);
+    _balanceController.removeListener(_onTextChanged);
     _nameController.dispose();
     _balanceController.dispose();
     super.dispose();
@@ -56,12 +71,15 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
       AccountType.creditCard => Icons.credit_card_rounded,
     };
 
-    final color = switch (_selectedType) {
-      AccountType.bank => const Color(0xFF1E88E5),
-      AccountType.eWallet => const Color(0xFF00897B),
-      AccountType.cash => const Color(0xFF43A047),
-      AccountType.creditCard => const Color(0xFFE53935),
-    };
+    final brand = CardBrand.detect(name);
+    final color = brand != CardBrand.custom
+        ? brand.gradient.colors.first
+        : switch (_selectedType) {
+            AccountType.bank => const Color(0xFF1E88E5),
+            AccountType.eWallet => const Color(0xFF00897B),
+            AccountType.cash => const Color(0xFF43A047),
+            AccountType.creditCard => const Color(0xFFE53935),
+          };
 
     final newAccount = AccountModel(
       id: 'acc_${DateTime.now().millisecondsSinceEpoch}',
@@ -77,7 +95,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
     ref.read(accountsProvider.notifier).addAccount(newAccount);
     Navigator.of(context).pop();
 
-    UndoSnackbar.info(
+    UndoSnackbar.success(
       context,
       message: 'Added $name to your ledger',
     );
@@ -88,146 +106,241 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
     final theme = Theme.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        Spacing.lg,
-        Spacing.md,
-        Spacing.lg,
-        Spacing.xl + bottomInset,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final name = _nameController.text.trim().isEmpty ? 'New Account' : _nameController.text.trim();
+    final balance = double.tryParse(_balanceController.text.replaceAll(',', '').trim()) ?? 0.0;
+    final brand = CardBrand.detect(name);
+
+    final icon = switch (_selectedType) {
+      AccountType.bank => Icons.account_balance_rounded,
+      AccountType.eWallet => Icons.wallet_rounded,
+      AccountType.cash => Icons.payments_rounded,
+      AccountType.creditCard => Icons.credit_card_rounded,
+    };
+
+    final previewAccount = AccountModel(
+      id: 'preview',
+      name: name,
+      type: _selectedType,
+      balance: balance,
+      icon: icon,
+      color: brand.gradient.colors.first,
+      institution: name,
+    );
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return SingleChildScrollView(
+          controller: scrollController,
+          padding: EdgeInsets.fromLTRB(
+            Spacing.lg,
+            Spacing.md,
+            Spacing.lg,
+            Spacing.xl + bottomInset,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(Spacing.sm),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.add_card_rounded,
+                          size: 20,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.md),
+                      Text(
+                        'Add Account / Wallet',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Live Personalized Physical Card Preview
+              Center(
+                child: PersonalizedCard(
+                  account: previewAccount,
+                  width: 250,
+                  height: 154,
+                ),
+              ),
+              const SizedBox(height: Spacing.lg),
+
+              // Quick Select Institution Preset Chips
+              Text(
+                'Quick Select Institution',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildPresetChip('GCash', AccountType.eWallet),
+                    _buildPresetChip('Maya', AccountType.eWallet),
+                    _buildPresetChip('MariBank', AccountType.bank),
+                    _buildPresetChip('BDO', AccountType.bank),
+                    _buildPresetChip('BPI', AccountType.bank),
+                    _buildPresetChip('UnionBank', AccountType.bank),
+                    _buildPresetChip('GoTyme', AccountType.bank),
+                    _buildPresetChip('Wise', AccountType.eWallet),
+                    _buildPresetChip('PayPal', AccountType.eWallet),
+                    _buildPresetChip('Venmo', AccountType.eWallet),
+                    _buildPresetChip('Cash Wallet', AccountType.cash),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Account Name Input
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Account or Provider Name',
+                  hintText: 'e.g. MariBank, Wise, GCash, PayPal',
+                  prefixIcon: Icon(Icons.account_balance_outlined),
+                ),
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Account Type Selector
+              Text(
+                'Account Type',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(Spacing.sm),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      Icons.add_card_rounded,
-                      size: 22,
-                      color: theme.colorScheme.primary,
+                  _buildTypeOption(
+                    label: 'Bank',
+                    icon: Icons.account_balance_rounded,
+                    type: AccountType.bank,
+                    theme: theme,
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  _buildTypeOption(
+                    label: 'E-Wallet',
+                    icon: Icons.wallet_rounded,
+                    type: AccountType.eWallet,
+                    theme: theme,
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  _buildTypeOption(
+                    label: 'Cash',
+                    icon: Icons.payments_rounded,
+                    type: AccountType.cash,
+                    theme: theme,
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  _buildTypeOption(
+                    label: 'Credit',
+                    icon: Icons.credit_card_rounded,
+                    type: AccountType.creditCard,
+                    theme: theme,
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Initial Balance
+              TextField(
+                controller: _balanceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                style: moneyStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Starting Balance',
+                  prefixText: '${AppConstants.currencySymbol} ',
+                  prefixStyle: moneyStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              const SizedBox(height: Spacing.xl),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
-                  Text(
-                    'Add Account / Wallet',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _saveAccount,
+                      child: const Text('Save Account'),
                     ),
                   ),
                 ],
               ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
             ],
           ),
-          const SizedBox(height: Spacing.lg),
+        );
+      },
+    );
+  }
 
-          // Account Name
-          TextField(
-            controller: _nameController,
-            autofocus: true,
-            decoration: const InputDecoration(
-              labelText: 'Account or Provider Name',
-              hintText: 'e.g. SeaBank, GoTyme, UnionBank, PayPal',
-              prefixIcon: Icon(Icons.account_balance_outlined),
-            ),
-          ),
-          const SizedBox(height: Spacing.md),
+  Widget _buildPresetChip(String name, AccountType type) {
+    final isSelected = _nameController.text.toLowerCase().trim() == name.toLowerCase();
+    final brand = CardBrand.detect(name);
 
-          // Account Type Selector
-          Text(
-            'Account Type',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: Spacing.xs),
-          Row(
-            children: [
-              _buildTypeOption(
-                label: 'Bank',
-                icon: Icons.account_balance_rounded,
-                type: AccountType.bank,
-                theme: theme,
-              ),
-              const SizedBox(width: Spacing.xs),
-              _buildTypeOption(
-                label: 'E-Wallet',
-                icon: Icons.wallet_rounded,
-                type: AccountType.eWallet,
-                theme: theme,
-              ),
-              const SizedBox(width: Spacing.xs),
-              _buildTypeOption(
-                label: 'Cash',
-                icon: Icons.payments_rounded,
-                type: AccountType.cash,
-                theme: theme,
-              ),
-              const SizedBox(width: Spacing.xs),
-              _buildTypeOption(
-                label: 'Credit',
-                icon: Icons.credit_card_rounded,
-                type: AccountType.creditCard,
-                theme: theme,
-              ),
-            ],
-          ),
-          const SizedBox(height: Spacing.md),
-
-          // Initial Balance
-          TextField(
-            controller: _balanceController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: moneyStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-            ),
-            decoration: InputDecoration(
-              labelText: 'Starting Balance',
-              prefixText: '${AppConstants.currencySymbol} ',
-              prefixStyle: moneyStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ),
-          const SizedBox(height: Spacing.xl),
-
-          // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _saveAccount,
-                  child: const Text('Save Account'),
-                ),
-              ),
-            ],
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(right: Spacing.xs),
+      child: FilterChip(
+        selected: isSelected,
+        label: Text(name),
+        labelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        selectedColor: brand.gradient.colors.first,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        side: BorderSide.none,
+        onSelected: (_) {
+          setState(() {
+            _nameController.text = name;
+            _selectedType = type;
+          });
+        },
       ),
     );
   }
@@ -244,8 +357,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
       child: InkWell(
         onTap: () => setState(() => _selectedType = type),
         borderRadius: BorderRadius.circular(10),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
           decoration: BoxDecoration(
             color: isSelected
@@ -253,7 +365,9 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                 : theme.colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : Colors.transparent,
               width: 1.5,
             ),
           ),
@@ -262,18 +376,18 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
             children: [
               Icon(
                 icon,
-                size: 20,
+                size: 18,
                 color: isSelected
                     ? theme.colorScheme.primary
                     : theme.colorScheme.onSurfaceVariant,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 label,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
-                      ? theme.colorScheme.onPrimaryContainer
+                      ? theme.colorScheme.primary
                       : theme.colorScheme.onSurfaceVariant,
                 ),
               ),

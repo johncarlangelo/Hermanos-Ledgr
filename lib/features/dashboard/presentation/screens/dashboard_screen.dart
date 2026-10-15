@@ -256,7 +256,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: Spacing.sm),
               SizedBox(
-                height: 124,
+                height: 142,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
