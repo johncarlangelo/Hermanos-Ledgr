@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" width="856" height="540" role="img" aria-label="MariBank card">
+<defs>
+<linearGradient id="g_maribank" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#FF5A1F"/>
+<stop offset="1" stop-color="#D63A0A"/>
+</linearGradient>
+<clipPath id="c"><rect width="856" height="540" rx="36"/></clipPath>
+</defs>
+<g clip-path="url(#c)">
+<rect width="856" height="540" fill="url(#g_maribank)"/>
+
+<!-- Circled 'M' Official MariBank Badge Top-Left -->
+<g transform="translate(56, 44)">
+  <circle cx="34" cy="34" r="32" fill="none" stroke="#FFFFFF" stroke-width="4"/>
+  <circle cx="34" cy="34" r="26" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+  <text x="34" y="44" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" text-anchor="middle">M</text>
+  <path d="M18 56 Q 26 50, 34 56 T 50 56" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+  <path d="M22 62 Q 28 58, 34 62 T 46 62" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+
+<!-- Mastercard Logo Top-Right -->
+<g transform="translate(690, 52)">
+  <circle cx="30" cy="30" r="30" fill="#EB001B"/>
+  <circle cx="68" cy="30" r="30" fill="#F79E1B" fill-opacity=".85"/>
+</g>
+
+<!-- Hand-drawn Doodle Smile with Heart Eyebrow (Reference Authentic Motif) -->
+<g transform="translate(510, 150)" stroke="#FFB08A" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+  <path d="M-15 -10 C -25 -25, -5 -35, 0 -20 C 5 -35, 25 -25, 15 -10 Q 0 8, -15 -10 Z" fill="#FFB08A" stroke-width="2" transform="rotate(-20) scale(0.65)"/>
+  <path d="M38 -15 Q 40 5, 36 20" stroke-width="10"/>
+  <path d="M85 -15 Q 87 5, 83 20" stroke-width="10"/>
+  <path d="M15 45 Q 60 110, 125 40" stroke-width="12"/>
+</g>
+
+<!-- Big Bold White 'MariBank' Wordmark Across the Card -->
+<text x="54" y="380" font-family="Helvetica, Arial, sans-serif" font-size="118" font-weight="900" fill="#FFFFFF" letter-spacing="-3">MariBank</text>
+
+<!-- Hand-drawn Brush Underlines Under 'MariBank' -->
+<path d="M54 415 Q 320 405, 580 412 T 820 410" fill="none" stroke="#FFB08A" stroke-width="12" stroke-linecap="round" opacity=".9"/>
+<path d="M280 432 Q 480 422, 740 426" fill="none" stroke="#FFB08A" stroke-width="8" stroke-linecap="round" opacity=".7"/>
+</g>
+</svg>

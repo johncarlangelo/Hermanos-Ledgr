@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" width="856" height="540" role="img" aria-label="Coins.ph card">
+<defs>
+<linearGradient id="g_coinsph" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#1E5BFF"/>
+<stop offset="1" stop-color="#0A2E99"/>
+</linearGradient>
+<clipPath id="c"><rect width="856" height="540" rx="36"/></clipPath>
+</defs>
+<g clip-path="url(#c)">
+<rect width="856" height="540" fill="url(#g_coinsph)"/>
+<defs><pattern id="d_8FB0FF" width="26" height="26" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2.6" fill="#8FB0FF"/></pattern></defs><rect x="430" y="0" width="426" height="540" fill="url(#d_8FB0FF)" opacity=".35"/>
+<text x="56" y="96" font-family="Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">Coins.ph</text>
+<rect x="56" y="170" width="94" height="72" rx="14" fill="#E5C16B"/>
+<path d="M56 206H150M103 170V242M80 170V242M126 170V242" stroke="#B8943F" stroke-width="2.5" opacity=".75"/>
+<g fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" opacity=".8" transform="translate(760, 50)">
+<path d="M0 10 q14 14 0 28"/>
+<path d="M16 2 q22 22 0 44"/>
+<path d="M32 -6 q30 30 0 60"/>
+</g>
+
+</g>
+</svg>

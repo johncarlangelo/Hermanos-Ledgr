@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermanos_ledgr/app/theme/app_theme.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
@@ -49,7 +50,7 @@ void main() {
   });
 
   group('PersonalizedCard Widget tests', () {
-    testWidgets('renders MariBank physical card branding and smile watermark', (tester) async {
+    testWidgets('renders MariBank physical card vector skin and balance overlay', (tester) async {
       const account = AccountModel(
         id: 'acc_maribank',
         name: 'MariBank',
@@ -70,12 +71,12 @@ void main() {
         ),
       );
 
-      expect(find.text('MariBank'), findsNWidgets(2)); // Header wordmark + Account name
-      expect(find.text('DEBIT'), findsOneWidget);
+      expect(find.byType(SvgPicture), findsOneWidget);
+      expect(find.text('MariBank'), findsOneWidget);
       expect(find.text('₱15,420.50'), findsOneWidget);
     });
 
-    testWidgets('renders Wise physical card with neon branding', (tester) async {
+    testWidgets('renders Wise physical card with vector skin and balance overlay', (tester) async {
       const account = AccountModel(
         id: 'acc_wise',
         name: 'Wise USD',
@@ -96,12 +97,12 @@ void main() {
         ),
       );
 
-      expect(find.text('wise'), findsOneWidget);
-      expect(find.text('GLOBAL'), findsOneWidget);
+      expect(find.byType(SvgPicture), findsOneWidget);
+      expect(find.text('Wise USD'), findsOneWidget);
       expect(find.text('₱500.00'), findsOneWidget);
     });
 
-    testWidgets('renders Apple Cash with virtual tag and frosted titanium styling', (tester) async {
+    testWidgets('renders Apple Cash with vector skin and balance overlay', (tester) async {
       const account = AccountModel(
         id: 'acc_apple',
         name: 'Apple Cash',
@@ -122,12 +123,12 @@ void main() {
         ),
       );
 
-      expect(find.text('Cash'), findsOneWidget); // Apple Cash wordmark
-      expect(find.text('VIRTUAL'), findsNWidgets(2)); // Virtual chip badge + top tag
+      expect(find.byType(SvgPicture), findsOneWidget);
+      expect(find.text('Apple Cash'), findsOneWidget);
       expect(find.text('₱2,450.00'), findsOneWidget);
     });
 
-    testWidgets('renders GrabPay digital card with e-wallet tag', (tester) async {
+    testWidgets('renders GrabPay digital card with vector skin and balance overlay', (tester) async {
       const account = AccountModel(
         id: 'acc_grab',
         name: 'GrabPay',
@@ -148,9 +149,36 @@ void main() {
         ),
       );
 
-      expect(find.text('GrabPay'), findsNWidgets(2));
-      expect(find.text('E-WALLET'), findsOneWidget);
+      expect(find.byType(SvgPicture), findsOneWidget);
+      expect(find.text('GrabPay'), findsOneWidget);
       expect(find.text('₱850.75'), findsOneWidget);
+    });
+
+    testWidgets('renders custom account with programmatic fallback and custom gradient', (tester) async {
+      const account = AccountModel(
+        id: 'acc_custom',
+        name: 'My Special Vault',
+        type: AccountType.bank,
+        balance: 99999.00,
+        icon: Icons.lock_outline_rounded,
+        color: Color(0xFF7B1FA2),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark(),
+          home: const Scaffold(
+            body: Center(
+              child: PersonalizedCard(account: account),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(SvgPicture), findsNothing);
+      expect(find.text('DEBIT'), findsOneWidget);
+      expect(find.text('MY SPECIAL VAULT'), findsOneWidget);
+      expect(find.text('₱99,999.00'), findsOneWidget);
     });
   });
 }

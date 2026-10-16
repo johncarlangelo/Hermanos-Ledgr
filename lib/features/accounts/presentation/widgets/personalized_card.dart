@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
@@ -26,11 +27,9 @@ class PersonalizedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brand = CardBrand.detect(account.name, account.institution);
-    final isCash = brand == CardBrand.cash;
-    final isWise = brand == CardBrand.wise;
+    final svgPath = brand.svgAssetPath;
     final isMaya = brand == CardBrand.maya;
     final isAppleCash = brand == CardBrand.appleCash;
-    final isVirtualOnly = brand == CardBrand.appleCash || brand == CardBrand.googleWallet;
 
     return Container(
       width: width,
@@ -60,9 +59,11 @@ class PersonalizedCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              gradient: brand == CardBrand.custom
-                  ? CardBrand.customGradient(account.color)
-                  : brand.gradient,
+              gradient: svgPath == null
+                  ? (brand == CardBrand.custom
+                      ? CardBrand.customGradient(account.color)
+                      : brand.gradient)
+                  : null,
               border: Border.all(
                 color: isMaya
                     ? const Color(0xFF00E676).withValues(alpha: 0.4)
@@ -76,225 +77,337 @@ class PersonalizedCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: Stack(
+              child: svgPath != null
+                  ? _buildSvgCard(brand, svgPath)
+                  : _buildProgrammaticCard(brand),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSvgCard(CardBrand brand, String svgPath) {
+    final isWise = brand == CardBrand.wise;
+    final isAppleCash = brand == CardBrand.appleCash;
+    final textColor = isWise
+        ? const Color(0xFF163300)
+        : isAppleCash
+            ? const Color(0xFF1C1C1E)
+            : Colors.white;
+    final subtextColor = isWise
+        ? const Color(0xFF2E590A)
+        : isAppleCash
+            ? const Color(0xFF636366)
+            : Colors.white.withValues(alpha: 0.85);
+
+    return Stack(
+      children: [
+        // 1. Vector SVG Card Face (Wordmark, chip, patterns, contactless, network)
+        Positioned.fill(
+          child: SvgPicture.asset(
+            svgPath,
+            fit: BoxFit.cover,
+          ),
+        ),
+
+        // 2. Dynamic Live Account Overlay (Account name, live tabular balance, last 4 digits)
+        Padding(
+          padding: const EdgeInsets.all(Spacing.md),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                account.name,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: subtextColor,
+                  letterSpacing: 0.3,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: isAppleCash || isWise ? 0.15 : 0.7),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
                 children: [
-                  // --- Brand-Specific Background Patterns & Watermarks ---
-                  _buildBrandBackground(brand),
-
-                  // --- Card Front Content ---
-                  Padding(
-                    padding: const EdgeInsets.all(Spacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Top Header: Brand Wordmark/Logo + Network / Contactless
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            _buildBrandHeader(brand),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ContactlessWaveIcon(
-                                  color: isWise
-                                      ? const Color(0xFF163300).withValues(alpha: 0.7)
-                                      : isAppleCash
-                                          ? const Color(0xFF1C1C1E).withValues(alpha: 0.6)
-                                          : Colors.white.withValues(alpha: 0.75),
-                                  size: 15,
-                                ),
-                                const SizedBox(width: Spacing.xs),
-                                CardNetworkLogo(
-                                  network: brand.defaultNetwork,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-
-                        // Middle: EMV Smart Chip vs Virtual NFC Badge vs Cash
-                        if (isCash) ...[
-                          // Cash emblem
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                ),
-                                child: const Icon(
-                                  Icons.payments_rounded,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'CASH WALLET',
-                                  style: TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8,
-                                    color: brand.subtextColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else if (isVirtualOnly) ...[
-                          // Virtual / NFC Digital Emblem
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: isAppleCash
-                                      ? Colors.black.withValues(alpha: 0.08)
-                                      : Colors.white.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isAppleCash
-                                        ? Colors.black.withValues(alpha: 0.15)
-                                        : Colors.white.withValues(alpha: 0.2),
-                                    width: 0.8,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.nfc_rounded,
-                                      size: 12,
-                                      color: brand.textColor.withValues(alpha: 0.85),
-                                    ),
-                                    const SizedBox(width: 3),
-                                    Text(
-                                      'VIRTUAL',
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.8,
-                                        color: brand.textColor.withValues(alpha: 0.85),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  brand.defaultTag,
-                                  style: TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8,
-                                    color: brand.subtextColor,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else ...[
-                          // Standard Physical EMV Smart Chip
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              EmvChipWidget(
-                                isGold: brand != CardBrand.wise && brand != CardBrand.venmo,
-                                width: 26,
-                                height: 18,
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  brand.defaultTag,
-                                  style: TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.8,
-                                    color: brand.subtextColor,
-                                  ),
-                                ),
-                              ),
-                            ],
+                  Expanded(
+                    child: Text(
+                      CurrencyFormatter.format(account.balance),
+                      style: moneyStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                        letterSpacing: -0.3,
+                      ).copyWith(
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: isAppleCash || isWise ? 0.2 : 0.8),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
                           ),
                         ],
-
-                        // Bottom: Account Name & Balance
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              account.name,
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: brand.subtextColor,
-                                letterSpacing: 0.2,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 1),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    CurrencyFormatter.format(account.balance),
-                                    style: moneyStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w800,
-                                      color: brand.textColor,
-                                      letterSpacing: -0.3,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Text(
-                                  '•••• ${account.id.length >= 4 ? account.id.substring(account.id.length - 4) : "8821"}',
-                                  style: TextStyle(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: brand.subtextColor,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    '•••• ${account.id.length >= 4 ? account.id.substring(account.id.length - 4) : "8821"}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: subtextColor,
+                      letterSpacing: 0.8,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: isAppleCash || isWise ? 0.15 : 0.7),
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ),
+            ],
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _buildProgrammaticCard(CardBrand brand) {
+    final isCash = brand == CardBrand.cash;
+    final isWise = brand == CardBrand.wise;
+    final isAppleCash = brand == CardBrand.appleCash;
+    final isVirtualOnly = brand == CardBrand.appleCash || brand == CardBrand.googleWallet;
+
+    return Stack(
+      children: [
+        // --- Brand-Specific Background Patterns & Watermarks ---
+        _buildBrandBackground(brand),
+
+        // --- Card Front Content ---
+        Padding(
+          padding: const EdgeInsets.all(Spacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Top Header: Brand Wordmark/Logo + Network / Contactless
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: _buildBrandHeader(brand),
+                  ),
+                  const SizedBox(width: Spacing.xs),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ContactlessWaveIcon(
+                        color: isWise
+                            ? const Color(0xFF163300).withValues(alpha: 0.7)
+                            : isAppleCash
+                                ? const Color(0xFF1C1C1E).withValues(alpha: 0.6)
+                                : Colors.white.withValues(alpha: 0.75),
+                        size: 15,
+                      ),
+                      const SizedBox(width: Spacing.xs),
+                      CardNetworkLogo(
+                        network: brand.defaultNetwork,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              // Middle: EMV Smart Chip vs Virtual NFC Badge vs Cash
+              if (isCash) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.15),
+                      ),
+                      child: const Icon(
+                        Icons.payments_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'CASH WALLET',
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: brand.subtextColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else if (isVirtualOnly) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: isAppleCash
+                            ? Colors.black.withValues(alpha: 0.08)
+                            : Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: isAppleCash
+                              ? Colors.black.withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.2),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.nfc_rounded,
+                            size: 12,
+                            color: brand.textColor.withValues(alpha: 0.85),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            'VIRTUAL',
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                              color: brand.textColor.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        brand.defaultTag,
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: brand.subtextColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    EmvChipWidget(
+                      isGold: brand != CardBrand.wise && brand != CardBrand.venmo,
+                      width: 26,
+                      height: 18,
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        brand.defaultTag,
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8,
+                          color: brand.subtextColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              // Bottom: Account Name & Balance
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    account.name,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: brand.subtextColor,
+                      letterSpacing: 0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 1),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          CurrencyFormatter.format(account.balance),
+                          style: moneyStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: brand.textColor,
+                            letterSpacing: -0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        '•••• ${account.id.length >= 4 ? account.id.substring(account.id.length - 4) : "8821"}',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w500,
+                          color: brand.subtextColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -882,8 +995,9 @@ class PersonalizedCard extends StatelessWidget {
         );
 
       case CardBrand.custom:
+      default:
         return Text(
-          account.name.toUpperCase(),
+          account.name.isNotEmpty ? account.name.toUpperCase() : brand.displayName.toUpperCase(),
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w800,

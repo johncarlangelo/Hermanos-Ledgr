@@ -51,3 +51,6 @@ app.*.map.json
 .env
 .env.*
 *.env
+
+# Local generation scripts
+gen.py

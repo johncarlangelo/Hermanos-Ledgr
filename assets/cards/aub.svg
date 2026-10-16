@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 856 540" width="856" height="540" role="img" aria-label="AUB card">
+<defs>
+<linearGradient id="g_aub" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#8C1C2C"/>
+<stop offset="1" stop-color="#4F0E18"/>
+</linearGradient>
+<clipPath id="c"><rect width="856" height="540" rx="36"/></clipPath>
+</defs>
+<g clip-path="url(#c)">
+<rect width="856" height="540" fill="url(#g_aub)"/>
+<circle cx="760" cy="90" r="230" fill="#E58A96" opacity=".22"/><circle cx="880" cy="260" r="170" fill="#E58A96" opacity=".16"/><circle cx="90" cy="560" r="150" fill="#E58A96" opacity=".14"/>
+<text x="56" y="96" font-family="Helvetica, Arial, sans-serif" font-size="44" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">AUB</text>
+<rect x="56" y="170" width="94" height="72" rx="14" fill="#E5C16B"/>
+<path d="M56 206H150M103 170V242M80 170V242M126 170V242" stroke="#B8943F" stroke-width="2.5" opacity=".75"/>
+<g fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" opacity=".8" transform="translate(760, 50)">
+<path d="M0 10 q14 14 0 28"/>
+<path d="M16 2 q22 22 0 44"/>
+<path d="M32 -6 q30 30 0 60"/>
+</g>
+<g transform="translate(710, 420)">
+<circle cx="32" cy="32" r="30" fill="#EB001B"/>
+<circle cx="72" cy="32" r="30" fill="#F79E1B" fill-opacity=".85"/>
+</g>
+</g>
+</svg>
