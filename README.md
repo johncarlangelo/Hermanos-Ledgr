@@ -199,6 +199,5 @@ Hermanos Ledgr is developed as personal-use software. It will never include:
 * ❌ Cloud synchronization or telemetry
 * ❌ Third-party trackers or advertising SDKs
 * ❌ Account sign-ups or subscription paywalls
-* ❌ Gamification badges or frivolous confetti animations
 
 Your financial data is private, confidential, and completely yours.
