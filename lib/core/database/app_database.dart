@@ -4,6 +4,7 @@ import 'package:hermanos_ledgr/core/constants/category_defaults.dart';
 import 'package:hermanos_ledgr/core/database/daos/accounts_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/budgets_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/categories_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/debts_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/goals_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/transactions_dao.dart';
 import 'package:hermanos_ledgr/core/database/tables/accounts_table.dart';
@@ -32,6 +33,7 @@ part 'app_database.g.dart';
     BudgetsDao,
     CategoriesDao,
     GoalsDao,
+    DebtsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {

@@ -213,4 +213,16 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 
 ---
 
+### D-016: Unified Debt & Receivables Model with Direct Bill Splitting
+**Date:** 2026-10-18
+**Status:** Accepted
+**Context:** Tracking personal loans, debts owed to friends/banks (Utang), and money owed to you (Pautang/collectibles) requires intuitive management and quick bill-splitting among friends.
+**Decision:** Model both debts and receivables under a unified `DebtModel` entity parameterized by `DebtType` (`debt` vs `receivable`). Implement a reactive Drift SQLite DAO (`debts_dao.dart`) with atomic `recordPayment` increments and status updates. Provide a dedicated `BillSplitSheet` calculator with adjustable headcounts and tip/tax presets that can automatically generate individual receivable records in a single tap with undo support.
+**Alternatives Considered:**
+- Separate tables for Debts and Receivables — duplicates schema and DAO queries for identical attributes.
+- External bill-split calculator app — breaks offline all-in-one experience.
+**Rationale:** Keeps database queries and presentation components DRY while providing distinct visual badges, progress bars, and dedicated segmented tabs ("I Owe", "Owed to Me", "Settled").
+
+---
+
 *Add new decisions below this line.*

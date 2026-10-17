@@ -8,6 +8,7 @@ import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/widgets/budget_progress_card.dart';
 import 'package:hermanos_ledgr/features/budget/providers/mock_budgets_provider.dart';
+import 'package:hermanos_ledgr/features/debts/providers/debts_provider.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_contribution_sheet.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_goal_sheet.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/delete_goal_sheet.dart';
@@ -40,6 +41,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
         : 0;
 
     final goals = ref.watch(goalsProvider);
+    final totalPayable = ref.watch(totalPayableAmountProvider);
+    final totalReceivable = ref.watch(totalReceivableAmountProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -384,6 +387,103 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
               ),
             ],
           ],
+          const SizedBox(height: Spacing.lg),
+
+          // 4. Debts & Receivables Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'DEBTS & RECEIVABLES',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: theme.colorScheme.primary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: Spacing.xs),
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                ),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 15),
+                label: const Text('View All'),
+                onPressed: () => context.push('/debts'),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xs),
+          M3Card(
+            onTap: () => context.push('/debts'),
+            padding: const EdgeInsets.all(Spacing.md),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'I Owe',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        CurrencyFormatter.format(totalPayable),
+                        style: moneyStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: totalPayable > 0
+                              ? SemanticColors.expense(isDark)
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Owed to Me',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        CurrencyFormatter.format(totalReceivable),
+                        style: moneyStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: totalReceivable > 0
+                              ? SemanticColors.income(isDark)
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, size: 20),
+              ],
+            ),
+          ),
           const SizedBox(height: Spacing.xxl),
         ],
       ),

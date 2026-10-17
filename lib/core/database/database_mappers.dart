@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hermanos_ledgr/core/database/app_database.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/budget/domain/budget_model.dart';
+import 'package:hermanos_ledgr/features/debts/domain/debt_model.dart';
 import 'package:hermanos_ledgr/features/goals/domain/goal_model.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 
@@ -131,6 +132,34 @@ class DatabaseMappers {
       iconCode: Value(goal.icon.codePoint),
       colorValue: Value(goal.color.toARGB32()),
       isCompleted: Value(goal.isCompleted),
+    );
+  }
+
+  static DebtModel debtFromDrift(DebtsTableData row) {
+    return DebtModel(
+      id: row.id,
+      type: row.type == 'receivable' ? DebtType.receivable : DebtType.debt,
+      personName: row.personName,
+      originalAmount: row.originalAmount,
+      remainingAmount: row.remainingAmount,
+      note: row.note,
+      dueDate: row.dueDate,
+      isSettled: row.isSettled,
+      createdAt: row.createdAt,
+    );
+  }
+
+  static DebtsTableCompanion debtToCompanion(DebtModel debt) {
+    return DebtsTableCompanion.insert(
+      id: debt.id,
+      type: debt.type == DebtType.receivable ? 'receivable' : 'debt',
+      personName: debt.personName,
+      originalAmount: debt.originalAmount,
+      remainingAmount: debt.remainingAmount,
+      note: Value(debt.note),
+      dueDate: Value(debt.dueDate),
+      isSettled: Value(debt.isSettled),
+      createdAt: debt.createdAt,
     );
   }
 }

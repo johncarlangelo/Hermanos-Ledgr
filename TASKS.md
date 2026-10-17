@@ -145,14 +145,14 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 7.1 | Create `DebtEntity`, `ReceivableEntity`, `DebtRepository` | 🟡 | 1.1 | ⬜ TODO |
-| 7.2 | Implement `DebtRepositoryImpl` | 🟡 | 7.1 | ⬜ TODO |
-| 7.3 | Create debt providers | 🟢 | 7.2 | ⬜ TODO |
-| 7.4 | Build debts screen with tabs (Debts / Receivables) | 🟡 | 7.3 | ⬜ TODO |
-| 7.5 | Build debt card with payoff progress | 🟡 | 7.4 | ⬜ TODO |
-| 7.6 | Build debt creation/edit form | 🟡 | 7.3 | ⬜ TODO |
-| 7.7 | Implement payment logging against debts | 🟡 | 7.3 | ⬜ TODO |
-| 7.8 | Build simple bill split calculator | 🟡 | — | ⬜ TODO |
+| 7.1 | Create `DebtEntity`, `ReceivableEntity`, `DebtRepository` | 🟡 | 1.1 | ✅ DONE |
+| 7.2 | Implement `DebtRepositoryImpl` | 🟡 | 7.1 | ✅ DONE |
+| 7.3 | Create debt providers | 🟢 | 7.2 | ✅ DONE |
+| 7.4 | Build debts screen with tabs (Debts / Receivables) | 🟡 | 7.3 | ✅ DONE |
+| 7.5 | Build debt card with payoff progress | 🟡 | 7.4 | ✅ DONE |
+| 7.6 | Build debt creation/edit form | 🟡 | 7.3 | ✅ DONE |
+| 7.7 | Implement payment logging against debts | 🟡 | 7.3 | ✅ DONE |
+| 7.8 | Build simple bill split calculator | 🟡 | — | ✅ DONE |
 
 ---
 
