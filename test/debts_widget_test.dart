@@ -116,6 +116,7 @@ void main() {
     await tester.tap(find.text('Edit Details'));
     await tester.pumpAndSettle();
     expect(editTapped, isTrue);
+    expect(deleteTapped, isFalse);
   });
 
   testWidgets('DebtsScreen renders net hero position and allows tab switching', (tester) async {

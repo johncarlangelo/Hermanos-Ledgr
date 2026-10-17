@@ -5,6 +5,7 @@ import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/budget/domain/budget_model.dart';
 import 'package:hermanos_ledgr/features/debts/domain/debt_model.dart';
 import 'package:hermanos_ledgr/features/goals/domain/goal_model.dart';
+import 'package:hermanos_ledgr/features/recurring/domain/recurring_model.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 
 /// Extension and mapper utilities converting between Drift SQLite tables
@@ -160,6 +161,46 @@ class DatabaseMappers {
       dueDate: Value(debt.dueDate),
       isSettled: Value(debt.isSettled),
       createdAt: debt.createdAt,
+    );
+  }
+
+  static RecurringModel recurringFromDrift(RecurringTransactionsTableData row) {
+    return RecurringModel(
+      id: row.id,
+      title: row.title,
+      amount: row.amount,
+      type: TransactionType.values.firstWhere(
+        (e) => e.name == row.type,
+        orElse: () => TransactionType.expense,
+      ),
+      categoryId: row.categoryId,
+      categoryName: row.categoryName,
+      accountId: row.accountId,
+      accountName: row.accountName,
+      frequency: RecurringFrequency.values.firstWhere(
+        (e) => e.name == row.frequency,
+        orElse: () => RecurringFrequency.monthly,
+      ),
+      startDate: row.startDate,
+      nextDueDate: row.nextDueDate,
+      isActive: row.isActive,
+    );
+  }
+
+  static RecurringTransactionsTableCompanion recurringToCompanion(RecurringModel model) {
+    return RecurringTransactionsTableCompanion.insert(
+      id: model.id,
+      title: model.title,
+      amount: model.amount,
+      type: model.type.name,
+      categoryId: model.categoryId,
+      categoryName: model.categoryName,
+      accountId: model.accountId,
+      accountName: model.accountName,
+      frequency: model.frequency.name,
+      startDate: model.startDate,
+      nextDueDate: model.nextDueDate,
+      isActive: Value(model.isActive),
     );
   }
 }

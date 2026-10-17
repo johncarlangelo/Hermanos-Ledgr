@@ -6,6 +6,7 @@ import 'package:hermanos_ledgr/core/database/daos/budgets_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/categories_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/debts_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/goals_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/recurring_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/transactions_dao.dart';
 import 'package:hermanos_ledgr/core/database/tables/accounts_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/budgets_table.dart';
@@ -34,6 +35,7 @@ part 'app_database.g.dart';
     CategoriesDao,
     GoalsDao,
     DebtsDao,
+    RecurringDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {

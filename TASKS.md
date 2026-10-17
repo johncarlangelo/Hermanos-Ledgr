@@ -161,15 +161,15 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 8.1 | Create `RecurringEntity` and `RecurringRepository` | 🟢 | 1.1 | ⬜ TODO |
-| 8.2 | Implement `RecurringRepositoryImpl` | 🟡 | 8.1, 3.2 | ⬜ TODO |
-| 8.3 | Create recurring providers | 🟢 | 8.2 | ⬜ TODO |
-| 8.4 | Build recurring rules management screen | 🟡 | 8.3 | ⬜ TODO |
-| 8.5 | Build recurring rule creation/edit form | 🟡 | 8.3 | ⬜ TODO |
-| 8.6 | Implement auto-log engine (check and create on app open) | 🔴 | 8.2, 3.2 | ⬜ TODO |
-| 8.7 | Build cashflow forecast screen | 🔴 | 8.3, 3.3 | ⬜ TODO |
-| 8.8 | Build forecast timeline widget | 🟡 | 8.7 | ⬜ TODO |
-| 8.9 | Build upcoming payments list | 🟡 | 8.7 | ⬜ TODO |
+| 8.1 | Create `RecurringEntity` and `RecurringRepository` | 🟢 | 1.1 | ✅ DONE |
+| 8.2 | Implement `RecurringRepositoryImpl` | 🟡 | 8.1, 3.2 | ✅ DONE |
+| 8.3 | Create recurring providers | 🟢 | 8.2 | ✅ DONE |
+| 8.4 | Build recurring rules management screen | 🟡 | 8.3 | ✅ DONE |
+| 8.5 | Build recurring rule creation/edit form | 🟡 | 8.3 | ✅ DONE |
+| 8.6 | Implement auto-log engine (check and create on app open) | 🔴 | 8.2, 3.2 | ✅ DONE |
+| 8.7 | Build cashflow forecast screen | 🔴 | 8.3, 3.3 | ✅ DONE |
+| 8.8 | Build forecast timeline widget | 🟡 | 8.7 | ✅ DONE |
+| 8.9 | Build upcoming payments list | 🟡 | 8.7 | ✅ DONE |
 
 ---
 

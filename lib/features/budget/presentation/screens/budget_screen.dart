@@ -9,6 +9,7 @@ import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/widgets/budget_progress_card.dart';
 import 'package:hermanos_ledgr/features/budget/providers/mock_budgets_provider.dart';
 import 'package:hermanos_ledgr/features/debts/providers/debts_provider.dart';
+import 'package:hermanos_ledgr/features/recurring/providers/recurring_provider.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_contribution_sheet.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_goal_sheet.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/delete_goal_sheet.dart';
@@ -43,6 +44,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
     final goals = ref.watch(goalsProvider);
     final totalPayable = ref.watch(totalPayableAmountProvider);
     final totalReceivable = ref.watch(totalReceivableAmountProvider);
+    final monthlyRecurring = ref.watch(monthlyRecurringExpenseProvider);
+    final activeRecurring = ref.watch(activeRecurringProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -481,6 +484,86 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                   ),
                 ),
                 const Icon(Icons.chevron_right_rounded, size: 20),
+              ],
+            ),
+          ),
+          const SizedBox(height: Spacing.lg),
+
+          // 5. Recurring & Forecast Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'RECURRING & FORECAST',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: theme.colorScheme.primary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: Spacing.xs),
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                ),
+                icon: const Icon(Icons.arrow_forward_rounded, size: 15),
+                label: const Text('View All'),
+                onPressed: () => context.push('/recurring'),
+              ),
+            ],
+          ),
+          const SizedBox(height: Spacing.xs),
+          M3Card(
+            onTap: () => context.push('/recurring'),
+            padding: const EdgeInsets.all(Spacing.md),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: StashColors.tealAccent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.event_repeat_rounded,
+                    size: 22,
+                    color: StashColors.tealAccent,
+                  ),
+                ),
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Monthly Subscriptions',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${CurrencyFormatter.format(monthlyRecurring)}/mo (${activeRecurring.length} active rules)',
+                        style: moneyStyle(
+                          fontSize: 12,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.auto_graph_rounded, size: 20),
+                  tooltip: 'Cashflow Forecast',
+                  onPressed: () => context.push('/forecast'),
+                ),
               ],
             ),
           ),

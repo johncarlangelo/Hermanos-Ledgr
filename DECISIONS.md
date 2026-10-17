@@ -225,4 +225,20 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 
 ---
 
+### D-017: Recurring Transactions Auto-Log Engine & Cashflow Timeline Forecast
+**Date:** 2026-10-18
+**Status:** Accepted
+**Context:** Users need scheduled payments (e.g., subscriptions, rent, utility bills, salary) to log automatically or be logged ahead of time, while visualizing projected liquidity over 30, 60, and 90-day horizons.
+**Decision:** Implement a modular `RecurringAutoLogEngine` and `ForecastEngine` with clean architecture separation:
+1. `RecurringTransactionsTable` Drift table and `RecurringDao` managing recurring rules with frequency math (`daily`, `weekly`, `biweekly`, `monthly`, `yearly`), month-end clamping (Jan 31 -> Feb 28), and monthly equivalent normalization factors.
+2. `RecurringAutoLogEngine`: Runs on app launch (guarded to once per session via Riverpod state notifier), checks for rules whose `nextDueDate` is on or before current date and `isActive == true`, inserts corresponding `TransactionCompanion` records, and advances `nextDueDate` atomically.
+3. `ForecastEngine`: Simulates daily cashflow deltas over user-selectable horizons (30, 60, 90 days) based on current total liquid balances + recurring income & expense occurrences. Feeds into an interactive `fl_chart` LineChart widget with smooth cubic curvature, gradient area shading, dot markers on active payment days, and chronological upcoming payment tiles.
+**Alternatives Considered:**
+- Android WorkManager background service — unnecessary battery drain and complexity for an offline personal app; running on session startup is 100% reliable and instantaneous.
+- Static monthly multiplier without day-by-day simulation — fails to depict mid-month cash dips or account for bi-weekly paychecks.
+**Rationale:** Delivers high-precision predictive cashflow visualization, zero battery overhead, zero stock Android UI, and seamless offline SQLite persistence.
+
+---
+
 *Add new decisions below this line.*
+

@@ -11,6 +11,8 @@ import 'package:hermanos_ledgr/features/dashboard/presentation/screens/dashboard
 import 'package:hermanos_ledgr/features/debts/presentation/screens/debts_screen.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/screens/goals_screen.dart';
 import 'package:hermanos_ledgr/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:hermanos_ledgr/features/recurring/presentation/screens/forecast_screen.dart';
+import 'package:hermanos_ledgr/features/recurring/presentation/screens/recurring_screen.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/screens/settings_screen.dart';
 import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/screens/transactions_screen.dart';
@@ -78,6 +80,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/debts',
         builder: (context, state) => const DebtsScreen(),
+      ),
+      GoRoute(
+        path: '/recurring',
+        builder: (context, state) => const RecurringScreen(),
+      ),
+      GoRoute(
+        path: '/forecast',
+        builder: (context, state) => const ForecastScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),
