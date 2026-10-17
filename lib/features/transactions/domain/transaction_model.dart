@@ -21,6 +21,7 @@ class TransactionModel {
   final String? destinationAccountName;
   final DateTime date;
   final String? note;
+  final String? receiptImagePath;
 
   const TransactionModel({
     required this.id,
@@ -37,6 +38,7 @@ class TransactionModel {
     this.destinationAccountName,
     required this.date,
     this.note,
+    this.receiptImagePath,
   });
 
   TransactionModel copyWith({
@@ -54,6 +56,7 @@ class TransactionModel {
     String? destinationAccountName,
     DateTime? date,
     String? note,
+    String? receiptImagePath,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -71,6 +74,7 @@ class TransactionModel {
           destinationAccountName ?? this.destinationAccountName,
       date: date ?? this.date,
       note: note ?? this.note,
+      receiptImagePath: receiptImagePath ?? this.receiptImagePath,
     );
   }
 }

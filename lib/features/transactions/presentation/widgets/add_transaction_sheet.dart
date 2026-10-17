@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,9 +9,10 @@ import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/constants/category_defaults.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
-import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
+import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_photo_adjust_sheet.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
-import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
+import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/custom_keypad.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
@@ -58,6 +61,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   final TextEditingController _noteController = TextEditingController();
   late DateTime _selectedDate;
   bool _showKeypad = true;
+  String? _receiptImageBase64;
 
   bool get _isEditing => widget.existingTransaction != null;
 
@@ -73,6 +77,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       _noteController.text = existing.note ?? '';
       _selectedDate = existing.date;
       _selectedCategory = CategoryDefaults.findById(existing.categoryId);
+      _receiptImageBase64 = existing.receiptImagePath;
     } else {
       _type = widget.initialType;
       _selectedDate = DateTime.now();
@@ -83,6 +88,34 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     }
     if (widget.initialAccount != null) {
       _selectedAccount = widget.initialAccount;
+    }
+  }
+
+  Future<void> _pickReceiptImage() async {
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['png', 'jpg', 'jpeg', 'gif'],
+      );
+      if (file == null) return;
+      final bytes = await file.xFile.readAsBytes();
+      if (bytes.isEmpty) return;
+
+      if (!mounted) return;
+      final cropped = await ProfilePhotoAdjustSheet.show(
+        context,
+        rawImageBytes: bytes,
+      );
+
+      if (cropped != null && mounted) {
+        setState(() {
+          _receiptImageBase64 = cropped;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        UndoSnackbar.error(context, message: 'Failed to select image: $e');
+      }
     }
   }
 
@@ -181,6 +214,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         destinationAccountName: _selectedDestinationAccount?.name,
         date: _selectedDate,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        receiptImagePath: _receiptImageBase64,
       );
 
       ref.read(transactionsProvider.notifier).updateTransaction(updatedTx);
@@ -206,6 +240,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         destinationAccountName: _selectedDestinationAccount?.name,
         date: _selectedDate,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        receiptImagePath: _receiptImageBase64,
       );
 
       ref.read(transactionsProvider.notifier).addTransaction(tx);
@@ -265,25 +300,29 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _isEditing ? 'Edit Transaction' : 'Quick Log',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.2,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isEditing ? 'Edit Transaction' : 'Quick Log',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                          ),
                         ),
-                      ),
-                      Text(
-                        _isEditing
-                            ? 'Update transaction details and balances'
-                            : 'Record a new entry to your ledger',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        Text(
+                          _isEditing
+                              ? 'Update transaction details and balances'
+                              : 'Record a new entry to your ledger',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
@@ -459,6 +498,74 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                       prefixIcon: const Icon(Icons.edit_note_rounded),
                     ),
                   ),
+                  const SizedBox(height: Spacing.md),
+
+                  // 6. Optional Receipt Photo Attachment (Task 3.18)
+                  if (_receiptImageBase64 == null) ...[
+                    OutlinedButton.icon(
+                      onPressed: _pickReceiptImage,
+                      icon: const Icon(Icons.receipt_long_rounded, size: 16),
+                      label: const Text('Attach Receipt / Proof (Optional)'),
+                      style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Spacing.md,
+                          vertical: Spacing.xs,
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(Spacing.sm),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: (isDark ? StashColors.tealAccent : theme.colorScheme.primary)
+                              .withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.memory(
+                              base64Decode(_receiptImageBase64!),
+                              width: 44,
+                              height: 44,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: Spacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Receipt Proof Attached',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  'Tap remove to detach',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            tooltip: 'Remove',
+                            onPressed: () => setState(() => _receiptImageBase64 = null),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: Spacing.lg),
                 ],
               ),

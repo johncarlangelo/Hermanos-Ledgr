@@ -21,7 +21,7 @@
 | **Phase 0: Scaffolding** | 🟢 Complete | ██████████ 100% | Flutter app initialized, M3 tokens, Onboarding, 5 interactive tabs |
 | **Phase 1: Database** | 🟢 Complete | ██████████ 100% | Drift SQLite tables, 5 DAOs, Money & DateRange value objects, CRUD tests |
 | **Phase 2: Accounts** | 🟢 Complete | ██████████ 100% | Persistent Drift repo, account CRUD, 31+ card presets, detail ledger, profile cropper |
-| **Phase 3: Transactions** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
+| **Phase 3: Transactions** | 🟢 Complete | ██████████ 100% | Drift TransactionRepositoryImpl, ACID atomic balance updates, swipe actions (delete + undo, edit), receipt photo attachment |
 | **Phase 4: Dashboard** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 5: Budgets** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 6: Goals** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
@@ -40,10 +40,10 @@
 | Metric | Value |
 |---|---|
 | **Total Tasks** | 130 |
-| **Completed** | 0 |
+| **Completed** | 35 |
 | **In Progress** | 0 |
-| **Remaining** | 130 |
-| **Overall Progress** | 0% |
+| **Remaining** | 95 |
+| **Overall Progress** | 27% |
 
 ---
 
@@ -51,6 +51,7 @@
 
 | Date | Phase | Task(s) | Notes |
 |---|---|---|---|
+| 2026-10-17 | Phase 3 | 3.1-3.18 | Complete Phase 3: TransactionEntity, TransactionRepositoryImpl with Drift SQLite ACID db.transaction balance updates, TransactionsNotifier, bidirectional swipe actions (delete + UndoSnackbar, edit), and receipt photo attachment |
 | 2026-09-28 | Planning | — | Created PRD, DESIGN, ARCHITECTURE, AGENTS, VERIFY, TASKS, PROGRESS, DECISIONS docs |
 | 2026-09-28 | Planning | — | Created `.agents/skills/flutter-m3-premium-design/SKILL.md` custom skill |
 | 2026-09-28 | Planning | — | Cleaned legacy workspace artifacts and moved docs/.agents into git repo |

@@ -72,24 +72,24 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 3.1 | Create `TransactionEntity` and `TransactionRepository` (abstract) | 🟡 | 1.1 | ⬜ TODO |
-| 3.2 | Implement `TransactionRepositoryImpl` with Drift DAO | 🔴 | 3.1, 1.4 | ⬜ TODO |
-| 3.3 | Create transaction providers (list, form state) | 🟡 | 3.2 | ⬜ TODO |
-| 3.4 | Build transaction list screen with date grouping | 🔴 | 3.3 | ⬜ TODO |
-| 3.5 | Build `TransactionCard` widget | 🟡 | 3.4 | ⬜ TODO |
-| 3.6 | Build add transaction bottom sheet | 🔴 | 3.3, 2.3 | ⬜ TODO |
-| 3.7 | Build amount keypad widget | 🟡 | 3.6 | ⬜ TODO |
-| 3.8 | Build category picker (grid with icons) | 🟡 | 1.6 | ⬜ TODO |
-| 3.9 | Build account selector | 🟢 | 2.3 | ⬜ TODO |
-| 3.10 | Implement expense creation (save + update account balance) | 🟡 | 3.6 | ⬜ TODO |
-| 3.11 | Implement income creation | 🟢 | 3.10 | ⬜ TODO |
-| 3.12 | Implement account transfer | 🟡 | 3.10 | ⬜ TODO |
-| 3.13 | Build filter chips bar (date, category, account) | 🟡 | 3.4 | ⬜ TODO |
-| 3.14 | Implement search transactions | 🟢 | 3.4 | ⬜ TODO |
-| 3.15 | Implement edit transaction | 🟡 | 3.6 | ⬜ TODO |
-| 3.16 | Implement delete transaction with balance rollback | 🟡 | 3.4 | ⬜ TODO |
-| 3.17 | Add swipe actions (edit/delete) to transaction cards | 🟢 | 3.5 | ⬜ TODO |
-| 3.18 | Add image attachment (camera + gallery) | 🟡 | 3.6 | ⬜ TODO |
+| 3.1 | Create `TransactionEntity` and `TransactionRepository` (abstract) | 🟡 | 1.1 | ✅ DONE |
+| 3.2 | Implement `TransactionRepositoryImpl` with Drift DAO | 🔴 | 3.1, 1.4 | ✅ DONE |
+| 3.3 | Create transaction providers (list, form state) | 🟡 | 3.2 | ✅ DONE |
+| 3.4 | Build transaction list screen with date grouping | 🔴 | 3.3 | ✅ DONE |
+| 3.5 | Build `TransactionCard` widget | 🟡 | 3.4 | ✅ DONE |
+| 3.6 | Build add transaction bottom sheet | 🔴 | 3.3, 2.3 | ✅ DONE |
+| 3.7 | Build amount keypad widget | 🟡 | 3.6 | ✅ DONE |
+| 3.8 | Build category picker (grid with icons) | 🟡 | 1.6 | ✅ DONE |
+| 3.9 | Build account selector | 🟢 | 2.3 | ✅ DONE |
+| 3.10 | Implement expense creation (save + update account balance) | 🟡 | 3.6 | ✅ DONE |
+| 3.11 | Implement income creation | 🟢 | 3.10 | ✅ DONE |
+| 3.12 | Implement account transfer | 🟡 | 3.10 | ✅ DONE |
+| 3.13 | Build filter chips bar (date, category, account) | 🟡 | 3.4 | ✅ DONE |
+| 3.14 | Implement search transactions | 🟢 | 3.4 | ✅ DONE |
+| 3.15 | Implement edit transaction | 🟡 | 3.6 | ✅ DONE |
+| 3.16 | Implement delete transaction with balance rollback | 🟡 | 3.4 | ✅ DONE |
+| 3.17 | Add swipe actions (edit/delete) to transaction cards | 🟢 | 3.5 | ✅ DONE |
+| 3.18 | Add image attachment (camera + gallery) | 🟡 | 3.6 | ✅ DONE |
 
 ---
 

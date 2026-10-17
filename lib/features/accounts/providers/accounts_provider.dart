@@ -81,7 +81,7 @@ class AccountsNotifier extends Notifier<List<AccountModel>> {
     await _repository.updateAccount(updatedAccount);
   }
 
-  Future<void> updateBalance(String accountId, double delta) async {
+  void updateBalanceInMemory(String accountId, double delta) {
     state = [
       for (final account in state)
         if (account.id == accountId)
@@ -89,6 +89,10 @@ class AccountsNotifier extends Notifier<List<AccountModel>> {
         else
           account,
     ];
+  }
+
+  Future<void> updateBalance(String accountId, double delta) async {
+    updateBalanceInMemory(accountId, delta);
     await _repository.updateBalance(accountId, delta);
   }
 

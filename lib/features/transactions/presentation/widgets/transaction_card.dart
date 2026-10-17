@@ -148,24 +148,76 @@ class TransactionCard extends StatelessWidget {
       ),
     );
 
-    if (onDelete != null) {
+    if (onDelete != null || onTap != null) {
+      final accentColor = isDark ? StashColors.tealAccent : theme.colorScheme.primary;
+
       return Dismissible(
         key: ValueKey(transaction.id),
-        direction: DismissDirection.endToStart,
+        direction: (onDelete != null && onTap != null)
+            ? DismissDirection.horizontal
+            : (onDelete != null
+                ? DismissDirection.endToStart
+                : DismissDirection.startToEnd),
+        // Swipe Right Background (Edit)
         background: Container(
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.only(left: Spacing.xl),
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.edit_rounded, color: Colors.white, size: 22),
+              SizedBox(width: Spacing.sm),
+              Text(
+                'Edit',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Swipe Left Secondary Background (Delete)
+        secondaryBackground: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: Spacing.xl),
           decoration: BoxDecoration(
             color: SemanticColors.expense(isDark).withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(
-            Icons.delete_outline_rounded,
-            color: Colors.white,
-            size: 26,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              SizedBox(width: Spacing.sm),
+              Icon(Icons.delete_outline_rounded, color: Colors.white, size: 24),
+            ],
           ),
         ),
-        onDismissed: (_) => onDelete!(),
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.startToEnd) {
+            onTap?.call();
+            return false; // Do not dismiss card from tree
+          }
+          return true; // Dismiss card on delete
+        },
+        onDismissed: (direction) {
+          if (direction == DismissDirection.endToStart) {
+            onDelete?.call();
+          }
+        },
         child: cardContent,
       );
     }

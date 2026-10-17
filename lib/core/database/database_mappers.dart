@@ -60,6 +60,7 @@ class DatabaseMappers {
       destinationAccountName: row.destinationAccountName,
       date: row.date,
       note: row.note,
+      receiptImagePath: row.receiptImagePath,
     );
   }
 
@@ -79,6 +80,7 @@ class DatabaseMappers {
       destinationAccountName: Value(tx.destinationAccountName),
       date: tx.date,
       note: Value(tx.note),
+      receiptImagePath: Value(tx.receiptImagePath),
     );
   }
 
