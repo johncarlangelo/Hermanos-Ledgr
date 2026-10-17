@@ -57,13 +57,13 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 2.1 | Create `AccountEntity` and `AccountRepository` (abstract) | 🟢 | 1.1 | ⬜ TODO |
-| 2.2 | Implement `AccountRepositoryImpl` with Drift DAO | 🟡 | 2.1, 1.4 | ⬜ TODO |
-| 2.3 | Create `accountProvider` (Riverpod) | 🟢 | 2.2 | ⬜ TODO |
-| 2.4 | Build account list screen | 🟡 | 2.3 | ⬜ TODO |
-| 2.5 | Build account creation/edit form | 🟡 | 2.4 | ⬜ TODO |
-| 2.6 | Add bank/e-wallet templates (BDO, BPI, GCash, Maya, etc.) | 🟢 | 2.5 | ⬜ TODO |
-| 2.7 | Build account detail screen (transaction history for one account) | 🟡 | 2.4, 3.4 | ⬜ TODO |
+| 2.1 | Create `AccountEntity` and `AccountRepository` (abstract) | 🟢 | 1.1 | ✅ DONE |
+| 2.2 | Implement `AccountRepositoryImpl` with Drift DAO | 🟡 | 2.1, 1.4 | ✅ DONE |
+| 2.3 | Create `accountProvider` (Riverpod) | 🟢 | 2.2 | ✅ DONE |
+| 2.4 | Build account list screen | 🟡 | 2.3 | ✅ DONE |
+| 2.5 | Build account creation/edit form | 🟡 | 2.4 | ✅ DONE |
+| 2.6 | Add bank/e-wallet templates (BDO, BPI, GCash, Maya, etc.) | 🟢 | 2.5 | ✅ DONE |
+| 2.7 | Build account detail screen (transaction history for one account) | 🟡 | 2.4, 3.4 | ✅ DONE |
 
 ---
 

@@ -21,6 +21,7 @@ import 'package:hermanos_ledgr/features/settings/presentation/widgets/stash_swit
 import 'package:hermanos_ledgr/features/settings/providers/settings_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/profile_avatar.dart';
 import 'package:hermanos_ledgr/shared/widgets/theme_selection_sheet.dart';
 import 'package:hermanos_ledgr/shared/widgets/version_pill.dart';
 
@@ -50,7 +51,9 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final userName = ref.watch(onboardingProvider).userName;
+    final onboardingState = ref.watch(onboardingProvider);
+    final userName = onboardingState.userName;
+    final profilePic = onboardingState.profilePicBase64;
     final currentTheme = ref.watch(themeProvider);
     final userPrefs = ref.watch(userPreferencesProvider);
     final accounts = ref.watch(accountsProvider);
@@ -89,6 +92,7 @@ class SettingsScreen extends ConsumerWidget {
             theme: theme,
             isDark: isDark,
             userName: userName,
+            profilePic: profilePic,
             accountsCount: accounts.length,
             transactionsCount: transactions.length,
           ),
@@ -265,80 +269,91 @@ class SettingsScreen extends ConsumerWidget {
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.md,
-            vertical: Spacing.sm + 2,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: account.color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+        InkWell(
+          onTap: () => context.push('/accounts/${account.id}'),
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.md,
+              vertical: Spacing.sm + 2,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: account.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    account.icon,
+                    size: 20,
+                    color: account.color,
+                  ),
                 ),
-                child: Icon(
-                  account.icon,
-                  size: 20,
-                  color: account.color,
+                const SizedBox(width: Spacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        account.name,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${account.institution} • ${account.typeLabel}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      account.name,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${account.institution} • ${account.typeLabel}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 11.5,
+                      CurrencyFormatter.format(account.balance),
+                      style: moneyStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: account.balance < 0
+                            ? dangerColor
+                            : theme.colorScheme.onSurface,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    CurrencyFormatter.format(account.balance),
-                    style: moneyStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: account.balance < 0
-                          ? dangerColor
-                          : theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: Spacing.xs),
-              IconButton(
-                icon: Icon(
-                  Icons.delete_outline_rounded,
-                  size: 20,
-                  color: accountsCount > 1
-                      ? dangerColor
-                      : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                const SizedBox(width: Spacing.xs),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 20),
+                  tooltip: 'Edit ${account.name}',
+                  onPressed: () {
+                    AddAccountSheet.edit(context, account);
+                  },
                 ),
-                tooltip: accountsCount > 1
-                    ? 'Delete ${account.name}'
-                    : 'Cannot delete the only remaining account',
-                onPressed: () {
-                  DeleteAccountSheet.show(context, account);
-                },
-              ),
-            ],
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: accountsCount > 1
+                        ? dangerColor
+                        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                  ),
+                  tooltip: accountsCount > 1
+                      ? 'Delete ${account.name}'
+                      : 'Cannot delete the only remaining account',
+                  onPressed: () {
+                    DeleteAccountSheet.show(context, account);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
         if (showDivider)
@@ -358,53 +373,22 @@ class SettingsScreen extends ConsumerWidget {
     required ThemeData theme,
     required bool isDark,
     required String userName,
+    String? profilePic,
     required int accountsCount,
     required int transactionsCount,
   }) {
-    final initials = userName.trim().isNotEmpty
-        ? userName
-            .trim()
-            .split(' ')
-            .where((part) => part.isNotEmpty)
-            .map((part) => part[0].toUpperCase())
-            .take(2)
-            .join()
-        : 'HL';
-
     return M3Card(
       padding: const EdgeInsets.all(Spacing.lg),
       child: Column(
         children: [
           Row(
             children: [
-              // Avatar circle with subtle teal ring
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDark
-                      ? StashColors.raised
-                      : theme.colorScheme.primaryContainer,
-                  border: Border.all(
-                    color: isDark
-                        ? StashColors.tealAccent
-                        : theme.colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: isDark
-                          ? StashColors.tealAccent
-                          : theme.colorScheme.primary,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
+              ProfileAvatar(
+                size: 54,
+                userName: userName,
+                profilePicBase64: profilePic,
+                showEditBadge: true,
+                onTap: () => ProfileEditSheet.show(context),
               ),
               const SizedBox(width: Spacing.md),
               Expanded(

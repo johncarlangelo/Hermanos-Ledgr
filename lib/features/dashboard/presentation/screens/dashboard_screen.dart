@@ -15,6 +15,7 @@ import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/hero_amount_display.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/profile_avatar.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -59,21 +60,37 @@ class DashboardScreen extends ConsumerWidget {
               // Header Greeting & Date
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '$greeting, $userName',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$greeting, $userName',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Personal Ledger',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Personal Ledger',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                    const SizedBox(width: Spacing.md),
+                    ProfileAvatar(
+                      size: 44,
+                      userName: userName,
+                      profilePicBase64: ref.watch(onboardingProvider).profilePicBase64,
+                      onTap: () => context.push('/settings'),
                     ),
                   ],
                 ),
@@ -202,10 +219,25 @@ class DashboardScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Accounts & Wallets',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+                    InkWell(
+                      onTap: () => context.push('/accounts'),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Accounts & Wallets',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 20,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ],
                       ),
                     ),
                     Row(
@@ -269,10 +301,7 @@ class DashboardScreen extends ConsumerWidget {
                     return AccountCard(
                       account: accounts[index],
                       onTap: () {
-                        ref
-                            .read(transactionAccountFilterProvider.notifier)
-                            .setFilter(accounts[index].id);
-                        context.go('/transactions');
+                        context.push('/accounts/${accounts[index].id}');
                       },
                     );
                   },

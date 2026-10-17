@@ -6,14 +6,19 @@ import 'package:hermanos_ledgr/core/constants/app_constants.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/card_brand.dart';
 import 'package:hermanos_ledgr/features/accounts/presentation/widgets/personalized_card.dart';
-import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
-/// Custom bottom sheet for adding a new bank, e-wallet, or international account with live card preview.
+/// Custom bottom sheet for adding or editing a bank, e-wallet, or cash account with live card preview.
 class AddAccountSheet extends ConsumerStatefulWidget {
-  const AddAccountSheet({super.key});
+  final AccountModel? initialAccount;
 
-  static Future<void> show(BuildContext context) {
+  const AddAccountSheet({
+    super.key,
+    this.initialAccount,
+  });
+
+  static Future<void> show(BuildContext context, {AccountModel? account}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -21,8 +26,12 @@ class AddAccountSheet extends ConsumerStatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => const AddAccountSheet(),
+      builder: (_) => AddAccountSheet(initialAccount: account),
     );
+  }
+
+  static Future<void> edit(BuildContext context, AccountModel account) {
+    return show(context, account: account);
   }
 
   @override
@@ -30,13 +39,22 @@ class AddAccountSheet extends ConsumerStatefulWidget {
 }
 
 class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
-  final _nameController = TextEditingController();
-  final _balanceController = TextEditingController(text: '0.00');
-  AccountType _selectedType = AccountType.bank;
+  late final TextEditingController _nameController;
+  late final TextEditingController _balanceController;
+  late AccountType _selectedType;
+
+  bool get isEditing => widget.initialAccount != null;
 
   @override
   void initState() {
     super.initState();
+    final acc = widget.initialAccount;
+    _nameController = TextEditingController(text: acc?.name ?? '');
+    _balanceController = TextEditingController(
+      text: acc != null ? acc.balance.toStringAsFixed(2) : '0.00',
+    );
+    _selectedType = acc?.type ?? AccountType.bank;
+
     _nameController.addListener(_onTextChanged);
     _balanceController.addListener(_onTextChanged);
   }
@@ -81,24 +99,43 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
             AccountType.creditCard => const Color(0xFFE53935),
           };
 
-    final newAccount = AccountModel(
-      id: 'acc_${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
-      type: _selectedType,
-      balance: balance,
-      icon: icon,
-      color: color,
-      institution: name,
-      monthlyChange: 0.0,
-    );
+    if (isEditing) {
+      final updatedAccount = widget.initialAccount!.copyWith(
+        name: name,
+        type: _selectedType,
+        balance: balance,
+        icon: icon,
+        color: color,
+        institution: name,
+      );
 
-    ref.read(accountsProvider.notifier).addAccount(newAccount);
-    Navigator.of(context).pop();
+      ref.read(accountsProvider.notifier).updateAccount(updatedAccount);
+      Navigator.of(context).pop();
 
-    UndoSnackbar.success(
-      context,
-      message: 'Added $name to your ledger',
-    );
+      UndoSnackbar.success(
+        context,
+        message: 'Updated $name',
+      );
+    } else {
+      final newAccount = AccountModel(
+        id: 'acc_${DateTime.now().millisecondsSinceEpoch}',
+        name: name,
+        type: _selectedType,
+        balance: balance,
+        icon: icon,
+        color: color,
+        institution: name,
+        monthlyChange: 0.0,
+      );
+
+      ref.read(accountsProvider.notifier).addAccount(newAccount);
+      Navigator.of(context).pop();
+
+      UndoSnackbar.success(
+        context,
+        message: 'Added $name to your ledger',
+      );
+    }
   }
 
   @override
@@ -106,7 +143,8 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
     final theme = Theme.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    final name = _nameController.text.trim().isEmpty ? 'New Account' : _nameController.text.trim();
+    final defaultPlaceholder = isEditing ? (widget.initialAccount?.name ?? 'Account') : 'New Account';
+    final name = _nameController.text.trim().isEmpty ? defaultPlaceholder : _nameController.text.trim();
     final balance = double.tryParse(_balanceController.text.replaceAll(',', '').trim()) ?? 0.0;
     final brand = CardBrand.detect(name);
 
@@ -125,7 +163,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
     };
 
     final previewAccount = AccountModel(
-      id: 'preview',
+      id: widget.initialAccount?.id ?? 'preview',
       name: name,
       type: _selectedType,
       balance: balance,
@@ -164,14 +202,14 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
-                          Icons.add_card_rounded,
+                          isEditing ? Icons.edit_rounded : Icons.add_card_rounded,
                           size: 20,
                           color: theme.colorScheme.primary,
                         ),
                       ),
                       const SizedBox(width: Spacing.md),
                       Text(
-                        'Add Account / Wallet',
+                        isEditing ? 'Edit Account' : 'Add Account / Wallet',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -223,6 +261,13 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                     _buildPresetChip('BPI', AccountType.bank),
                     _buildPresetChip('UnionBank', AccountType.bank),
                     _buildPresetChip('GoTyme', AccountType.bank),
+                    _buildPresetChip('Metrobank', AccountType.bank),
+                    _buildPresetChip('Security Bank', AccountType.bank),
+                    _buildPresetChip('RCBC', AccountType.bank),
+                    _buildPresetChip('China Bank', AccountType.bank),
+                    _buildPresetChip('LandBank', AccountType.bank),
+                    _buildPresetChip('PSBank', AccountType.bank),
+                    _buildPresetChip('UnoBank', AccountType.bank),
                     _buildPresetChip('Wise', AccountType.eWallet),
                     _buildPresetChip('PayPal', AccountType.eWallet),
                     _buildPresetChip('Venmo', AccountType.eWallet),
@@ -276,7 +321,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                   ),
                   const SizedBox(width: Spacing.xs),
                   _buildTypeOption(
-                    label: 'Credit',
+                    label: 'Credit Card',
                     icon: Icons.credit_card_rounded,
                     type: AccountType.creditCard,
                     theme: theme,
@@ -285,17 +330,13 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
               ),
               const SizedBox(height: Spacing.md),
 
-              // Initial Balance
+              // Initial Balance Input
               TextField(
                 controller: _balanceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                style: moneyStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface,
-                ),
                 decoration: InputDecoration(
-                  labelText: 'Starting Balance',
+                  labelText: isEditing ? 'Current Balance' : 'Initial Balance',
+                  hintText: '0.00',
                   prefixText: '${AppConstants.currencySymbol} ',
                   prefixStyle: moneyStyle(
                     fontSize: 18,
@@ -319,7 +360,7 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
                   Expanded(
                     child: FilledButton(
                       onPressed: _saveAccount,
-                      child: const Text('Save Account'),
+                      child: Text(isEditing ? 'Save Changes' : 'Save Account'),
                     ),
                   ),
                 ],

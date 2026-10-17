@@ -3,11 +3,13 @@ import 'package:hermanos_ledgr/core/providers/shared_preferences_provider.dart';
 
 const _kOnboardingKey = 'has_completed_onboarding';
 const _kUserNameKey = 'user_display_name';
+const _kProfilePicKey = 'user_profile_pic_base64';
 
 class OnboardingState {
   final bool isCompleted;
   final bool isLoading;
   final String userName;
+  final String? profilePicBase64;
   final List<String> selectedStarterAccounts;
   final String customAccountName;
   final String customAccountType;
@@ -16,6 +18,7 @@ class OnboardingState {
     required this.isCompleted,
     this.isLoading = false,
     this.userName = 'John C.',
+    this.profilePicBase64,
     this.selectedStarterAccounts = const ['GCash', 'Cash Wallet', 'BDO Savings'],
     this.customAccountName = '',
     this.customAccountType = 'bank',
@@ -25,6 +28,8 @@ class OnboardingState {
     bool? isCompleted,
     bool? isLoading,
     String? userName,
+    String? profilePicBase64,
+    bool clearProfilePic = false,
     List<String>? selectedStarterAccounts,
     String? customAccountName,
     String? customAccountType,
@@ -33,6 +38,7 @@ class OnboardingState {
       isCompleted: isCompleted ?? this.isCompleted,
       isLoading: isLoading ?? this.isLoading,
       userName: userName ?? this.userName,
+      profilePicBase64: clearProfilePic ? null : (profilePicBase64 ?? this.profilePicBase64),
       selectedStarterAccounts:
           selectedStarterAccounts ?? this.selectedStarterAccounts,
       customAccountName: customAccountName ?? this.customAccountName,
@@ -47,11 +53,33 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     final prefs = ref.watch(sharedPreferencesProvider);
     final isCompleted = prefs.getBool(_kOnboardingKey) ?? false;
     final userName = prefs.getString(_kUserNameKey) ?? 'John C.';
+    final profilePic = prefs.getString(_kProfilePicKey);
     return OnboardingState(
       isCompleted: isCompleted,
       isLoading: false,
       userName: userName,
+      profilePicBase64: profilePic,
     );
+  }
+
+  Future<void> setProfilePic(String? base64String) async {
+    if (base64String == null || base64String.isEmpty) {
+      state = state.copyWith(clearProfilePic: true);
+    } else {
+      state = state.copyWith(profilePicBase64: base64String);
+    }
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      if (base64String == null || base64String.isEmpty) {
+        await prefs.remove(_kProfilePicKey);
+      } else {
+        await prefs.setString(_kProfilePicKey, base64String);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> removeProfilePic() async {
+    await setProfilePic(null);
   }
 
   Future<void> setUserName(String name) async {
@@ -93,10 +121,11 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   Future<void> resetOnboarding() async {
-    state = state.copyWith(isCompleted: false);
+    state = state.copyWith(isCompleted: false, clearProfilePic: true);
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       await prefs.setBool(_kOnboardingKey, false);
+      await prefs.remove(_kProfilePicKey);
     } catch (_) {}
   }
 }

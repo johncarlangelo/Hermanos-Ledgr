@@ -16,17 +16,20 @@ import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 class AddTransactionSheet extends ConsumerStatefulWidget {
   final TransactionType initialType;
   final TransactionModel? existingTransaction;
+  final AccountModel? initialAccount;
 
   const AddTransactionSheet({
     super.key,
     this.initialType = TransactionType.expense,
     this.existingTransaction,
+    this.initialAccount,
   });
 
   static Future<void> show(
     BuildContext context, {
     TransactionType initialType = TransactionType.expense,
     TransactionModel? existingTransaction,
+    AccountModel? initialAccount,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -36,6 +39,7 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
       builder: (_) => AddTransactionSheet(
         initialType: initialType,
         existingTransaction: existingTransaction,
+        initialAccount: initialAccount,
       ),
     );
   }
@@ -76,6 +80,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         (c) => c.isExpense == (_type == TransactionType.expense),
         orElse: () => CategoryDefaults.defaultCategories.first,
       );
+    }
+    if (widget.initialAccount != null) {
+      _selectedAccount = widget.initialAccount;
     }
   }
 

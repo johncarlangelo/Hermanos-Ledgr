@@ -8,8 +8,8 @@
 
 ## Current Sprint
 
-**Phase:** Phase 1: Database Foundation Complete
-**Focus:** Drift SQLite Tables, DAOs, Value Objects & CRUD Tests
+**Phase:** Phase 2: Account Management Complete · Ready for Phase 3
+**Focus:** Drift Accounts Repo, Accounts Screen, Card Presets & 1:1 Photo Cropper
 
 ---
 
@@ -20,7 +20,7 @@
 | **Planning** | 🟢 Complete | ██████████ 100% | All 8 MD docs created, M3 design skill configured |
 | **Phase 0: Scaffolding** | 🟢 Complete | ██████████ 100% | Flutter app initialized, M3 tokens, Onboarding, 5 interactive tabs |
 | **Phase 1: Database** | 🟢 Complete | ██████████ 100% | Drift SQLite tables, 5 DAOs, Money & DateRange value objects, CRUD tests |
-| **Phase 2: Accounts** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
+| **Phase 2: Accounts** | 🟢 Complete | ██████████ 100% | Persistent Drift repo, account CRUD, 31+ card presets, detail ledger, profile cropper |
 | **Phase 3: Transactions** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 4: Dashboard** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 5: Budgets** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |

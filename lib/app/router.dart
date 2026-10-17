@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/shell_scaffold.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
+import 'package:hermanos_ledgr/features/accounts/presentation/screens/accounts_screen.dart';
+import 'package:hermanos_ledgr/features/accounts/presentation/screens/account_detail_screen.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/screens/budget_screen.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -56,6 +58,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/accounts',
+        builder: (context, state) => const AccountsScreen(),
+      ),
+      GoRoute(
+        path: '/accounts/:id',
+        builder: (context, state) => AccountDetailScreen(
+          accountId: state.pathParameters['id']!,
+        ),
       ),
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),
