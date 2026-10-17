@@ -8,6 +8,7 @@ import 'package:hermanos_ledgr/features/accounts/presentation/screens/account_de
 import 'package:hermanos_ledgr/features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/screens/budget_screen.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:hermanos_ledgr/features/goals/presentation/screens/goals_screen.dart';
 import 'package:hermanos_ledgr/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/screens/settings_screen.dart';
 import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
@@ -68,6 +69,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => AccountDetailScreen(
           accountId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/goals',
+        builder: (context, state) => const GoalsScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),

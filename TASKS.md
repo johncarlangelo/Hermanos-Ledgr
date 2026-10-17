@@ -129,14 +129,14 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 6.1 | Create `GoalEntity` and `GoalRepository` | 🟢 | 1.1 | ⬜ TODO |
-| 6.2 | Implement `GoalRepositoryImpl` | 🟡 | 6.1 | ⬜ TODO |
-| 6.3 | Create goal providers | 🟢 | 6.2 | ⬜ TODO |
-| 6.4 | Build goals screen with goal cards | 🟡 | 6.3 | ⬜ TODO |
-| 6.5 | Build goal progress ring widget | 🟡 | 6.4 | ⬜ TODO |
-| 6.6 | Build goal creation/edit form | 🟡 | 6.3 | ⬜ TODO |
-| 6.7 | Implement contribution logging | 🟡 | 6.3 | ⬜ TODO |
-| 6.8 | Calculate and display monthly contribution needed | 🟢 | 6.4 | ⬜ TODO |
+| 6.1 | Create `GoalEntity` and `GoalRepository` | 🟢 | 1.1 | ✅ DONE |
+| 6.2 | Implement `GoalRepositoryImpl` | 🟡 | 6.1 | ✅ DONE |
+| 6.3 | Create goal providers | 🟢 | 6.2 | ✅ DONE |
+| 6.4 | Build goals screen with goal cards | 🟡 | 6.3 | ✅ DONE |
+| 6.5 | Build goal progress ring widget | 🟡 | 6.4 | ✅ DONE |
+| 6.6 | Build goal creation/edit form | 🟡 | 6.3 | ✅ DONE |
+| 6.7 | Implement contribution logging | 🟡 | 6.3 | ✅ DONE |
+| 6.8 | Calculate and display monthly contribution needed | 🟢 | 6.4 | ✅ DONE |
 
 ---
 
@@ -286,7 +286,7 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 3. Transaction Management | 18 | 18 / 18 | ~15 hours | ✅ Complete (100%) |
 | 4. Dashboard | 7 | 7 / 7 | ~6 hours | ✅ Complete (100%) |
 | 5. Budget System | 8 | 4 / 8 | ~8 hours | 🟡 In Progress (50%) |
-| 6. Savings Goals | 8 | 0 / 8 | ~6 hours | ⬜ Pending (0%) |
+| 6. Savings Goals | 8 | 8 / 8 | ~6 hours | ✅ Complete (100%) |
 | 7. Debt & Receivables | 8 | 0 / 8 | ~7 hours | ⬜ Pending (0%) |
 | 8. Recurring & Forecast | 9 | 0 / 9 | ~10 hours | ⬜ Pending (0%) |
 | 9. AI Assistant | 17 | 3 / 17 | ~18 hours | 🟡 UI Mockup Built (18%) |
@@ -294,5 +294,5 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 11. Backup & Data | 7 | 4 / 7 | ~8 hours | 🟡 In Progress (57%) |
 | 12. Settings & Profiles | 8 | 5 / 8 | ~6 hours | 🟡 Mostly Built (63%) |
 | 13. Polish & Optimization | 8 | 1 / 8 | ~7 hours | 🟡 Ongoing (13%) |
-| **Total** | **130** | **68 / 130** | **~114 hours** | **52.3% Completed** |
+| **Total** | **130** | **76 / 130** | **~114 hours** | **58.5% Completed** |
 | *Standalone: OTA Auto-Updater* | *9* | *0 / 9* | *~8 hours* | *⬜ Planned* |

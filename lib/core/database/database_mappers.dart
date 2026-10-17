@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hermanos_ledgr/core/database/app_database.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/budget/domain/budget_model.dart';
+import 'package:hermanos_ledgr/features/goals/domain/goal_model.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 
 /// Extension and mapper utilities converting between Drift SQLite tables
@@ -98,6 +99,38 @@ class DatabaseMappers {
       categoryColor: color,
       limitAmount: row.monthlyLimit,
       spentAmount: spentAmount,
+    );
+  }
+
+  static GoalModel goalFromDrift(GoalsTableData row) {
+    return GoalModel(
+      id: row.id,
+      name: row.name,
+      targetAmount: row.targetAmount,
+      currentAmount: row.currentAmount,
+      targetDate: row.targetDate,
+      // ignore: non_const_argument_for_const_parameter
+      icon: row.iconCode != null
+          // ignore: non_const_argument_for_const_parameter
+          ? IconData(row.iconCode!, fontFamily: 'MaterialIcons')
+          : Icons.savings_rounded,
+      color: row.colorValue != null
+          ? Color(row.colorValue!)
+          : const Color(0xFF00897B),
+      isCompleted: row.isCompleted,
+    );
+  }
+
+  static GoalsTableCompanion goalToCompanion(GoalModel goal) {
+    return GoalsTableCompanion.insert(
+      id: goal.id,
+      name: goal.name,
+      targetAmount: goal.targetAmount,
+      currentAmount: Value(goal.currentAmount),
+      targetDate: Value(goal.targetDate),
+      iconCode: Value(goal.icon.codePoint),
+      colorValue: Value(goal.color.toARGB32()),
+      isCompleted: Value(goal.isCompleted),
     );
   }
 }

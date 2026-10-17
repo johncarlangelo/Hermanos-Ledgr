@@ -2,11 +2,17 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/widgets/budget_progress_card.dart';
 import 'package:hermanos_ledgr/features/budget/providers/mock_budgets_provider.dart';
+import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_contribution_sheet.dart';
+import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_goal_sheet.dart';
+import 'package:hermanos_ledgr/features/goals/presentation/widgets/delete_goal_sheet.dart';
+import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_card.dart';
+import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
@@ -32,6 +38,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
     final overallPercent = totalLimit > 0
         ? ((totalSpent / totalLimit) * 100).toInt()
         : 0;
+
+    final goals = ref.watch(goalsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -259,62 +267,118 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
 
           const SizedBox(height: Spacing.xl),
 
-          // 4. Savings Goals Teaser
-          M3Card(
-            padding: const EdgeInsets.all(Spacing.md),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(Spacing.sm),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.flag_outlined,
-                    color: theme.colorScheme.primary,
-                  ),
+          // 4. Savings Goals Section (Phase 6)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                goals.isNotEmpty
+                    ? 'SAVINGS GOALS (${goals.length})'
+                    : 'SAVINGS GOALS',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                  color: theme.colorScheme.primary,
                 ),
-                const SizedBox(width: Spacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Savings Goals',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Set targets and track contribution progress (Roadmap Phase 6)',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontSize: 11.5,
-                        ),
-                      ),
-                    ],
+              ),
+              if (goals.isNotEmpty)
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
                   ),
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 15),
+                  label: const Text('View All'),
+                  onPressed: () => context.push('/goals'),
+                )
+              else
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                  label: const Text('Add Goal'),
+                  onPressed: () => AddGoalSheet.show(context),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'Soon',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurfaceVariant,
+            ],
+          ),
+          const SizedBox(height: Spacing.xs),
+
+          if (goals.isEmpty)
+            M3Card(
+              padding: const EdgeInsets.all(Spacing.md),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.savings_rounded,
+                      color: theme.colorScheme.primary,
+                      size: 22,
                     ),
                   ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Track Savings Milestones',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Set targets for emergency funds, travel, or gear with monthly pacing.',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  FilledButton.tonal(
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                    ),
+                    onPressed: () => AddGoalSheet.show(context),
+                    child: const Text('New Goal'),
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            for (final goal in goals.take(2)) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: Spacing.sm),
+                child: GoalCard(
+                  goal: goal,
+                  onContribute: () => AddContributionSheet.show(context, goal),
+                  onEdit: () => AddGoalSheet.edit(context, goal),
+                  onDelete: () => DeleteGoalSheet.show(context, goal),
                 ),
-              ],
-            ),
-          ),
+              ),
+            ],
+            if (goals.length > 2) ...[
+              Center(
+                child: TextButton(
+                  onPressed: () => context.push('/goals'),
+                  child: Text('View ${goals.length - 2} more goals...'),
+                ),
+              ),
+            ],
+          ],
           const SizedBox(height: Spacing.xxl),
         ],
       ),
