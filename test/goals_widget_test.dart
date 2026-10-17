@@ -146,15 +146,37 @@ void main() {
     expect(find.text('Piggy Bank'), findsOneWidget); // Default selected icon label
     expect(find.byType(GridView), findsOneWidget);
 
-    // Verify presence of travel icon in the grid
+    // Verify presence of car icon in the initial grid view
+    expect(find.byIcon(Icons.directions_car_rounded), findsOneWidget);
+
+    // Tap car icon
+    await tester.tap(find.byIcon(Icons.directions_car_rounded));
+    await tester.pump();
+    expect(find.text('Car & Vehicle'), findsOneWidget);
+
+    // Tap 'Travel' category chip
+    await tester.tap(find.text('Travel'));
+    await tester.pumpAndSettle();
+
+    // Verify flight icon is visible in Travel category
     expect(find.byIcon(Icons.flight_takeoff_rounded), findsOneWidget);
 
-    // Tap travel icon
+    // Tap flight icon
     await tester.tap(find.byIcon(Icons.flight_takeoff_rounded));
     await tester.pump();
-
-    // Verify selected label updated to 'Travel & Flights'
     expect(find.text('Travel & Flights'), findsOneWidget);
+
+    // Tap 'Housing' category chip
+    await tester.tap(find.text('Housing'));
+    await tester.pumpAndSettle();
+
+    // Verify apartment icon is visible in Housing category
+    expect(find.byIcon(Icons.apartment_rounded), findsOneWidget);
+
+    // Tap apartment icon
+    await tester.tap(find.byIcon(Icons.apartment_rounded));
+    await tester.pump();
+    expect(find.text('Apartment & Condo'), findsOneWidget);
   });
 }
 

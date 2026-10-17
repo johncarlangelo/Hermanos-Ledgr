@@ -11,57 +11,112 @@ import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_progress
 import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
-/// Available icons for savings goals (categorized & curated).
+/// Available categories for goal icon filtering.
+const _kGoalCategories = [
+  'All',
+  'Vehicles',
+  'Housing',
+  'Tech',
+  'Travel',
+  'Finance',
+  'Lifestyle',
+];
+
+/// Available icons for savings goals with categories.
 const _kGoalIcons = [
-  // Savings, Banking & Safety
-  (Icons.savings_rounded, 'Piggy Bank'),
-  (Icons.account_balance_rounded, 'Bank & Vault'),
-  (Icons.shield_rounded, 'Emergency Fund'),
-  (Icons.lock_rounded, 'Security & Safe'),
-  (Icons.trending_up_rounded, 'Investing'),
-  (Icons.attach_money_rounded, 'Cash Reserve'),
-  (Icons.credit_card_rounded, 'Debt Payoff'),
+  // ─── Vehicles & Transportation (15 icons) ───
+  (Icons.directions_car_rounded, 'Car & Vehicle', 'Vehicles'),
+  (Icons.time_to_leave_rounded, 'Automobile', 'Vehicles'),
+  (Icons.electric_car_rounded, 'Electric Car / EV', 'Vehicles'),
+  (Icons.car_rental_rounded, 'Sedan / Rental', 'Vehicles'),
+  (Icons.airport_shuttle_rounded, 'Van & Shuttle', 'Vehicles'),
+  (Icons.two_wheeler_rounded, 'Motorcycle & Scooter', 'Vehicles'),
+  (Icons.pedal_bike_rounded, 'Bicycle & Cycling', 'Vehicles'),
+  (Icons.electric_bike_rounded, 'E-Bike', 'Vehicles'),
+  (Icons.electric_scooter_rounded, 'E-Scooter', 'Vehicles'),
+  (Icons.car_repair_rounded, 'Car Repair & Service', 'Vehicles'),
+  (Icons.local_gas_station_rounded, 'Fuel & Gas Fund', 'Vehicles'),
+  (Icons.build_rounded, 'Auto Maintenance', 'Vehicles'),
+  (Icons.speed_rounded, 'Performance & Tuning', 'Vehicles'),
+  (Icons.commute_rounded, 'Daily Commute', 'Vehicles'),
+  (Icons.local_taxi_rounded, 'Taxi & Rideshare', 'Vehicles'),
 
-  // Travel & Adventure
-  (Icons.flight_takeoff_rounded, 'Travel & Flights'),
-  (Icons.beach_access_rounded, 'Vacation & Beach'),
-  (Icons.luggage_rounded, 'Trip & Luggage'),
-  (Icons.explore_rounded, 'Adventure & Camping'),
+  // ─── Housing, Apartment & Moving (17 icons) ───
+  (Icons.apartment_rounded, 'Apartment & Condo', 'Housing'),
+  (Icons.home_rounded, 'House & Property', 'Housing'),
+  (Icons.location_city_rounded, 'City High-Rise', 'Housing'),
+  (Icons.domain_rounded, 'Real Estate', 'Housing'),
+  (Icons.cottage_rounded, 'Cottage / Vacation Home', 'Housing'),
+  (Icons.key_rounded, 'New Keys / Move-In', 'Housing'),
+  (Icons.door_front_door_rounded, 'Front Door / Entry', 'Housing'),
+  (Icons.local_shipping_rounded, 'Moving & Relocation', 'Housing'),
+  (Icons.chair_rounded, 'Furniture & Decor', 'Housing'),
+  (Icons.weekend_rounded, 'Living Room Couch', 'Housing'),
+  (Icons.bed_rounded, 'Bedroom & Mattress', 'Housing'),
+  (Icons.kitchen_rounded, 'Kitchen Appliances', 'Housing'),
+  (Icons.construction_rounded, 'Renovation & Hardware', 'Housing'),
+  (Icons.roofing_rounded, 'Roof & Structure', 'Housing'),
+  (Icons.yard_rounded, 'Garden & Patio', 'Housing'),
+  (Icons.water_damage_rounded, 'Plumbing & Repairs', 'Housing'),
+  (Icons.power_rounded, 'Power & Utilities', 'Housing'),
 
-  // Mobility & Vehicles
-  (Icons.directions_car_rounded, 'Car & Vehicle'),
-  (Icons.two_wheeler_rounded, 'Motorcycle & Scooter'),
-  (Icons.pedal_bike_rounded, 'Bicycle & Cycling'),
+  // ─── Tech, Electronics & Studio (13 icons) ───
+  (Icons.smartphone_rounded, 'Smartphone Upgrade', 'Tech'),
+  (Icons.laptop_mac_rounded, 'MacBook & Laptop', 'Tech'),
+  (Icons.desktop_windows_rounded, 'Desktop PC / Rig', 'Tech'),
+  (Icons.tablet_mac_rounded, 'Tablet & iPad', 'Tech'),
+  (Icons.sports_esports_rounded, 'Gaming & Console', 'Tech'),
+  (Icons.camera_alt_rounded, 'Camera & Photography', 'Tech'),
+  (Icons.videocam_rounded, 'Video & Content Gear', 'Tech'),
+  (Icons.headphones_rounded, 'Headphones & Audio', 'Tech'),
+  (Icons.tv_rounded, '4K TV & Home Theater', 'Tech'),
+  (Icons.speaker_rounded, 'Hi-Fi Speaker', 'Tech'),
+  (Icons.watch_rounded, 'Smartwatch & Wearable', 'Tech'),
+  (Icons.memory_rounded, 'GPU & Hardware', 'Tech'),
+  (Icons.wifi_rounded, 'Smart Home & Network', 'Tech'),
 
-  // Home & Property
-  (Icons.home_rounded, 'House & Property'),
-  (Icons.apartment_rounded, 'Condo & Apartment'),
-  (Icons.chair_rounded, 'Furniture & Decor'),
-  (Icons.construction_rounded, 'Renovation & Tools'),
+  // ─── Travel & Adventure (11 icons) ───
+  (Icons.flight_takeoff_rounded, 'Travel & Flights', 'Travel'),
+  (Icons.beach_access_rounded, 'Beach Vacation', 'Travel'),
+  (Icons.luggage_rounded, 'Trip & Luggage', 'Travel'),
+  (Icons.hotel_rounded, 'Hotel & Staycation', 'Travel'),
+  (Icons.explore_rounded, 'Adventure & Compass', 'Travel'),
+  (Icons.terrain_rounded, 'Mountain Hiking', 'Travel'),
+  (Icons.pool_rounded, 'Resort & Pool', 'Travel'),
+  (Icons.sailing_rounded, 'Cruise & Boat', 'Travel'),
+  (Icons.map_rounded, 'Roadtrip & Map', 'Travel'),
+  (Icons.camera_rounded, 'Travel Memories', 'Travel'),
+  (Icons.public_rounded, 'World Tour', 'Travel'),
 
-  // Tech, Electronics & Media
-  (Icons.smartphone_rounded, 'Smartphone Upgrade'),
-  (Icons.laptop_mac_rounded, 'Laptop & PC'),
-  (Icons.sports_esports_rounded, 'Gaming & Console'),
-  (Icons.camera_alt_rounded, 'Camera & Photo'),
-  (Icons.headphones_rounded, 'Audio & Music'),
-  (Icons.watch_rounded, 'Watch & Luxury'),
+  // ─── Savings & Finance (11 icons) ───
+  (Icons.savings_rounded, 'Piggy Bank', 'Finance'),
+  (Icons.account_balance_rounded, 'Bank & Vault', 'Finance'),
+  (Icons.shield_rounded, 'Emergency Fund', 'Finance'),
+  (Icons.lock_rounded, 'Security & Safe', 'Finance'),
+  (Icons.trending_up_rounded, 'Stock Market & Growth', 'Finance'),
+  (Icons.attach_money_rounded, 'Cash Reserve', 'Finance'),
+  (Icons.credit_card_rounded, 'Debt Freedom', 'Finance'),
+  (Icons.monetization_on_rounded, 'Gold & Coins', 'Finance'),
+  (Icons.receipt_long_rounded, 'Tax & Sinking Fund', 'Finance'),
+  (Icons.pie_chart_rounded, 'Portfolio', 'Finance'),
+  (Icons.balance_rounded, 'Net Worth Milestone', 'Finance'),
 
-  // Health, Fitness & Family
-  (Icons.favorite_rounded, 'Health & Medical'),
-  (Icons.fitness_center_rounded, 'Fitness & Gym'),
-  (Icons.pets_rounded, 'Pets & Veterinary'),
-  (Icons.child_care_rounded, 'Baby & Family'),
-  (Icons.school_rounded, 'Education & Tuition'),
-  (Icons.menu_book_rounded, 'Books & Learning'),
-
-  // Milestones, Lifestyle & Gifts
-  (Icons.celebration_rounded, 'Celebration & Party'),
-  (Icons.diamond_rounded, 'Jewelry & Wedding'),
-  (Icons.card_giftcard_rounded, 'Gifts & Presents'),
-  (Icons.shopping_bag_rounded, 'Shopping & Wardrobe'),
-  (Icons.palette_rounded, 'Art & Creative'),
-  (Icons.restaurant_rounded, 'Dining & Foodie'),
+  // ─── Life, Family & Celebrations (15 icons) ───
+  (Icons.celebration_rounded, 'Celebration & Party', 'Lifestyle'),
+  (Icons.diamond_rounded, 'Engagement & Wedding', 'Lifestyle'),
+  (Icons.favorite_rounded, 'Health & Medical', 'Lifestyle'),
+  (Icons.fitness_center_rounded, 'Fitness & Gym', 'Lifestyle'),
+  (Icons.pets_rounded, 'Pets & Veterinary', 'Lifestyle'),
+  (Icons.child_care_rounded, 'Baby & Nursery', 'Lifestyle'),
+  (Icons.school_rounded, 'Education & Tuition', 'Lifestyle'),
+  (Icons.menu_book_rounded, 'Books & Courses', 'Lifestyle'),
+  (Icons.card_giftcard_rounded, 'Gifts & Holidays', 'Lifestyle'),
+  (Icons.shopping_bag_rounded, 'Shopping & Wardrobe', 'Lifestyle'),
+  (Icons.palette_rounded, 'Art & Creativity', 'Lifestyle'),
+  (Icons.music_note_rounded, 'Music & Instrument', 'Lifestyle'),
+  (Icons.restaurant_rounded, 'Dining & Foodie', 'Lifestyle'),
+  (Icons.local_cafe_rounded, 'Coffee & Espresso', 'Lifestyle'),
+  (Icons.stars_rounded, 'Special Milestone', 'Lifestyle'),
 ];
 
 /// Curated Stash color palette for savings goals.
@@ -158,14 +213,21 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
     super.dispose();
   }
 
+  String _selectedCategory = 'All';
+
   double get _targetAmount => double.tryParse(_targetController.text) ?? 0.0;
   double get _currentAmount => double.tryParse(_currentController.text) ?? 0.0;
 
   String get _selectedIconLabel {
-    for (final (icon, label) in _kGoalIcons) {
+    for (final (icon, label, _) in _kGoalIcons) {
       if (icon == _selectedIcon) return label;
     }
     return 'Custom Icon';
+  }
+
+  List<(IconData, String, String)> get _filteredIcons {
+    if (_selectedCategory == 'All') return _kGoalIcons;
+    return _kGoalIcons.where((item) => item.$3 == _selectedCategory).toList();
   }
 
   void _saveGoal() {
@@ -615,6 +677,57 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
               ],
             ),
             const SizedBox(height: Spacing.xs),
+            // Category Filter Chips
+            SizedBox(
+              height: 32,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: _kGoalCategories.length,
+                separatorBuilder: (_, _) => const SizedBox(width: Spacing.xs),
+                itemBuilder: (ctx, i) {
+                  final cat = _kGoalCategories[i];
+                  final isCatSelected = _selectedCategory == cat;
+
+                  return InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedCategory = cat);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isCatSelected
+                            ? _selectedColor
+                            : (isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isCatSelected
+                              ? _selectedColor
+                              : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        cat,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontSize: 11,
+                          fontWeight: isCatSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isCatSelected
+                              ? Colors.white
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: Spacing.sm),
+
+            // Icon Picker Grid
             SizedBox(
               height: 112,
               child: GridView.builder(
@@ -626,9 +739,9 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
                   crossAxisSpacing: Spacing.sm,
                   childAspectRatio: 1.0,
                 ),
-                itemCount: _kGoalIcons.length,
+                itemCount: _filteredIcons.length,
                 itemBuilder: (ctx, i) {
-                  final (icon, tooltip) = _kGoalIcons[i];
+                  final (icon, tooltip, _) = _filteredIcons[i];
                   final isSelected = _selectedIcon == icon;
 
                   return Tooltip(
