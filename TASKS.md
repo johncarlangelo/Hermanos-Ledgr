@@ -116,11 +116,11 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 5.1 | Create `BudgetEntity` and `BudgetRepository` | 🟢 | 1.1 | ⬜ TODO |
 | 5.2 | Implement `BudgetRepositoryImpl` | 🟡 | 5.1, 3.2 | ⬜ TODO |
 | 5.3 | Create budget providers | 🟡 | 5.2 | ⬜ TODO |
-| 5.4 | Build budget overview screen | 🔴 | 5.3 | ⬜ TODO |
-| 5.5 | Build budget progress card widget | 🟡 | 5.4 | ⬜ TODO |
+| 5.4 | Build budget overview screen | 🔴 | 5.3 | ✅ DONE |
+| 5.5 | Build budget progress card widget | 🟡 | 5.4 | ✅ DONE |
 | 5.6 | Build budget creation/edit form | 🟡 | 5.3 | ⬜ TODO |
-| 5.7 | Build monthly spending chart | 🟡 | 5.3 | ⬜ TODO |
-| 5.8 | Implement overspend warnings (75%, 90%, 100%) | 🟢 | 5.5 | ⬜ TODO |
+| 5.7 | Build monthly spending chart | 🟡 | 5.3 | ✅ DONE |
+| 5.8 | Implement overspend warnings (75%, 90%, 100%) | 🟢 | 5.5 | ✅ DONE |
 
 ---
 
@@ -186,9 +186,9 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 9.6 | Build `NlpParser` — unified parser standardizing Tier 1 & Tier 2 outputs → `ParsedTransaction` | 🟡 | 9.1, 9.5 | ⬜ TODO |
 | 9.7 | Create hybrid AI providers (`ClassifierProvider`, `LlmProvider`, `ChatProvider`) | 🟡 | 9.2, 9.6 | ⬜ TODO |
 | 9.8 | Design and benchmark optimized system prompt for sub-1B model | 🟡 | 9.5 | ⬜ TODO |
-| 9.9 | Build chat screen UI (offline badge, message list, prompt chips, input bar) | 🔴 | 9.7 | ⬜ TODO |
-| 9.10 | Build chat bubble widget (user messages + assistant responses) | 🟡 | 9.9 | ⬜ TODO |
-| 9.11 | Build transaction action card (amount, category, account preview with confirm/edit/discard) | 🟡 | 9.9, 3.6 | ⬜ TODO |
+| 9.9 | Build chat screen UI (offline badge, message list, prompt chips, input bar) | 🔴 | 9.7 | ✅ DONE |
+| 9.10 | Build chat bubble widget (user messages + assistant responses) | 🟡 | 9.9 | ✅ DONE |
+| 9.11 | Build transaction action card (amount, category, account preview with confirm/edit/discard) | 🟡 | 9.9, 3.6 | ✅ DONE |
 | 9.12 | Implement confirm flow (action card → save transaction to Drift DB with 5s undo toast) | 🟡 | 9.11, 3.10 | ⬜ TODO |
 | 9.13 | Add voice input button (Android speech-to-text → hybrid pipeline) | 🟡 | 9.9 | ⬜ TODO |
 | 9.14 | Build model download dialog with progress indicator (for optional Tier 2 Sub-1B model) | 🟡 | 9.4 | ⬜ TODO |
@@ -218,12 +218,12 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
 | 11.1 | Build `BackupService` — serialize full database to JSON | 🔴 | 1.4 | ⬜ TODO |
-| 11.2 | Build `CsvExportService` — transactions to CSV | 🟡 | 3.2 | ⬜ TODO |
+| 11.2 | Build `CsvExportService` — transactions to CSV | 🟡 | 3.2 | ✅ DONE |
 | 11.3 | Implement auto-backup (daily, on app open) | 🟡 | 11.1 | ⬜ TODO |
-| 11.4 | Implement manual JSON export (via Share sheet) | 🟡 | 11.1 | ⬜ TODO |
-| 11.5 | Implement JSON import (validate + restore) | 🔴 | 11.1 | ⬜ TODO |
+| 11.4 | Implement manual JSON export (via Share sheet) | 🟡 | 11.1 | ✅ DONE |
+| 11.5 | Implement JSON import (validate + restore) | 🔴 | 11.1 | ✅ DONE |
 | 11.6 | Implement backup retention (keep last 7) | 🟢 | 11.3 | ⬜ TODO |
-| 11.7 | Build backup/restore UI in Settings | 🟡 | 11.1-11.5 | ⬜ TODO |
+| 11.7 | Build backup/restore UI in Settings | 🟡 | 11.1-11.5 | ✅ DONE |
 
 ---
 
@@ -232,14 +232,14 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 12.1 | Build settings screen layout | 🟡 | 0.6 | ⬜ TODO |
-| 12.2 | Theme toggle (light/dark/system) | 🟢 | 0.5 | ⬜ TODO |
-| 12.3 | AMOLED black mode toggle | 🟢 | 0.5 | ⬜ TODO |
-| 12.4 | Build profile manager screen | 🟡 | 1.5 | ⬜ TODO |
+| 12.1 | Build settings screen layout | 🟡 | 0.6 | ✅ DONE |
+| 12.2 | Theme toggle (light/dark/system) | 🟢 | 0.5 | ✅ DONE |
+| 12.3 | AMOLED black mode toggle | 🟢 | 0.5 | ✅ DONE |
+| 12.4 | Build profile manager screen | 🟡 | 1.5 | ✅ DONE |
 | 12.5 | Profile CRUD (create, switch, delete) | 🟡 | 12.4 | ⬜ TODO |
 | 12.6 | LLM model management UI (download, delete, switch model) | 🟡 | 9.2 | ⬜ TODO |
 | 12.7 | Quick notes screen | 🟡 | 1.4 | ⬜ TODO |
-| 12.8 | About screen (version, build info) | 🟢 | — | ⬜ TODO |
+| 12.8 | About screen (version, build info) | 🟢 | — | ✅ DONE |
 
 ---
 
@@ -250,7 +250,7 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 |---|---|---|---|---|
 | 13.1 | Add screen transition animations (shared axis) | 🟡 | All screens | ⬜ TODO |
 | 13.2 | Add micro-animations (card taps, list item add/remove) | 🟡 | All screens | ⬜ TODO |
-| 13.3 | Add empty state illustrations for all lists | 🟡 | All screens | ⬜ TODO |
+| 13.3 | Add empty state illustrations for all lists | 🟡 | All screens | ✅ DONE |
 | 13.4 | Performance audit on Samsung A36 (profiling) | 🟡 | All features | ⬜ TODO |
 | 13.5 | Fix any janky scrolling or frame drops | 🟡 | 13.4 | ⬜ TODO |
 | 13.6 | Edge case testing (no accounts, no transactions, etc.) | 🟡 | All features | ⬜ TODO |
@@ -278,20 +278,21 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 ## Summary
 
-| Phase | Tasks | Est. Total |
-|---|---|---|
-| 0. Project Scaffolding | 9 | ~5 hours |
-| 1. Database Foundation | 10 | ~7 hours |
-| 2. Account Management | 7 | ~6 hours |
-| 3. Transaction Management | 18 | ~15 hours |
-| 4. Dashboard | 7 | ~6 hours |
-| 5. Budget System | 8 | ~8 hours |
-| 6. Savings Goals | 8 | ~6 hours |
-| 7. Debt & Receivables | 8 | ~7 hours |
-| 8. Recurring & Forecast | 9 | ~10 hours |
-| 9. AI Assistant | 17 | ~18 hours |
-| 10. Receipt Scanner | 6 | ~5 hours |
-| 11. Backup & Data | 7 | ~8 hours |
-| 12. Settings & Profiles | 8 | ~6 hours |
-| 13. Polish & Optimization | 8 | ~7 hours |
-| **Total** | **130** | **~114 hours** |
+| Phase | Tasks | Completed | Est. Total | Status |
+|---|---|---|---|---|
+| 0. Project Scaffolding | 9 | 9 / 9 | ~5 hours | ✅ Complete (100%) |
+| 1. Database Foundation | 10 | 10 / 10 | ~7 hours | ✅ Complete (100%) |
+| 2. Account Management | 7 | 7 / 7 | ~6 hours | ✅ Complete (100%) |
+| 3. Transaction Management | 18 | 18 / 18 | ~15 hours | ✅ Complete (100%) |
+| 4. Dashboard | 7 | 7 / 7 | ~6 hours | ✅ Complete (100%) |
+| 5. Budget System | 8 | 4 / 8 | ~8 hours | 🟡 In Progress (50%) |
+| 6. Savings Goals | 8 | 0 / 8 | ~6 hours | ⬜ Pending (0%) |
+| 7. Debt & Receivables | 8 | 0 / 8 | ~7 hours | ⬜ Pending (0%) |
+| 8. Recurring & Forecast | 9 | 0 / 9 | ~10 hours | ⬜ Pending (0%) |
+| 9. AI Assistant | 17 | 3 / 17 | ~18 hours | 🟡 UI Mockup Built (18%) |
+| 10. Receipt Scanner | 6 | 0 / 6 | ~5 hours | ⬜ Pending (0%) |
+| 11. Backup & Data | 7 | 4 / 7 | ~8 hours | 🟡 In Progress (57%) |
+| 12. Settings & Profiles | 8 | 5 / 8 | ~6 hours | 🟡 Mostly Built (63%) |
+| 13. Polish & Optimization | 8 | 1 / 8 | ~7 hours | 🟡 Ongoing (13%) |
+| **Total** | **130** | **68 / 130** | **~114 hours** | **52.3% Completed** |
+| *Standalone: OTA Auto-Updater* | *9* | *0 / 9* | *~8 hours* | *⬜ Planned* |
