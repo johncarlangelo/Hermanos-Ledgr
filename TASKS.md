@@ -259,6 +259,23 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 ---
 
+## Standalone / Future Capabilities: In-App OTA Auto-Updater (Non-Play Store)
+> **Goal:** Sideloaded APK over-the-air updater fetching GitHub Releases without Google Play Store
+
+| # | Task | Size | Dependencies | Status |
+|---|---|---|---|---|
+| OTA.1 | Configure Android Manifest permissions (`REQUEST_INSTALL_PACKAGES`) & FileProvider | 🟢 | — | ⬜ TODO |
+| OTA.2 | Create `UpdateReleaseModel` and `GitHubUpdateService` (fetch latest release metadata from GitHub API) | 🟡 | — | ⬜ TODO |
+| OTA.3 | Implement SemVer version comparator (`remoteVersion > localVersion`) | 🟢 | OTA.2 | ⬜ TODO |
+| OTA.4 | Create `updateProvider` (Riverpod notifier managing check status, download progress, release info) | 🟡 | OTA.2, OTA.3 | ⬜ TODO |
+| OTA.5 | Build custom Stash-styled `UpdateAvailableSheet` (version badge, changelog markdown viewer, download progress) | 🟡 | OTA.4 | ⬜ TODO |
+| OTA.6 | Implement APK downloader with stream progress tracking to local temporary cache | 🟡 | OTA.4 | ⬜ TODO |
+| OTA.7 | Implement Android Package Installer trigger via intent (`application/vnd.android.package-archive`) | 🟡 | OTA.1, OTA.6 | ⬜ TODO |
+| OTA.8 | Add "Check for Updates" tile with instant status indicator to Settings screen | 🟢 | OTA.4 | ⬜ TODO |
+| OTA.9 | Implement optional startup background update check with 24-hour throttling | 🟢 | OTA.4 | ⬜ TODO |
+
+---
+
 ## Summary
 
 | Phase | Tasks | Est. Total |
