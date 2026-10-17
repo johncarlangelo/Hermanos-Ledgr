@@ -22,7 +22,7 @@
 | **Phase 1: Database** | 🟢 Complete | ██████████ 100% | Drift SQLite tables, 5 DAOs, Money & DateRange value objects, CRUD tests |
 | **Phase 2: Accounts** | 🟢 Complete | ██████████ 100% | Persistent Drift repo, account CRUD, 31+ card presets, detail ledger, profile cropper |
 | **Phase 3: Transactions** | 🟢 Complete | ██████████ 100% | Drift TransactionRepositoryImpl, ACID atomic balance updates, swipe actions (delete + undo, edit), receipt photo attachment |
-| **Phase 4: Dashboard** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
+| **Phase 4: Dashboard** | 🟢 Complete | ██████████ 100% | dashboardProvider metrics, NetWorthHeroCard with count-up animations, AccountSummaryCarousel, DashboardQuickActions, RecentActivitySection |
 | **Phase 5: Budgets** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 6: Goals** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
 | **Phase 7: Debts** | ⬜ Not Started | ░░░░░░░░░░ 0% | — |
@@ -40,10 +40,10 @@
 | Metric | Value |
 |---|---|
 | **Total Tasks** | 130 |
-| **Completed** | 35 |
+| **Completed** | 42 |
 | **In Progress** | 0 |
-| **Remaining** | 95 |
-| **Overall Progress** | 27% |
+| **Remaining** | 88 |
+| **Overall Progress** | 32% |
 
 ---
 
@@ -51,6 +51,7 @@
 
 | Date | Phase | Task(s) | Notes |
 |---|---|---|---|
+| 2026-10-17 | Phase 4 | 4.1-4.7 | Complete Phase 4: dashboardProvider reactive metrics, NetWorthHeroCard with easeOutCubic count-up animations, AccountSummaryCarousel, DashboardQuickActions, RecentActivitySection with empty state & swipe actions |
 | 2026-10-17 | Phase 3 | 3.1-3.18 | Complete Phase 3: TransactionEntity, TransactionRepositoryImpl with Drift SQLite ACID db.transaction balance updates, TransactionsNotifier, bidirectional swipe actions (delete + UndoSnackbar, edit), and receipt photo attachment |
 | 2026-09-28 | Planning | — | Created PRD, DESIGN, ARCHITECTURE, AGENTS, VERIFY, TASKS, PROGRESS, DECISIONS docs |
 | 2026-09-28 | Planning | — | Created `.agents/skills/flutter-m3-premium-design/SKILL.md` custom skill |

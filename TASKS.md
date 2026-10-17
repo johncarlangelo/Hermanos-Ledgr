@@ -98,13 +98,13 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 4.1 | Create `dashboardProvider` (computed from accounts + transactions) | 🟡 | 2.3, 3.3 | ⬜ TODO |
-| 4.2 | Build net worth hero card | 🟡 | 4.1 | ⬜ TODO |
-| 4.3 | Build account summary cards (scrollable row) | 🟡 | 4.1 | ⬜ TODO |
-| 4.4 | Build recent transactions widget | 🟡 | 3.5 | ⬜ TODO |
-| 4.5 | Build quick actions row (add expense, add income) | 🟢 | 3.6 | ⬜ TODO |
-| 4.6 | Assemble dashboard screen | 🟡 | 4.2-4.5 | ⬜ TODO |
-| 4.7 | Add count-up animation for numbers | 🟢 | 4.2 | ⬜ TODO |
+| 4.1 | Create `dashboardProvider` (computed from accounts + transactions) | 🟡 | 2.3, 3.3 | ✅ DONE |
+| 4.2 | Build net worth hero card | 🟡 | 4.1 | ✅ DONE |
+| 4.3 | Build account summary cards (scrollable row) | 🟡 | 4.1 | ✅ DONE |
+| 4.4 | Build recent transactions widget | 🟡 | 3.5 | ✅ DONE |
+| 4.5 | Build quick actions row (add expense, add income) | 🟢 | 3.6 | ✅ DONE |
+| 4.6 | Assemble dashboard screen | 🟡 | 4.2-4.5 | ✅ DONE |
+| 4.7 | Add count-up animation for numbers | 🟢 | 4.2 | ✅ DONE |
 
 ---
 

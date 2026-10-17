@@ -2,19 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
-import 'package:hermanos_ledgr/app/theme/text_theme.dart';
+import 'package:hermanos_ledgr/core/constants/app_constants.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
-import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
-import 'package:hermanos_ledgr/features/accounts/presentation/widgets/add_account_sheet.dart';
-import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
-import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/account_card.dart';
-import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
-import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
-import 'package:hermanos_ledgr/features/transactions/presentation/widgets/transaction_card.dart';
-import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
-import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
-import 'package:hermanos_ledgr/shared/widgets/hero_amount_display.dart';
-import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
+import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/account_summary_carousel.dart';
+import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/dashboard_quick_actions.dart';
+import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/net_worth_hero_card.dart';
+import 'package:hermanos_ledgr/features/dashboard/providers/dashboard_provider.dart';
+import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/recent_activity_section.dart';
+import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/profile_avatar.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -23,24 +19,10 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final userName = ref.watch(onboardingProvider).userName;
-    final netWorth = ref.watch(netWorthProvider);
-    final totalAssets = ref.watch(totalAssetsProvider);
-    final totalLiabilities = ref.watch(totalLiabilitiesProvider);
-    final accounts = ref.watch(accountsProvider);
-    final transactions = ref.watch(transactionsProvider);
-    final recentTransactions = transactions.take(5).toList();
+    final dashboardData = ref.watch(dashboardProvider);
 
     final now = DateTime.now();
-    final monthlyNetChange = transactions
-        .where((t) => t.date.year == now.year && t.date.month == now.month)
-        .fold<double>(0.0, (sum, t) {
-      if (t.type == TransactionType.income) return sum + t.amount;
-      if (t.type == TransactionType.expense) return sum - t.amount;
-      return sum;
-    });
-
     final hour = now.hour;
     final greeting = hour < 12
         ? 'Good morning'
@@ -52,12 +34,13 @@ class DashboardScreen extends ConsumerWidget {
           onRefresh: () async {
             ref.invalidate(accountsProvider);
             ref.invalidate(transactionsProvider);
+            ref.invalidate(dashboardProvider);
             await Future.delayed(const Duration(milliseconds: 300));
           },
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: Spacing.md),
             children: [
-              // Header Greeting & Date
+              // 1. Header Greeting & Profile Avatar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
                 child: Row(
@@ -67,20 +50,45 @@ class DashboardScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '$greeting, $userName',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '$greeting, $userName',
+                                  style: theme.textTheme.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            'Personal Ledger',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'Personal Ledger',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(width: Spacing.xs),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  AppConstants.appVersionDisplay,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    fontSize: 10,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -97,349 +105,26 @@ class DashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: Spacing.lg),
 
-              // 1. Net Worth Hero Card
+              // 2. Net Worth Hero Card (Count-up animation + tabular figures)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: M3Card(
-                  padding: const EdgeInsets.all(Spacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      HeroAmountDisplay(
-                        label: 'Net Worth',
-                        amount: netWorth,
-                        changeAmount: monthlyNetChange,
-                        changeLabel: 'this month',
-                      ),
-                      const SizedBox(height: Spacing.lg),
-                      const Divider(height: 1, thickness: 0.5),
-                      const SizedBox(height: Spacing.md),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Total Assets',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                CurrencyFormatter.format(totalAssets),
-                                style: moneyStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: SemanticColors.income(isDark),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Total Liabilities',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                CurrencyFormatter.format(totalLiabilities),
-                                style: moneyStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: SemanticColors.expense(isDark),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                child: NetWorthHeroCard(data: dashboardData),
               ),
               const SizedBox(height: Spacing.xl),
 
-              // 2. Quick Actions Row
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildQuickActionButton(
-                        context,
-                        icon: Icons.arrow_downward_rounded,
-                        label: 'Expense',
-                        color: SemanticColors.expense(isDark),
-                        onTap: () => AddTransactionSheet.show(
-                          context,
-                          initialType: TransactionType.expense,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.sm),
-                    Expanded(
-                      child: _buildQuickActionButton(
-                        context,
-                        icon: Icons.arrow_upward_rounded,
-                        label: 'Income',
-                        color: SemanticColors.income(isDark),
-                        onTap: () => AddTransactionSheet.show(
-                          context,
-                          initialType: TransactionType.income,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: Spacing.sm),
-                    Expanded(
-                      child: _buildQuickActionButton(
-                        context,
-                        icon: Icons.swap_horiz_rounded,
-                        label: 'Transfer',
-                        color: SemanticColors.transfer(isDark),
-                        onTap: () => AddTransactionSheet.show(
-                          context,
-                          initialType: TransactionType.transfer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // 3. Quick Actions Row (Expense, Income, Transfer)
+              const DashboardQuickActions(),
               const SizedBox(height: Spacing.xl),
 
-              // 3. Accounts Carousel
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () => context.push('/accounts'),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Accounts & Wallets',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 20,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          '${accounts.length} active',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(width: Spacing.sm),
-                        InkWell(
-                          onTap: () => AddAccountSheet.show(context),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: Spacing.sm,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.add_rounded,
-                                  size: 14,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  'Add',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: Spacing.sm),
-              SizedBox(
-                height: 142,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                  itemCount: accounts.length + 1,
-                  separatorBuilder: (_, _) => const SizedBox(width: Spacing.sm),
-                  itemBuilder: (context, index) {
-                    if (index == accounts.length) {
-                      return _buildAddAccountCard(context, theme);
-                    }
-                    return AccountCard(
-                      account: accounts[index],
-                      onTap: () {
-                        context.push('/accounts/${accounts[index].id}');
-                      },
-                    );
-                  },
-                ),
-              ),
+              // 4. Accounts & Wallets Carousel
+              AccountSummaryCarousel(accounts: dashboardData.accounts),
               const SizedBox(height: Spacing.xl),
 
-              // 4. Recent Transactions Header & List
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recent Activity',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/transactions'),
-                      child: const Text('See All'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: Spacing.xs),
-
-              if (recentTransactions.isEmpty)
-                EmptyStateView(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'No recent transactions',
-                  subtitle: 'Start tracking your spending by adding an expense.',
-                  actionLabel: 'Log Expense',
-                  onAction: () => AddTransactionSheet.show(context),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                  child: Column(
-                    children: [
-                      for (final tx in recentTransactions) ...[
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: Spacing.sm),
-                          child: TransactionCard(
-                            transaction: tx,
-                            onTap: () => AddTransactionSheet.show(
-                              context,
-                              existingTransaction: tx,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+              // 5. Recent Activity Section
+              RecentActivitySection(transactions: dashboardData.recentTransactions),
               const SizedBox(height: Spacing.xxl),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    return M3Card(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(vertical: Spacing.md),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(Spacing.sm),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 20, color: color),
-          ),
-          const SizedBox(height: Spacing.xs),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddAccountCard(BuildContext context, ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: () => AddAccountSheet.show(context),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 140,
-        padding: const EdgeInsets.all(Spacing.md),
-        decoration: BoxDecoration(
-          color: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(Spacing.sm),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.add_rounded,
-                size: 20,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: Spacing.sm),
-            Text(
-              'Add Account',
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ],
         ),
       ),
     );
