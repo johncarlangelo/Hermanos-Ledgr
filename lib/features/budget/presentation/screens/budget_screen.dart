@@ -271,17 +271,22 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                goals.isNotEmpty
-                    ? 'SAVINGS GOALS (${goals.length})'
-                    : 'SAVINGS GOALS',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                  color: theme.colorScheme.primary,
+              Flexible(
+                child: Text(
+                  goals.isNotEmpty
+                      ? 'SAVINGS GOALS (${goals.length})'
+                      : 'SAVINGS GOALS',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: theme.colorScheme.primary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: Spacing.xs),
               if (goals.isNotEmpty)
                 TextButton.icon(
                   style: TextButton.styleFrom(

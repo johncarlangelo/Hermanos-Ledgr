@@ -48,19 +48,26 @@ class NetWorthHeroCard extends StatelessWidget {
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      CurrencyFormatter.format(data.totalAssets),
-                      style: moneyStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: SemanticColors.income(isDark),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        CurrencyFormatter.format(data.totalAssets),
+                        style: moneyStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: SemanticColors.income(isDark),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: Spacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -70,14 +77,20 @@ class NetWorthHeroCard extends StatelessWidget {
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      CurrencyFormatter.format(data.totalLiabilities),
-                      style: moneyStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: SemanticColors.expense(isDark),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        CurrencyFormatter.format(data.totalLiabilities),
+                        style: moneyStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: SemanticColors.expense(isDark),
+                        ),
                       ),
                     ),
                   ],

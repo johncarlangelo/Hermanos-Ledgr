@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hermanos_ledgr/app/theme/app_theme.dart';
 import 'package:hermanos_ledgr/features/goals/domain/goal_model.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/screens/goals_screen.dart';
+import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_goal_sheet.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_card.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_progress_ring.dart';
 import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
@@ -132,6 +133,28 @@ void main() {
     expect(find.text('New Monitor'), findsOneWidget);
     expect(find.text('ACTIVE GOALS (1)'), findsOneWidget);
     expect(find.text('COMPLETED GOALS (1)'), findsOneWidget);
+  });
+
+  testWidgets('AddGoalSheet renders expanded icon grid and updates selected icon label', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        child: const AddGoalSheet(),
+      ),
+    );
+
+    expect(find.text('CHOOSE ICON'), findsOneWidget);
+    expect(find.text('Piggy Bank'), findsOneWidget); // Default selected icon label
+    expect(find.byType(GridView), findsOneWidget);
+
+    // Verify presence of travel icon in the grid
+    expect(find.byIcon(Icons.flight_takeoff_rounded), findsOneWidget);
+
+    // Tap travel icon
+    await tester.tap(find.byIcon(Icons.flight_takeoff_rounded));
+    await tester.pump();
+
+    // Verify selected label updated to 'Travel & Flights'
+    expect(find.text('Travel & Flights'), findsOneWidget);
   });
 }
 

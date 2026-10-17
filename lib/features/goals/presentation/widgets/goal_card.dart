@@ -158,28 +158,35 @@ class GoalCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text.rich(
-                TextSpan(
-                  children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text.rich(
                     TextSpan(
-                      text: CurrencyFormatter.format(goal.currentAmount),
-                      style: moneyStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurface,
-                      ),
+                      children: [
+                        TextSpan(
+                          text: CurrencyFormatter.format(goal.currentAmount),
+                          style: moneyStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' of ${CurrencyFormatter.format(goal.targetAmount)}',
+                          style: moneyStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: ' of ${CurrencyFormatter.format(goal.targetAmount)}',
-                      style: moneyStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
+              const SizedBox(width: Spacing.xs),
               if (!isAchieved)
                 Text(
                   '${CurrencyFormatter.format(goal.remainingAmount)} left',

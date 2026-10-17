@@ -11,32 +11,75 @@ import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_progress
 import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
-/// Available icons for savings goals.
+/// Available icons for savings goals (categorized & curated).
 const _kGoalIcons = [
-  (Icons.savings_rounded, 'Savings'),
-  (Icons.shield_rounded, 'Emergency'),
-  (Icons.flight_takeoff_rounded, 'Travel'),
-  (Icons.laptop_mac_rounded, 'Gadgets'),
-  (Icons.directions_car_rounded, 'Vehicle'),
-  (Icons.home_rounded, 'House'),
-  (Icons.favorite_rounded, 'Health'),
-  (Icons.school_rounded, 'Education'),
-  (Icons.celebration_rounded, 'Celebration'),
-  (Icons.watch_rounded, 'Luxury'),
+  // Savings, Banking & Safety
+  (Icons.savings_rounded, 'Piggy Bank'),
+  (Icons.account_balance_rounded, 'Bank & Vault'),
+  (Icons.shield_rounded, 'Emergency Fund'),
+  (Icons.lock_rounded, 'Security & Safe'),
   (Icons.trending_up_rounded, 'Investing'),
-  (Icons.card_giftcard_rounded, 'Gift'),
+  (Icons.attach_money_rounded, 'Cash Reserve'),
+  (Icons.credit_card_rounded, 'Debt Payoff'),
+
+  // Travel & Adventure
+  (Icons.flight_takeoff_rounded, 'Travel & Flights'),
+  (Icons.beach_access_rounded, 'Vacation & Beach'),
+  (Icons.luggage_rounded, 'Trip & Luggage'),
+  (Icons.explore_rounded, 'Adventure & Camping'),
+
+  // Mobility & Vehicles
+  (Icons.directions_car_rounded, 'Car & Vehicle'),
+  (Icons.two_wheeler_rounded, 'Motorcycle & Scooter'),
+  (Icons.pedal_bike_rounded, 'Bicycle & Cycling'),
+
+  // Home & Property
+  (Icons.home_rounded, 'House & Property'),
+  (Icons.apartment_rounded, 'Condo & Apartment'),
+  (Icons.chair_rounded, 'Furniture & Decor'),
+  (Icons.construction_rounded, 'Renovation & Tools'),
+
+  // Tech, Electronics & Media
+  (Icons.smartphone_rounded, 'Smartphone Upgrade'),
+  (Icons.laptop_mac_rounded, 'Laptop & PC'),
+  (Icons.sports_esports_rounded, 'Gaming & Console'),
+  (Icons.camera_alt_rounded, 'Camera & Photo'),
+  (Icons.headphones_rounded, 'Audio & Music'),
+  (Icons.watch_rounded, 'Watch & Luxury'),
+
+  // Health, Fitness & Family
+  (Icons.favorite_rounded, 'Health & Medical'),
+  (Icons.fitness_center_rounded, 'Fitness & Gym'),
+  (Icons.pets_rounded, 'Pets & Veterinary'),
+  (Icons.child_care_rounded, 'Baby & Family'),
+  (Icons.school_rounded, 'Education & Tuition'),
+  (Icons.menu_book_rounded, 'Books & Learning'),
+
+  // Milestones, Lifestyle & Gifts
+  (Icons.celebration_rounded, 'Celebration & Party'),
+  (Icons.diamond_rounded, 'Jewelry & Wedding'),
+  (Icons.card_giftcard_rounded, 'Gifts & Presents'),
+  (Icons.shopping_bag_rounded, 'Shopping & Wardrobe'),
+  (Icons.palette_rounded, 'Art & Creative'),
+  (Icons.restaurant_rounded, 'Dining & Foodie'),
 ];
 
 /// Curated Stash color palette for savings goals.
 const _kGoalColors = [
-  Color(0xFF00897B), // Stash Teal
+  Color(0xFF00897B), // Stash Teal (Primary)
+  Color(0xFF0D9488), // Mint Teal
+  Color(0xFF2E7D52), // Forest Green
+  Color(0xFF10B981), // Emerald
   Color(0xFF3F51B5), // Sapphire Indigo
-  Color(0xFF2E7D52), // Emerald Green
-  Color(0xFFF59E0B), // Amber Gold
-  Color(0xFFFF7043), // Coral Orange
-  Color(0xFF8B5CF6), // Royal Violet
-  Color(0xFFEC4899), // Rose Pink
+  Color(0xFF2563EB), // Cobalt Blue
   Color(0xFF06B6D4), // Cyan Sky
+  Color(0xFF8B5CF6), // Royal Violet
+  Color(0xFF9333EA), // Deep Purple
+  Color(0xFFEC4899), // Rose Pink
+  Color(0xFFE11D48), // Ruby Red
+  Color(0xFFFF7043), // Coral Orange
+  Color(0xFFF59E0B), // Amber Gold
+  Color(0xFFEAB308), // Sunflower
 ];
 
 /// Custom bottom sheet for creating or editing a savings goal.
@@ -117,6 +160,13 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
 
   double get _targetAmount => double.tryParse(_targetController.text) ?? 0.0;
   double get _currentAmount => double.tryParse(_currentController.text) ?? 0.0;
+
+  String get _selectedIconLabel {
+    for (final (icon, label) in _kGoalIcons) {
+      if (icon == _selectedIcon) return label;
+    }
+    return 'Custom Icon';
+  }
 
   void _saveGoal() {
     final name = _nameController.text.trim();
@@ -541,52 +591,73 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
             ),
             const SizedBox(height: Spacing.lg),
 
-            // Icon Picker
-            Text(
-              'CHOOSE ICON',
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-                color: theme.colorScheme.primary,
-              ),
+            // Icon Picker Header with Selected Label
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'CHOOSE ICON',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                Text(
+                  _selectedIconLabel,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: Spacing.xs),
             SizedBox(
-              height: 52,
-              child: ListView.separated(
+              height: 112,
+              child: GridView.builder(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: Spacing.sm,
+                  crossAxisSpacing: Spacing.sm,
+                  childAspectRatio: 1.0,
+                ),
                 itemCount: _kGoalIcons.length,
-                separatorBuilder: (_, _) => const SizedBox(width: Spacing.sm),
                 itemBuilder: (ctx, i) {
                   final (icon, tooltip) = _kGoalIcons[i];
                   final isSelected = _selectedIcon == icon;
 
-                  return InkWell(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedIcon = icon);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? _selectedColor.withValues(alpha: 0.2)
-                            : (isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
+                  return Tooltip(
+                    message: tooltip,
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _selectedIcon = icon);
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
                           color: isSelected
-                              ? _selectedColor
-                              : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
-                          width: isSelected ? 2 : 1,
+                              ? _selectedColor.withValues(alpha: 0.22)
+                              : (isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
+                                ? _selectedColor
+                                : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+                            width: isSelected ? 2 : 1,
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        icon,
-                        size: 22,
-                        color: isSelected ? _selectedColor : theme.colorScheme.onSurfaceVariant,
+                        child: Icon(
+                          icon,
+                          size: 22,
+                          color: isSelected ? _selectedColor : theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   );
