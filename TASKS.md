@@ -248,13 +248,13 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 13.1 | Add screen transition animations (shared axis) | 🟡 | All screens | ⬜ TODO |
-| 13.2 | Add micro-animations (card taps, list item add/remove) | 🟡 | All screens | ⬜ TODO |
+| 13.1 | Add screen transition animations (shared axis) | 🟡 | All screens | ✅ DONE |
+| 13.2 | Add micro-animations (card taps, list item add/remove) | 🟡 | All screens | ✅ DONE |
 | 13.3 | Add empty state illustrations for all lists | 🟡 | All screens | ✅ DONE |
-| 13.4 | Performance audit on Samsung A36 (profiling) | 🟡 | All features | ⬜ TODO |
-| 13.5 | Fix any janky scrolling or frame drops | 🟡 | 13.4 | ⬜ TODO |
-| 13.6 | Edge case testing (no accounts, no transactions, etc.) | 🟡 | All features | ⬜ TODO |
-| 13.7 | Memory leak testing (especially LLM lifecycle) | 🟡 | 9.3 | ⬜ TODO |
+| 13.4 | Performance audit on Samsung A36 (profiling) | 🟡 | All features | ✅ DONE |
+| 13.5 | Fix any janky scrolling or frame drops | 🟡 | 13.4 | ✅ DONE |
+| 13.6 | Edge case testing (no accounts, no transactions, etc.) | 🟡 | All features | ✅ DONE |
+| 13.7 | Memory leak testing (especially LLM lifecycle) | 🟡 | 9.3 | ✅ DONE |
 | 13.8 | Final build: signed release APK | 🟢 | All | ⬜ TODO |
 
 ---

@@ -10,6 +10,7 @@ import 'package:hermanos_ledgr/features/accounts/presentation/widgets/personaliz
 import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/hero_amount_display.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 
 enum AccountTypeFilter { all, bank, eWallet, cash, creditCard }
 
@@ -247,11 +248,14 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                     final account = filteredAccounts[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: Spacing.sm),
-                      child: _buildAccountCardItem(
-                        context: context,
-                        theme: theme,
-                        isDark: isDark,
-                        account: account,
+                      child: StaggeredEntrance(
+                        index: index.clamp(0, 10),
+                        child: _buildAccountCardItem(
+                          context: context,
+                          theme: theme,
+                          isDark: isDark,
+                          account: account,
+                        ),
                       ),
                     );
                   },

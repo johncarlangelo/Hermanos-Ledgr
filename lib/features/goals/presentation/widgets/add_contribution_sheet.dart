@@ -206,7 +206,9 @@ class _AddContributionSheetState extends ConsumerState<AddContributionSheet> {
               child: Row(
                 children: [
                   GoalProgressRing(
-                    percentage: newTotal / widget.goal.targetAmount,
+                    percentage: widget.goal.targetAmount > 0
+                        ? (newTotal / widget.goal.targetAmount).clamp(0.0, 1.0)
+                        : 0.0,
                     color: widget.goal.color,
                     size: 46,
                     strokeWidth: 4,

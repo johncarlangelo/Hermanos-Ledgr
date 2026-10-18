@@ -11,6 +11,7 @@ import 'package:hermanos_ledgr/features/recurring/providers/recurring_auto_log_p
 import 'package:hermanos_ledgr/features/recurring/providers/recurring_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 /// Main screen for managing recurring transactions, subscriptions, and scheduled bills (Task 8.4).
@@ -251,21 +252,24 @@ class _RecurringScreenState extends ConsumerState<RecurringScreen>
         final rule = rules[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: Spacing.md),
-          child: RecurringRuleCard(
-            rule: rule,
-            onToggleActive: () => ref.read(recurringProvider.notifier).toggleActive(rule.id),
-            onEdit: () => AddRecurringSheet.show(context, rule: rule),
-            onLogNow: () => ref.read(recurringAutoLogProvider.notifier).manuallyLogRule(context, rule),
-            onDelete: () async {
-              final deleted = await ref.read(recurringProvider.notifier).deleteRule(rule.id);
-              if (deleted != null && mounted) {
-                UndoSnackbar.show(
-                  context,
-                  message: 'Deleted "${rule.title}"',
-                  onUndo: () => ref.read(recurringProvider.notifier).addRule(deleted),
-                );
-              }
-            },
+          child: StaggeredEntrance(
+            index: index.clamp(0, 10),
+            child: RecurringRuleCard(
+              rule: rule,
+              onToggleActive: () => ref.read(recurringProvider.notifier).toggleActive(rule.id),
+              onEdit: () => AddRecurringSheet.show(context, rule: rule),
+              onLogNow: () => ref.read(recurringAutoLogProvider.notifier).manuallyLogRule(context, rule),
+              onDelete: () async {
+                final deleted = await ref.read(recurringProvider.notifier).deleteRule(rule.id);
+                if (deleted != null && mounted) {
+                  UndoSnackbar.show(
+                    context,
+                    message: 'Deleted "${rule.title}"',
+                    onUndo: () => ref.read(recurringProvider.notifier).addRule(deleted),
+                  );
+                }
+              },
+            ),
           ),
         );
       },

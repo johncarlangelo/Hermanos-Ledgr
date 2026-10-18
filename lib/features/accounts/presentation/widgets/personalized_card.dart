@@ -31,9 +31,10 @@ class PersonalizedCard extends StatelessWidget {
     final isMaya = brand == CardBrand.maya;
     final isAppleCash = brand == CardBrand.appleCash;
 
-    return Container(
-      width: width,
-      height: height,
+    return RepaintBoundary(
+      child: Container(
+        width: width,
+        height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -84,8 +85,9 @@ class PersonalizedCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSvgCard(CardBrand brand, String svgPath) {
     final isWise = brand == CardBrand.wise;

@@ -5,6 +5,7 @@ import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.da
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/transaction_card.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 
 class RecentActivitySection extends StatelessWidget {
   final List<TransactionModel> transactions;
@@ -63,14 +64,17 @@ class RecentActivitySection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
             child: Column(
               children: [
-                for (final tx in transactions) ...[
+                for (var i = 0; i < transactions.length; i++) ...[
                   Padding(
                     padding: const EdgeInsets.only(bottom: Spacing.sm),
-                    child: TransactionCard(
-                      transaction: tx,
-                      onTap: () => AddTransactionSheet.show(
-                        context,
-                        existingTransaction: tx,
+                    child: StaggeredEntrance(
+                      index: i,
+                      child: TransactionCard(
+                        transaction: transactions[i],
+                        onTap: () => AddTransactionSheet.show(
+                          context,
+                          existingTransaction: transactions[i],
+                        ),
                       ),
                     ),
                   ),

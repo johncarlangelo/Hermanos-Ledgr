@@ -66,10 +66,11 @@ class _HeroAmountDisplayState extends State<HeroAmountDisplay>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    return RepaintBoundary(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
         // 1. Label above number
         Text(
           widget.label,
@@ -141,6 +142,7 @@ class _HeroAmountDisplayState extends State<HeroAmountDisplay>
           ),
         ],
       ],
-    );
-  }
+    ),
+  );
+}
 }

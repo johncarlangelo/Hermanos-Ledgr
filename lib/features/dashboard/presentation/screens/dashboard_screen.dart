@@ -12,6 +12,7 @@ import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/net_worth
 import 'package:hermanos_ledgr/features/dashboard/providers/dashboard_provider.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/recent_activity_section.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 import 'package:hermanos_ledgr/shared/widgets/profile_avatar.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -116,20 +117,32 @@ class DashboardScreen extends ConsumerWidget {
               // 2. Net Worth Hero Card (Count-up animation + tabular figures)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-                child: NetWorthHeroCard(data: dashboardData),
+                child: StaggeredEntrance(
+                  index: 0,
+                  child: NetWorthHeroCard(data: dashboardData),
+                ),
               ),
               const SizedBox(height: Spacing.xl),
 
               // 3. Quick Actions Row (Expense, Income, Transfer)
-              const DashboardQuickActions(),
+              const StaggeredEntrance(
+                index: 1,
+                child: DashboardQuickActions(),
+              ),
               const SizedBox(height: Spacing.xl),
 
               // 4. Accounts & Wallets Carousel
-              AccountSummaryCarousel(accounts: dashboardData.accounts),
+              StaggeredEntrance(
+                index: 2,
+                child: AccountSummaryCarousel(accounts: dashboardData.accounts),
+              ),
               const SizedBox(height: Spacing.xl),
 
               // 5. Recent Activity Section
-              RecentActivitySection(transactions: dashboardData.recentTransactions),
+              StaggeredEntrance(
+                index: 3,
+                child: RecentActivitySection(transactions: dashboardData.recentTransactions),
+              ),
               const SizedBox(height: Spacing.xxl),
             ],
           ),

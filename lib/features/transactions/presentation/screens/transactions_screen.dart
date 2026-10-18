@@ -9,6 +9,7 @@ import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_tr
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/transaction_card.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
@@ -188,30 +189,33 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                               ),
                             ),
                           ),
-                          for (final tx in items) ...[
+                          for (var i = 0; i < items.length; i++) ...[
                             Padding(
                               padding:
                                   const EdgeInsets.only(bottom: Spacing.sm),
-                              child: TransactionCard(
-                                transaction: tx,
-                                onTap: () => AddTransactionSheet.show(
-                                  context,
-                                  existingTransaction: tx,
+                              child: StaggeredEntrance(
+                                index: (index * 3 + i).clamp(0, 10),
+                                child: TransactionCard(
+                                  transaction: items[i],
+                                  onTap: () => AddTransactionSheet.show(
+                                    context,
+                                    existingTransaction: items[i],
+                                  ),
+                                  onDelete: () {
+                                    final deleted = ref
+                                        .read(transactionsProvider.notifier)
+                                        .deleteTransaction(items[i].id);
+                                    if (deleted != null) {
+                                      UndoSnackbar.show(
+                                        context,
+                                        message: 'Deleted "${deleted.title}"',
+                                        onUndo: () => ref
+                                            .read(transactionsProvider.notifier)
+                                            .restoreTransaction(deleted),
+                                      );
+                                    }
+                                  },
                                 ),
-                                onDelete: () {
-                                  final deleted = ref
-                                      .read(transactionsProvider.notifier)
-                                      .deleteTransaction(tx.id);
-                                  if (deleted != null) {
-                                    UndoSnackbar.show(
-                                      context,
-                                      message: 'Deleted "${deleted.title}"',
-                                      onUndo: () => ref
-                                          .read(transactionsProvider.notifier)
-                                          .restoreTransaction(deleted),
-                                    );
-                                  }
-                                },
                               ),
                             ),
                           ],

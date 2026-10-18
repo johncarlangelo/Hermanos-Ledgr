@@ -4,6 +4,7 @@ import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/features/notes/presentation/widgets/add_note_sheet.dart';
 import 'package:hermanos_ledgr/features/notes/presentation/widgets/note_card.dart';
 import 'package:hermanos_ledgr/features/notes/providers/notes_provider.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 
 /// Full screen for Financial Quick Notes & Scratchpad (Task 12.7).
 class QuickNotesScreen extends ConsumerStatefulWidget {
@@ -151,7 +152,10 @@ class _QuickNotesScreenState extends ConsumerState<QuickNotesScreen> {
                         itemCount: filtered.length,
                         separatorBuilder: (context, index) => const SizedBox(height: Spacing.sm),
                         itemBuilder: (context, index) {
-                          return NoteCard(note: filtered[index]);
+                          return StaggeredEntrance(
+                            index: index.clamp(0, 10),
+                            child: NoteCard(note: filtered[index]),
+                          );
                         },
                       ),
               ),

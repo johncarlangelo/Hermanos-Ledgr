@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 
 class M3Card extends StatefulWidget {
@@ -43,7 +44,10 @@ class _M3CardState extends State<M3Card> {
 
     if (widget.onTap != null) {
       content = GestureDetector(
-        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapDown: (_) {
+          HapticFeedback.selectionClick();
+          setState(() => _isPressed = true);
+        },
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         onTap: widget.onTap,

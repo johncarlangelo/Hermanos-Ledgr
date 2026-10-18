@@ -10,6 +10,7 @@ import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_card.dar
 import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 
 /// Full-featured Goals Screen for Hermanos Ledgr (Phase 6).
 /// Displays overall savings goal summary, active goals, completed goals,
@@ -223,15 +224,18 @@ class GoalsScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: Spacing.xs),
-                  for (final goal in activeGoals) ...[
+                  for (var i = 0; i < activeGoals.length; i++) ...[
                     Padding(
                       padding: const EdgeInsets.only(bottom: Spacing.md),
-                      child: GoalCard(
-                        goal: goal,
-                        onContribute: () =>
-                            AddContributionSheet.show(context, goal),
-                        onEdit: () => AddGoalSheet.edit(context, goal),
-                        onDelete: () => DeleteGoalSheet.show(context, goal),
+                      child: StaggeredEntrance(
+                        index: i,
+                        child: GoalCard(
+                          goal: activeGoals[i],
+                          onContribute: () =>
+                              AddContributionSheet.show(context, activeGoals[i]),
+                          onEdit: () => AddGoalSheet.edit(context, activeGoals[i]),
+                          onDelete: () => DeleteGoalSheet.show(context, activeGoals[i]),
+                        ),
                       ),
                     ),
                   ],
@@ -250,15 +254,18 @@ class GoalsScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: Spacing.xs),
-                  for (final goal in completedGoals) ...[
+                  for (var i = 0; i < completedGoals.length; i++) ...[
                     Padding(
                       padding: const EdgeInsets.only(bottom: Spacing.md),
-                      child: GoalCard(
-                        goal: goal,
-                        onContribute: () =>
-                            AddContributionSheet.show(context, goal),
-                        onEdit: () => AddGoalSheet.edit(context, goal),
-                        onDelete: () => DeleteGoalSheet.show(context, goal),
+                      child: StaggeredEntrance(
+                        index: activeGoals.length + i,
+                        child: GoalCard(
+                          goal: completedGoals[i],
+                          onContribute: () =>
+                              AddContributionSheet.show(context, completedGoals[i]),
+                          onEdit: () => AddGoalSheet.edit(context, completedGoals[i]),
+                          onDelete: () => DeleteGoalSheet.show(context, completedGoals[i]),
+                        ),
                       ),
                     ),
                   ],

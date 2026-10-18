@@ -21,11 +21,17 @@ class BudgetModel {
     this.daysLeft = 12,
   });
 
-  double get percentage => (spentAmount / limitAmount).clamp(0.0, 2.0);
-  double get remainingAmount => (limitAmount - spentAmount).clamp(0.0, limitAmount);
+  double get percentage {
+    if (limitAmount <= 0) return spentAmount > 0 ? 2.0 : 0.0;
+    return (spentAmount / limitAmount).clamp(0.0, 2.0);
+  }
+
+  double get remainingAmount =>
+      limitAmount > 0 ? (limitAmount - spentAmount).clamp(0.0, limitAmount) : 0.0;
   bool get isOverBudget => spentAmount > limitAmount;
 
   BudgetStatus get status {
+    if (limitAmount <= 0) return spentAmount > 0 ? BudgetStatus.over : BudgetStatus.safe;
     final pct = spentAmount / limitAmount;
     if (pct > 1.0) return BudgetStatus.over;
     if (pct >= 0.75) return BudgetStatus.caution;

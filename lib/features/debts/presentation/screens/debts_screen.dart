@@ -12,6 +12,7 @@ import 'package:hermanos_ledgr/features/debts/presentation/widgets/record_paymen
 import 'package:hermanos_ledgr/features/debts/providers/debts_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 /// Full-featured Debts & Receivables screen for Hermanos Ledgr (Phase 7).
@@ -343,34 +344,37 @@ class _DebtsScreenState extends ConsumerState<DebtsScreen>
       separatorBuilder: (_, _) => const SizedBox(height: Spacing.sm),
       itemBuilder: (ctx, i) {
         final d = debts[i];
-        return DebtCard(
-          debt: d,
-          onRecordPayment: () => RecordPaymentSheet.show(ctx, d),
-          onEdit: () => AddDebtSheet.edit(ctx, d),
-          onSettle: () {
-            HapticFeedback.mediumImpact();
-            ref.read(debtsProvider.notifier).settleDebt(d.id);
-            UndoSnackbar.show(
-              ctx,
-              message: 'Marked ${d.personName} as fully settled',
-              onUndo: () {
-                ref.read(debtsProvider.notifier).updateDebt(d);
-              },
-            );
-          },
-          onDelete: () async {
-            HapticFeedback.heavyImpact();
-            final deleted = await ref.read(debtsProvider.notifier).deleteDebt(d.id);
-            if (deleted != null && context.mounted) {
+        return StaggeredEntrance(
+          index: i.clamp(0, 10),
+          child: DebtCard(
+            debt: d,
+            onRecordPayment: () => RecordPaymentSheet.show(ctx, d),
+            onEdit: () => AddDebtSheet.edit(ctx, d),
+            onSettle: () {
+              HapticFeedback.mediumImpact();
+              ref.read(debtsProvider.notifier).settleDebt(d.id);
               UndoSnackbar.show(
                 ctx,
-                message: 'Deleted record for ${deleted.personName}',
+                message: 'Marked ${d.personName} as fully settled',
                 onUndo: () {
-                  ref.read(debtsProvider.notifier).addDebt(deleted);
+                  ref.read(debtsProvider.notifier).updateDebt(d);
                 },
               );
-            }
-          },
+            },
+            onDelete: () async {
+              HapticFeedback.heavyImpact();
+              final deleted = await ref.read(debtsProvider.notifier).deleteDebt(d.id);
+              if (deleted != null && context.mounted) {
+                UndoSnackbar.show(
+                  ctx,
+                  message: 'Deleted record for ${deleted.personName}',
+                  onUndo: () {
+                    ref.read(debtsProvider.notifier).addDebt(deleted);
+                  },
+                );
+              }
+            },
+          ),
         );
       },
     );

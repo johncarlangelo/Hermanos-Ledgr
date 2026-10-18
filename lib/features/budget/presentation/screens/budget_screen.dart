@@ -18,6 +18,7 @@ import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 
 class BudgetScreen extends ConsumerStatefulWidget {
   const BudgetScreen({super.key});
@@ -195,8 +196,9 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                 else
                   SizedBox(
                     height: 180,
-                    child: PieChart(
-                      PieChartData(
+                    child: RepaintBoundary(
+                      child: PieChart(
+                        PieChartData(
                         pieTouchData: PieTouchData(
                           touchCallback: (event, pieTouchResponse) {
                             setState(() {
@@ -237,6 +239,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                       ),
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -264,10 +267,13 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
               ),
             )
           else
-            for (final budget in budgets) ...[
+            for (var i = 0; i < budgets.length; i++) ...[
               Padding(
                 padding: const EdgeInsets.only(bottom: Spacing.sm),
-                child: BudgetProgressCard(budget: budget),
+                child: StaggeredEntrance(
+                  index: i.clamp(0, 10),
+                  child: BudgetProgressCard(budget: budgets[i]),
+                ),
               ),
             ],
 

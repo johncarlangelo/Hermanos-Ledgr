@@ -311,6 +311,34 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - Bundling multiple models in the APK — bloats APK size to over 1GB; modular downloading and local file import keep the app compact.
 **Rationale:** Delivers complete multi-profile customization, flexible on-device LLM management, and a low-friction scratchpad for quick expense tracking.
 
+### D-022: Motion Transitions, Micro-Animations, and Samsung A36 Render Optimizations
+**Date:** 2026-10-18
+**Status:** Accepted
+**Context:** Delivering a fluid, 120Hz-ready experience on the Samsung Galaxy A36 5G (Exynos 1380 / Mali-G68 GPU) while adhering to Hermanos-Stash styling and Material Design 3 motion principles. The app needed shared axis screen transitions, staggered card cascades, tactile spring press feedback, edge-case math hardening, and paint containment to prevent jank during rapid scrolling.
+**Decision:**
+1. **Page Transitions (`lib/app/page_transitions.dart` - Task 13.1):**
+   - Shared Axis X Slide-Fade: 300ms `Curves.easeOutCubic` horizontal slide-fade for deep route pushes (`/settings`, `/accounts`, `/accounts/:id`, `/goals`, `/debts`, `/recurring`, `/forecast`, `/scanner`, `/notes`).
+   - Cross-Fade: 200ms `Curves.easeInOut` cross-fade for ShellRoute tab switching (`/`, `/transactions`, `/budget`, `/ai`) and `/onboarding`.
+2. **Motion Wrappers & Micro-Animations (`lib/shared/widgets/motion_wrapper.dart`, `m3_card.dart` - Task 13.2):**
+   - `StaggeredEntrance`: Ticker-driven `Interval` curve (no uncancelled `Timer` leaks) with 50ms per-index stagger and 220ms `Curves.easeOutCubic` fade-and-rise entrance for lists and dashboard cards.
+   - `BouncyPressable`: Spring-like scale micro-animation (0.96 scale on tap down, 1.0 on release) with subtle `HapticFeedback.selectionClick()`.
+   - Integrated subtle tactile haptics into all interactive cards (`M3Card`).
+3. **GPU Render Layer Containment (`RepaintBoundary` - Tasks 13.4, 13.5):**
+   - Wrapped `PersonalizedCard` root container in `RepaintBoundary` to isolate complex multi-layer shadows, SVG bank logos, and EMV chip vectors in GPU texture memory during horizontal carousel scrolling.
+   - Wrapped `HeroAmountDisplay` count-up ticker in `RepaintBoundary` to prevent frequent numeric text rasterization from triggering full dashboard repaints.
+   - Wrapped `PieChart` in `BudgetScreen` in `RepaintBoundary` to isolate canvas repaints during scroll.
+   - Removed deprecated `cacheExtent` overrides, letting Flutter's built-in 250px viewport cache work smoothly without layout jank.
+4. **Edge-Case Hardening & Lifecycle Leak Prevention (Tasks 13.6, 13.7):**
+   - Guarded `BudgetModel` against division by zero: `percentage` returns 2.0 (if spent > 0) or 0.0 when `limitAmount <= 0.0`; `remainingAmount` returns 0.0; `status` safely flags `over` or `safe` without throwing `ArgumentError`.
+   - Guarded `AddContributionSheet` against zero target goals (`widget.goal.targetAmount > 0`).
+   - Ensured all animation controllers and tickers across screens and widgets are safely disposed on teardown.
+5. **Release Milestone Discipline (Task 13.8):**
+   - Kept Task 13.8 (signed release APK) pending user on-device verification. The app SemVer is bumped to `0.17.0+35` (`v0.17.0-alpha`), reserving `v1.0.0` strictly for confirmed release.
+**Alternatives Considered:**
+- Using stock page transitions (MaterialPageRoute standard zoom) — felt generic and mismatched Stash's calm finance aesthetic.
+- Using heavy third-party animation packages (`animations`, `flutter_animate`) — unnecessary dependency overhead when pure Flutter ticker transitions and curves deliver 60/120fps with zero extra dependencies.
+**Rationale:** Guarantees buttery-smooth 120Hz motion on the Samsung Galaxy A36, eliminates repaint thrashing, hardens all mathematical edge cases, and provides tactile feedback.
+
 ---
 
 *Add new decisions below this line.*

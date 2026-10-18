@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hermanos_ledgr/app/page_transitions.dart';
 import 'package:hermanos_ledgr/app/shell_scaffold.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/features/accounts/presentation/screens/accounts_screen.dart';
@@ -59,68 +60,113 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => buildCrossFadeTransition(
+          child: const OnboardingScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const SettingsScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/accounts',
-        builder: (context, state) => const AccountsScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const AccountsScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/accounts/:id',
-        builder: (context, state) => AccountDetailScreen(
-          accountId: state.pathParameters['id']!,
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: AccountDetailScreen(
+            accountId: state.pathParameters['id']!,
+          ),
+          state: state,
         ),
       ),
       GoRoute(
         path: '/goals',
-        builder: (context, state) => const GoalsScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const GoalsScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/debts',
-        builder: (context, state) => const DebtsScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const DebtsScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/recurring',
-        builder: (context, state) => const RecurringScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const RecurringScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/forecast',
-        builder: (context, state) => const ForecastScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const ForecastScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/scanner',
-        builder: (context, state) => const ReceiptScannerScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const ReceiptScannerScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/receipt-scanner',
-        builder: (context, state) => const ReceiptScannerScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const ReceiptScannerScreen(),
+          state: state,
+        ),
       ),
       GoRoute(
         path: '/notes',
-        builder: (context, state) => const QuickNotesScreen(),
+        pageBuilder: (context, state) => buildSharedAxisXTransition(
+          child: const QuickNotesScreen(),
+          state: state,
+        ),
       ),
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => const DashboardScreen(),
+            pageBuilder: (context, state) => buildCrossFadeTransition(
+              child: const DashboardScreen(),
+              state: state,
+            ),
           ),
           GoRoute(
             path: '/transactions',
-            builder: (context, state) => const TransactionsScreen(),
+            pageBuilder: (context, state) => buildCrossFadeTransition(
+              child: const TransactionsScreen(),
+              state: state,
+            ),
           ),
           GoRoute(
             path: '/budget',
-            builder: (context, state) => const BudgetScreen(),
+            pageBuilder: (context, state) => buildCrossFadeTransition(
+              child: const BudgetScreen(),
+              state: state,
+            ),
           ),
           GoRoute(
             path: '/ai',
-            builder: (context, state) => const AiAssistantScreen(),
+            pageBuilder: (context, state) => buildCrossFadeTransition(
+              child: const AiAssistantScreen(),
+              state: state,
+            ),
           ),
         ],
       ),
