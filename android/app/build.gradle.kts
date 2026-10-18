@@ -29,10 +29,8 @@ android {
         release {
             // Signing with debug keys for sideloading on personal Android device.
             signingConfig = signingConfigs.getByName("debug")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
