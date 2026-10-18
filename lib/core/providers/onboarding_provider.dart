@@ -17,7 +17,7 @@ class OnboardingState {
   const OnboardingState({
     required this.isCompleted,
     this.isLoading = false,
-    this.userName = 'John C.',
+    this.userName = '',
     this.profilePicBase64,
     this.selectedStarterAccounts = const ['GCash', 'Cash Wallet', 'BDO Savings'],
     this.customAccountName = '',
@@ -52,7 +52,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   OnboardingState build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     final isCompleted = prefs.getBool(_kOnboardingKey) ?? false;
-    final userName = prefs.getString(_kUserNameKey) ?? 'John C.';
+    final userName = prefs.getString(_kUserNameKey) ?? '';
     final profilePic = prefs.getString(_kProfilePicKey);
     return OnboardingState(
       isCompleted: isCompleted,
@@ -83,7 +83,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   Future<void> setUserName(String name) async {
-    final trimmed = name.trim().isEmpty ? 'John C.' : name.trim();
+    final trimmed = name.trim().isEmpty ? 'User' : name.trim();
     state = state.copyWith(userName: trimmed);
     try {
       final prefs = ref.read(sharedPreferencesProvider);

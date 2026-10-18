@@ -9,12 +9,6 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   setGlobalSharedPreferences(prefs);
 
-  // If the user already finished onboarding (or hasn't explicitly reset it),
-  // ensure onboarding is marked as complete so it does not bounce back.
-  if (prefs.getBool('has_completed_onboarding') != false) {
-    await prefs.setBool('has_completed_onboarding', true);
-  }
-
   runApp(
     ProviderScope(
       overrides: [

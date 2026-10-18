@@ -48,7 +48,8 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
   }
 
   AiMessage _createWelcomeMessage() {
-    final userName = ref.read(onboardingProvider).userName.split(' ').first;
+    final rawName = ref.read(onboardingProvider).userName.trim();
+    final userName = rawName.isEmpty ? 'there' : rawName.split(' ').first;
     return AiMessage(
       id: 'msg_welcome_${DateTime.now().millisecondsSinceEpoch}',
       content:

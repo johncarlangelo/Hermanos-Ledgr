@@ -244,7 +244,7 @@ class _ProfileEditSheetState extends ConsumerState<ProfileEditSheet> {
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   labelText: 'Your Name',
-                  hintText: 'e.g. John C.',
+                  hintText: 'Enter your name (e.g. Alex)',
                   prefixIcon: const Icon(Icons.person_outline_rounded),
                   suffixIcon: _nameController.text.isNotEmpty
                       ? IconButton(

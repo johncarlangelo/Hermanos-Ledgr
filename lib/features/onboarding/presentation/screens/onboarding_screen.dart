@@ -27,7 +27,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = ref.read(onboardingProvider).userName;
+    final saved = ref.read(onboardingProvider).userName;
+    _nameController.text = (saved == 'User') ? '' : saved;
   }
 
   @override
@@ -573,7 +574,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             controller: _nameController,
             decoration: const InputDecoration(
               labelText: 'Owner / Profile Name',
-              hintText: 'e.g. John C.',
+              hintText: 'Enter your name (e.g. Alex)',
               prefixIcon: Icon(Icons.person_rounded),
             ),
             onChanged: (val) =>

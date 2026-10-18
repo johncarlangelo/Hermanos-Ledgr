@@ -49,23 +49,12 @@ class AccountsNotifier extends Notifier<List<AccountModel>> {
     final repo = ref.watch(accountRepositoryProvider);
 
     _sub?.cancel();
-    _sub = repo.watchAccounts().listen((accounts) async {
-      if (accounts.isEmpty) {
-        // Auto-seed starter clean accounts if store is completely empty
-        await _seedInitialAccounts();
-      } else {
-        state = accounts;
-      }
+    _sub = repo.watchAccounts().listen((accounts) {
+      state = accounts;
     });
     ref.onDispose(() => _sub?.cancel());
 
     return const [];
-  }
-
-  Future<void> _seedInitialAccounts() async {
-    for (final acc in starterCleanAccounts) {
-      await _repository.addAccount(acc);
-    }
   }
 
   Future<void> addAccount(AccountModel newAccount) async {
