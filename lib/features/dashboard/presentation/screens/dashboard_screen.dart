@@ -5,6 +5,7 @@ import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/core/constants/app_constants.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
+import 'package:hermanos_ledgr/features/backup/providers/backup_provider.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/account_summary_carousel.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/dashboard_quick_actions.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/net_worth_hero_card.dart';
@@ -27,6 +28,11 @@ class DashboardScreen extends ConsumerWidget {
     final greeting = hour < 12
         ? 'Good morning'
         : (hour < 17 ? 'Good afternoon' : 'Good evening');
+
+    // Trigger daily auto-backup check on launch (Task 11.3)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(backupProvider.notifier).checkAndRunDailyAutoBackup();
+    });
 
     return Scaffold(
       body: SafeArea(

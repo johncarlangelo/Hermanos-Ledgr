@@ -270,6 +270,21 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - LLM-only OCR extraction — requires downloading a 350MB model before anyone can scan a receipt; 1-2s latency vs <5ms pure Dart regex.
 **Rationale:** Instant zero-cost receipt parsing for 95% of receipts, with graceful optional LLM fallback and transparent user verification.
 
+### D-020: Full SQLite Database JSON Serialization, 7-Snapshot Retention, & Share Sheet Integration
+**Date:** 2026-10-18
+**Status:** Accepted
+**Context:** Local backups, easy recovery, and cross-platform data mobility are critical for an offline-first budget app. Users need 1-tap automated daily backups, manual on-demand snapshots, RFC 4180 CSV spreadsheets for spreadsheet apps (Excel/Sheets), and structured JSON database export/import with validation and atomic restoration across all 8 Drift tables (`accounts`, `transactions`, `budgets`, `categories`, `debts`, `recurring`, `chat_messages`, `receipts`).
+**Decision:**
+1. **Full Database Serialization (`BackupService`):** Serializes all 8 Drift SQLite tables into a single JSON payload with an embedded `BackupManifest` (app name, version, timestamp, schema version, table counts). On import/restore, performs structural validation, checks table keys, presents an interactive confirmation sheet showing detected record chips, and executes atomic table replacement inside a single SQLite transaction.
+2. **RFC 4180 CSV Serializer (`CsvExportService`):** Formats transactions and accounts with strict RFC 4180 compliance (double-quote escaping, comma handling, multi-line notes support).
+3. **Dedicated Local Storage & Retention (`BackupStorageService`):** Manages backups under `getApplicationDocumentsDirectory()/backups`. Enforces automated 7-snapshot retention (`pruneAutoBackups(keepLast: 7)`) that preserves the 7 newest auto-backups and purges older automated files.
+4. **App Launch Hook:** `checkAndRunDailyAutoBackup()` executed once per calendar day upon dashboard mount via `addPostFrameCallback`, running non-blocking in the background.
+5. **Custom UI & Share Sheet Integration:** Custom 28dp top radius bottom sheets (`BackupHistorySheet`, `RestoreConfirmSheet`, `ExportDialogSheet`, `ImportDialogSheet`) with `share_plus` system share sheet integration, clipboard fallback, file picker support, and zero stock Android native pickers or dialogs.
+**Alternatives Considered:**
+- Direct raw SQLite database file copying (`.db`) — brittle across Drift schema migrations and unreadable in text editors or external tools.
+- Cloud storage sync (Google Drive / Dropbox API) — violates 100% offline-first and zero-cloud independence principles.
+**Rationale:** JSON serialization provides transparent, readable, and future-proof backup archives that the user can inspect, share, or restore anytime, completely offline.
+
 ---
 
 *Add new decisions below this line.*

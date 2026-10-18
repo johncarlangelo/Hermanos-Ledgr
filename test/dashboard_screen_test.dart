@@ -12,8 +12,10 @@ import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/recent_ac
 import 'package:hermanos_ledgr/features/dashboard/providers/dashboard_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
+import 'package:hermanos_ledgr/core/providers/shared_preferences_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/transaction_card.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final _testGcash = const AccountModel(
   id: 'acc_gcash',
@@ -89,6 +91,12 @@ class _TestOnboardingNotifier extends OnboardingNotifier {
 }
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    setGlobalSharedPreferences(prefs);
+  });
+
   test('dashboardProvider computes correct metrics from accounts and transactions', () {
     final container = ProviderContainer(
       overrides: [

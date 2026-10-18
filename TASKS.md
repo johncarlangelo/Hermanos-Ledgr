@@ -217,12 +217,12 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 11.1 | Build `BackupService` — serialize full database to JSON | 🔴 | 1.4 | ⬜ TODO |
+| 11.1 | Build `BackupService` — serialize full database to JSON | 🔴 | 1.4 | ✅ DONE |
 | 11.2 | Build `CsvExportService` — transactions to CSV | 🟡 | 3.2 | ✅ DONE |
-| 11.3 | Implement auto-backup (daily, on app open) | 🟡 | 11.1 | ⬜ TODO |
+| 11.3 | Implement auto-backup (daily, on app open) | 🟡 | 11.1 | ✅ DONE |
 | 11.4 | Implement manual JSON export (via Share sheet) | 🟡 | 11.1 | ✅ DONE |
 | 11.5 | Implement JSON import (validate + restore) | 🔴 | 11.1 | ✅ DONE |
-| 11.6 | Implement backup retention (keep last 7) | 🟢 | 11.3 | ⬜ TODO |
+| 11.6 | Implement backup retention (keep last 7) | 🟢 | 11.3 | ✅ DONE |
 | 11.7 | Build backup/restore UI in Settings | 🟡 | 11.1-11.5 | ✅ DONE |
 
 ---

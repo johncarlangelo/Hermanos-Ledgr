@@ -48,7 +48,7 @@ void main() {
     expect(find.text('DANGER ZONE'), findsOneWidget);
 
     // Verify key action tiles
-    expect(find.text('Export Ledger'), findsOneWidget);
+    expect(find.textContaining('Export Ledger'), findsOneWidget);
     expect(find.text('Reset Ledger Data'), findsOneWidget);
   });
 

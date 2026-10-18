@@ -1,15 +1,14 @@
-import 'dart:convert';
-import 'package:drift/drift.dart' as drift;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
-import 'package:hermanos_ledgr/core/database/app_database.dart';
-import 'package:hermanos_ledgr/core/providers/database_provider.dart';
+import 'package:hermanos_ledgr/features/backup/domain/backup_validation_result.dart';
+import 'package:hermanos_ledgr/features/backup/providers/backup_provider.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/stash_switch.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
-/// Custom bottom sheet for restoring ledger data from JSON backups.
+/// Custom bottom sheet for restoring ledger data from JSON backups (Task 11.5).
 /// Adheres strictly to Hermanos-Stash styling with zero native Android dialogs.
 class ImportDialogSheet extends ConsumerStatefulWidget {
   const ImportDialogSheet({super.key});
@@ -34,12 +33,8 @@ class ImportDialogSheet extends ConsumerStatefulWidget {
 class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
   final TextEditingController _jsonController = TextEditingController();
   bool _replaceExisting = true;
-  int _detectedTxCount = 0;
-  int _detectedAccCount = 0;
-  String? _validationError;
-  bool _isParsed = false;
-  List<Map<String, dynamic>> _txList = [];
-  List<Map<String, dynamic>> _accList = [];
+  BackupValidationResult? _validationResult;
+  bool _isRestoring = false;
 
   @override
   void dispose() {
@@ -47,84 +42,23 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
     super.dispose();
   }
 
-  void _parseJson(String raw) {
+  void _onJsonChanged(String raw) {
     final text = raw.trim();
     if (text.isEmpty) {
-      setState(() {
-        _isParsed = false;
-        _validationError = null;
-        _detectedTxCount = 0;
-        _detectedAccCount = 0;
-        _txList = [];
-        _accList = [];
-      });
+      setState(() => _validationResult = null);
       return;
     }
 
-    try {
-      final decoded = jsonDecode(text);
-      List<Map<String, dynamic>> txList = [];
-      List<Map<String, dynamic>> accList = [];
-
-      if (decoded is List) {
-        // Plain list of transactions
-        txList = decoded.whereType<Map<String, dynamic>>().toList();
-      } else if (decoded is Map<String, dynamic>) {
-        if (decoded.containsKey('transactions') && decoded['transactions'] is List) {
-          final rawTxs = decoded['transactions'] as List;
-          txList = rawTxs
-              .whereType<Map>()
-              .map((e) => Map<String, dynamic>.from(e))
-              .toList();
-        }
-        if (decoded.containsKey('accounts') && decoded['accounts'] is List) {
-          final rawAccs = decoded['accounts'] as List;
-          accList = rawAccs
-              .whereType<Map>()
-              .map((e) => Map<String, dynamic>.from(e))
-              .toList();
-        }
-      } else {
-        throw const FormatException('Expected JSON object or list');
-      }
-
-      if (txList.isEmpty && accList.isEmpty) {
-        setState(() {
-          _isParsed = false;
-          _validationError = 'No valid transaction or account entries found in JSON';
-          _detectedTxCount = 0;
-          _detectedAccCount = 0;
-          _txList = [];
-          _accList = [];
-        });
-        return;
-      }
-
-      setState(() {
-        _isParsed = true;
-        _validationError = null;
-        _detectedTxCount = txList.length;
-        _detectedAccCount = accList.length;
-        _txList = txList;
-        _accList = accList;
-      });
-    } catch (e) {
-      setState(() {
-        _isParsed = false;
-        _validationError = 'Invalid JSON syntax: ${e.toString().split('\n').first}';
-        _detectedTxCount = 0;
-        _detectedAccCount = 0;
-        _txList = [];
-        _accList = [];
-      });
-    }
+    final notifier = ref.read(backupProvider.notifier);
+    final result = notifier.validateBackupJson(text);
+    setState(() => _validationResult = result);
   }
 
   Future<void> _pasteFromClipboard() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
     if (data?.text != null && data!.text!.trim().isNotEmpty) {
       _jsonController.text = data.text!.trim();
-      _parseJson(_jsonController.text);
+      _onJsonChanged(_jsonController.text);
     } else {
       if (mounted) {
         UndoSnackbar.error(context, message: 'Clipboard is empty');
@@ -132,99 +66,52 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
     }
   }
 
-  Future<void> _importData() async {
-    if (!_isParsed || (_detectedTxCount == 0 && _detectedAccCount == 0)) return;
+  Future<void> _pickBackupFile() async {
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
 
-    final db = ref.read(databaseProvider);
+      if (file == null) return;
+
+      final content = await file.xFile.readAsString();
+
+      if (content.trim().isNotEmpty) {
+        _jsonController.text = content.trim();
+        _onJsonChanged(_jsonController.text);
+      }
+    } catch (e) {
+      if (mounted) {
+        UndoSnackbar.error(context, message: 'Failed to read file: $e');
+      }
+    }
+  }
+
+  Future<void> _importData() async {
+    if (_validationResult == null || !_validationResult!.isValid) return;
+
+    setState(() => _isRestoring = true);
+    final notifier = ref.read(backupProvider.notifier);
 
     try {
-      await db.transaction(() async {
-        if (_replaceExisting) {
-          await db.delete(db.transactionsTable).go();
-          if (_accList.isNotEmpty) {
-            await db.delete(db.accountsTable).go();
-          }
-        }
-
-        // Insert accounts
-        for (var i = 0; i < _accList.length; i++) {
-          final a = _accList[i];
-          final id = a['id'] as String? ?? 'acc_${DateTime.now().millisecondsSinceEpoch}_$i';
-          final name = a['name'] as String? ?? 'Imported Account';
-          final type = a['type'] as String? ?? 'bank';
-          final balance = (a['balance'] as num?)?.toDouble() ?? 0.0;
-          final iconCode = (a['iconCode'] as num?)?.toInt() ?? Icons.account_balance_rounded.codePoint;
-          final colorValue = (a['colorValue'] as num?)?.toInt() ?? 0xFF00897B;
-          final institution = a['institution'] as String? ?? '';
-          final monthlyChange = (a['monthlyChange'] as num?)?.toDouble() ?? 0.0;
-
-          await db.into(db.accountsTable).insert(
-            AccountsTableCompanion.insert(
-              id: id,
-              name: name,
-              type: type,
-              balance: balance,
-              iconCode: iconCode,
-              colorValue: colorValue,
-              institution: institution,
-              monthlyChange: drift.Value(monthlyChange),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-        }
-
-        // Insert transactions
-        for (var i = 0; i < _txList.length; i++) {
-          final t = _txList[i];
-          final id = t['id'] as String? ?? 'tx_${DateTime.now().millisecondsSinceEpoch}_$i';
-          final title = t['title'] as String? ?? 'Imported Transaction';
-          final amount = (t['amount'] as num?)?.toDouble() ?? 0.0;
-          final type = t['type'] as String? ?? 'expense';
-          final categoryId = t['categoryId'] as String? ?? 'cat_food';
-          final categoryName = t['categoryName'] as String? ?? 'Food & Dining';
-          final iconCode = (t['categoryIconCode'] as num?)?.toInt() ?? Icons.fastfood_rounded.codePoint;
-          final colorValue = (t['categoryColorValue'] as num?)?.toInt() ?? 0xFFFF8F00;
-          final accountId = t['accountId'] as String? ?? 'acc_cash';
-          final accountName = t['accountName'] as String? ?? 'Cash Wallet';
-          final destinationAccountId = t['destinationAccountId'] as String?;
-          final destinationAccountName = t['destinationAccountName'] as String?;
-          final date = t['date'] != null
-              ? (DateTime.tryParse(t['date'].toString()) ?? DateTime.now())
-              : DateTime.now();
-          final note = t['note'] as String?;
-
-          await db.into(db.transactionsTable).insert(
-            TransactionsTableCompanion.insert(
-              id: id,
-              title: title,
-              amount: amount,
-              type: type,
-              categoryId: categoryId,
-              categoryName: categoryName,
-              categoryIconCode: iconCode,
-              categoryColorValue: colorValue,
-              accountId: accountId,
-              accountName: accountName,
-              destinationAccountId: drift.Value(destinationAccountId),
-              destinationAccountName: drift.Value(destinationAccountName),
-              date: date,
-              note: drift.Value(note),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-        }
-      });
+      final counts = await notifier.restoreFromJson(
+        _jsonController.text,
+        replaceExisting: _replaceExisting,
+      );
 
       if (mounted) {
-        Navigator.of(context).pop();
-        UndoSnackbar.info(
+        Navigator.pop(context);
+        UndoSnackbar.success(
           context,
-          message: 'Restored $_detectedTxCount transactions${_detectedAccCount > 0 ? " and $_detectedAccCount accounts" : ""}',
+          message:
+              'Restored ${counts['transactions'] ?? 0} transactions and ${counts['accounts'] ?? 0} accounts',
         );
       }
     } catch (e) {
       if (mounted) {
-        UndoSnackbar.error(context, message: 'Restore failed: $e');
+        setState(() => _isRestoring = false);
+        UndoSnackbar.error(context, message: 'Restore error: $e');
       }
     }
   }
@@ -233,6 +120,8 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final v = _validationResult;
+    final isValid = v != null && v.isValid;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -250,21 +139,33 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: Spacing.md),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
               // Header
               Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(Spacing.sm),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? StashColors.tealAccent.withValues(alpha: 0.15)
-                          : theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(10),
+                      color: (isDark ? StashColors.tealAccent : theme.colorScheme.primary)
+                          .withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.file_upload_outlined,
-                      size: 20,
+                      Icons.restore_page_rounded,
                       color: isDark ? StashColors.tealAccent : theme.colorScheme.primary,
+                      size: 20,
                     ),
                   ),
                   const SizedBox(width: Spacing.md),
@@ -279,7 +180,7 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
                           ),
                         ),
                         Text(
-                          'Import and restore records from JSON data',
+                          'Select a JSON file or paste backup contents',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -287,150 +188,168 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
+                ],
+              ),
+              const SizedBox(height: Spacing.md),
+
+              // Quick Actions Bar: Pick File & Paste Clipboard
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pickBackupFile,
+                      icon: const Icon(Icons.file_open_rounded, size: 16),
+                      label: const Text('Pick JSON File'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isDark ? StashColors.tealAccent : theme.colorScheme.primary,
+                        side: BorderSide(
+                          color: (isDark ? StashColors.tealAccent : theme.colorScheme.primary)
+                              .withValues(alpha: 0.5),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _pasteFromClipboard,
+                      icon: const Icon(Icons.content_paste_rounded, size: 16),
+                      label: const Text('Paste Clipboard'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: theme.colorScheme.onSurface,
+                        side: BorderSide(
+                          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: Spacing.md),
 
-              // Paste Action Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'JSON Payload',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      if (_jsonController.text.isNotEmpty)
-                        TextButton(
-                          onPressed: () {
-                            _jsonController.clear();
-                            _parseJson('');
-                          },
-                          child: const Text('Clear'),
-                        ),
-                      TextButton.icon(
-                        icon: const Icon(Icons.content_paste_rounded, size: 16),
-                        label: const Text('Paste Clipboard'),
-                        onPressed: _pasteFromClipboard,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: Spacing.xs),
-
-              // Multi-line JSON TextField
+              // Text Field for JSON
               TextField(
                 controller: _jsonController,
-                onChanged: _parseJson,
-                minLines: 4,
-                maxLines: 8,
+                maxLines: 5,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontFamily: 'monospace',
-                  fontSize: 12,
+                  fontSize: 11.5,
                 ),
                 decoration: InputDecoration(
-                  hintText: '{\n  "transactions": [...],\n  "accounts": [...]\n}',
+                  hintText: 'Paste backup JSON payload here or pick a file above...',
                   hintStyle: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    fontSize: 11.5,
                   ),
                   filled: true,
-                  fillColor: isDark
-                      ? StashColors.raised
-                      : theme.colorScheme.surfaceContainerHigh,
+                  fillColor: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
                       color: isDark
-                          ? StashColors.line
-                          : theme.colorScheme.outlineVariant,
+                          ? StashColors.line.withValues(alpha: 0.8)
+                          : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
+                onChanged: _onJsonChanged,
               ),
-              const SizedBox(height: Spacing.md),
+              const SizedBox(height: Spacing.sm),
 
-              // Parse status feedback
-              if (_isParsed) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Spacing.md,
-                    vertical: Spacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: SemanticColors.income(isDark).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: SemanticColors.income(isDark).withValues(alpha: 0.4),
+              // Validation & Statistics Badge
+              if (v != null) ...[
+                if (v.isValid) ...[
+                  Container(
+                    padding: const EdgeInsets.all(Spacing.md),
+                    decoration: BoxDecoration(
+                      color: StashColors.tealAccent.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: StashColors.tealAccent.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: StashColors.tealAccent,
+                              size: 16,
+                            ),
+                            const SizedBox(width: Spacing.xs),
+                            Text(
+                              'Valid Ledger Backup (${v.totalRecords} total records)',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: StashColors.tealAccent,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: Spacing.xs),
+                        Wrap(
+                          spacing: Spacing.xs,
+                          runSpacing: 4,
+                          children: [
+                            _miniChip(theme, '${v.detectedTransactions} txs'),
+                            _miniChip(theme, '${v.detectedAccounts} accounts'),
+                            if (v.detectedBudgets > 0)
+                              _miniChip(theme, '${v.detectedBudgets} budgets'),
+                            if (v.detectedGoals > 0)
+                              _miniChip(theme, '${v.detectedGoals} goals'),
+                            if (v.detectedDebts > 0)
+                              _miniChip(theme, '${v.detectedDebts} debts'),
+                            if (v.detectedRecurring > 0)
+                              _miniChip(theme, '${v.detectedRecurring} recurring'),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        size: 18,
-                        color: SemanticColors.income(isDark),
+                ] else ...[
+                  Container(
+                    padding: const EdgeInsets.all(Spacing.md),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.errorContainer.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.error.withValues(alpha: 0.4),
                       ),
-                      const SizedBox(width: Spacing.sm),
-                      Expanded(
-                        child: Text(
-                          'Valid Backup: $_detectedTxCount transactions${_detectedAccCount > 0 ? ", $_detectedAccCount accounts" : ""} detected',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: SemanticColors.income(isDark),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          color: theme.colorScheme.error,
+                          size: 16,
+                        ),
+                        const SizedBox(width: Spacing.xs),
+                        Expanded(
+                          child: Text(
+                            v.errorMessage ?? 'Invalid backup payload.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.error,
+                              fontSize: 11.5,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: Spacing.md),
-              ] else if (_validationError != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Spacing.md,
-                    vertical: Spacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: SemanticColors.expense(isDark).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: SemanticColors.expense(isDark).withValues(alpha: 0.4),
+                      ],
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline_rounded,
-                        size: 18,
-                        color: SemanticColors.expense(isDark),
-                      ),
-                      const SizedBox(width: Spacing.sm),
-                      Expanded(
-                        child: Text(
-                          _validationError!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: SemanticColors.expense(isDark),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
                 const SizedBox(height: Spacing.md),
               ],
 
-              // Replace vs Merge Toggle
+              // Mode: Replace vs Merge Toggle
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: Spacing.md,
@@ -438,7 +357,7 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
                 ),
                 decoration: BoxDecoration(
                   color: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isDark
                         ? StashColors.line.withValues(alpha: 0.8)
@@ -446,32 +365,22 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
                   ),
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      _replaceExisting
-                          ? Icons.published_with_changes_rounded
-                          : Icons.call_merge_rounded,
-                      size: 20,
-                      color: isDark ? StashColors.tealAccent : theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: Spacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _replaceExisting
-                                ? 'Replace Current Data'
-                                : 'Merge with Current Data',
-                            style: theme.textTheme.titleSmall?.copyWith(
+                            'Replace Existing Records',
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
                             ),
                           ),
                           Text(
                             _replaceExisting
-                                ? 'Clears existing records before restoring'
-                                : 'Adds new records and updates matching IDs',
+                                ? 'Clears tables and restores clean snapshot'
+                                : 'Merges without deleting current entries',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                               fontSize: 11,
@@ -489,29 +398,55 @@ class _ImportDialogSheetState extends ConsumerState<ImportDialogSheet> {
               ),
               const SizedBox(height: Spacing.lg),
 
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+              // Restore Button
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: isValid && !_isRestoring ? _importData : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: StashColors.tealAccent,
+                    foregroundColor: Colors.black,
+                    disabledBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  const SizedBox(width: Spacing.md),
-                  Expanded(
-                    child: FilledButton.icon(
-                      icon: const Icon(Icons.restore_rounded, size: 18),
-                      label: const Text('Restore Data'),
-                      onPressed: (_isParsed && (_detectedTxCount > 0 || _detectedAccCount > 0))
-                          ? _importData
-                          : null,
-                    ),
-                  ),
-                ],
+                  child: _isRestoring
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                          ),
+                        )
+                      : const Text(
+                          'Restore Ledger',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _miniChip(ThemeData theme, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: StashColors.tealAccent.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: theme.textTheme.labelSmall?.copyWith(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: StashColors.tealAccent,
         ),
       ),
     );

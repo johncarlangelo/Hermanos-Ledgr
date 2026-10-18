@@ -12,7 +12,11 @@ import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/accounts/presentation/widgets/add_account_sheet.dart';
 import 'package:hermanos_ledgr/features/accounts/presentation/widgets/delete_account_sheet.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
+import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/presentation/widgets/model_download_sheet.dart';
+import 'package:hermanos_ledgr/features/backup/presentation/widgets/backup_history_sheet.dart';
+import 'package:hermanos_ledgr/features/backup/providers/backup_provider.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/export_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/import_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_edit_sheet.dart';
@@ -20,6 +24,7 @@ import 'package:hermanos_ledgr/features/settings/presentation/widgets/reset_conf
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/stash_switch.dart';
 import 'package:hermanos_ledgr/features/settings/providers/settings_provider.dart';
+import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 import 'package:hermanos_ledgr/shared/widgets/profile_avatar.dart';
@@ -59,6 +64,7 @@ class SettingsScreen extends ConsumerWidget {
     final userPrefs = ref.watch(userPreferencesProvider);
     final accounts = ref.watch(accountsProvider);
     final transactions = ref.watch(transactionsProvider);
+    final backupState = ref.watch(backupProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -204,15 +210,48 @@ class SettingsScreen extends ConsumerWidget {
             theme: theme,
             children: [
               SettingsTile(
-                icon: Icons.file_download_outlined,
-                title: 'Export Ledger',
-                subtitle: 'Generate and copy CSV or structured JSON backup',
+                icon: Icons.auto_mode_rounded,
+                title: 'Daily Auto-Backup',
+                subtitle: backupState.isAutoBackupEnabled
+                    ? (backupState.lastAutoBackupTime != null
+                        ? 'Active • Last: ${DateFormat("MMM d, h:mm a").format(backupState.lastAutoBackupTime!)}'
+                        : 'Active • Runs daily on app open (keeps last 7)')
+                    : 'Disabled',
+                trailing: StashSwitch(
+                  value: backupState.isAutoBackupEnabled,
+                  onChanged: (v) => ref.read(backupProvider.notifier).toggleAutoBackup(v),
+                ),
+              ),
+              SettingsTile(
+                icon: Icons.history_rounded,
+                title: 'Local Snapshots & History',
+                subtitle: '${backupState.localBackups.length} snapshots stored on device',
+                onTap: () => BackupHistorySheet.show(context),
+              ),
+              SettingsTile(
+                icon: Icons.save_rounded,
+                title: 'Create Backup Now',
+                subtitle: 'Save instant full database snapshot',
+                onTap: () async {
+                  final file = await ref.read(backupProvider.notifier).createManualBackup(openShareSheet: false);
+                  if (file != null && context.mounted) {
+                    UndoSnackbar.success(
+                      context,
+                      message: 'Backup created: ${file.path.split(Platform.pathSeparator).last}',
+                    );
+                  }
+                },
+              ),
+              SettingsTile(
+                icon: Icons.ios_share_rounded,
+                title: 'Export Ledger (CSV / JSON)',
+                subtitle: 'Share CSV spreadsheet or JSON backup via share sheet',
                 onTap: () => ExportDialogSheet.show(context),
               ),
               SettingsTile(
-                icon: Icons.file_upload_outlined,
+                icon: Icons.restore_page_rounded,
                 title: 'Restore Ledger',
-                subtitle: 'Import structured JSON backup and restore records',
+                subtitle: 'Import structured JSON file or paste clipboard',
                 onTap: () => ImportDialogSheet.show(context),
               ),
               SettingsTile(
