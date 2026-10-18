@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
@@ -67,6 +68,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       appBar: AppBar(
         title: const Text('Transactions'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.document_scanner_rounded),
+            tooltip: 'Scan Receipt',
+            onPressed: () => context.push('/scanner'),
+          ),
           IconButton(
             icon: const Icon(Icons.add_rounded),
             tooltip: 'Add Transaction',

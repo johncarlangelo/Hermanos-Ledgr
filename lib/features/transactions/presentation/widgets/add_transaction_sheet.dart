@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,12 +21,22 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
   final TransactionType initialType;
   final TransactionModel? existingTransaction;
   final AccountModel? initialAccount;
+  final double? initialAmount;
+  final String? initialTitle;
+  final String? initialCategoryId;
+  final String? initialReceiptImage;
+  final DateTime? initialDate;
 
   const AddTransactionSheet({
     super.key,
     this.initialType = TransactionType.expense,
     this.existingTransaction,
     this.initialAccount,
+    this.initialAmount,
+    this.initialTitle,
+    this.initialCategoryId,
+    this.initialReceiptImage,
+    this.initialDate,
   });
 
   static Future<void> show(
@@ -33,6 +44,11 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
     TransactionType initialType = TransactionType.expense,
     TransactionModel? existingTransaction,
     AccountModel? initialAccount,
+    double? initialAmount,
+    String? initialTitle,
+    String? initialCategoryId,
+    String? initialReceiptImage,
+    DateTime? initialDate,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -43,6 +59,11 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
         initialType: initialType,
         existingTransaction: existingTransaction,
         initialAccount: initialAccount,
+        initialAmount: initialAmount,
+        initialTitle: initialTitle,
+        initialCategoryId: initialCategoryId,
+        initialReceiptImage: initialReceiptImage,
+        initialDate: initialDate,
       ),
     );
   }
@@ -80,11 +101,25 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       _receiptImageBase64 = existing.receiptImagePath;
     } else {
       _type = widget.initialType;
-      _selectedDate = DateTime.now();
-      _selectedCategory = CategoryDefaults.defaultCategories.firstWhere(
-        (c) => c.isExpense == (_type == TransactionType.expense),
-        orElse: () => CategoryDefaults.defaultCategories.first,
-      );
+      _selectedDate = widget.initialDate ?? DateTime.now();
+      if (widget.initialCategoryId != null) {
+        _selectedCategory = CategoryDefaults.findById(widget.initialCategoryId!);
+      } else {
+        _selectedCategory = CategoryDefaults.defaultCategories.firstWhere(
+          (c) => c.isExpense == (_type == TransactionType.expense),
+          orElse: () => CategoryDefaults.defaultCategories.first,
+        );
+      }
+      if (widget.initialAmount != null && widget.initialAmount! > 0) {
+        final isInt = widget.initialAmount!.truncateToDouble() == widget.initialAmount!;
+        _amountString = widget.initialAmount!.toStringAsFixed(isInt ? 0 : 2);
+      }
+      if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
+        _titleController.text = widget.initialTitle!;
+      }
+      if (widget.initialReceiptImage != null && widget.initialReceiptImage!.isNotEmpty) {
+        _receiptImageBase64 = widget.initialReceiptImage;
+      }
     }
     if (widget.initialAccount != null) {
       _selectedAccount = widget.initialAccount;
@@ -529,11 +564,37 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.memory(
-                              base64Decode(_receiptImageBase64!),
-                              width: 44,
-                              height: 44,
-                              fit: BoxFit.cover,
+                            child: Builder(
+                              builder: (_) {
+                                final img = _receiptImageBase64!;
+                                if (img.startsWith('/') ||
+                                    img.contains(Platform.pathSeparator) ||
+                                    img.endsWith('.jpg') ||
+                                    img.endsWith('.png')) {
+                                  final file = File(img);
+                                  if (file.existsSync()) {
+                                    return Image.file(
+                                      file,
+                                      width: 44,
+                                      height: 44,
+                                      fit: BoxFit.cover,
+                                    );
+                                  }
+                                }
+                                try {
+                                  return Image.memory(
+                                    base64Decode(img),
+                                    width: 44,
+                                    height: 44,
+                                    fit: BoxFit.cover,
+                                  );
+                                } catch (_) {
+                                  return const Icon(
+                                    Icons.receipt_long_rounded,
+                                    size: 28,
+                                  );
+                                }
+                              },
                             ),
                           ),
                           const SizedBox(width: Spacing.md),

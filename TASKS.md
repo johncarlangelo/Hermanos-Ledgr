@@ -203,12 +203,12 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 10.1 | Add Google ML Kit text recognition dependency | 🟢 | 0.3 | ⬜ TODO |
-| 10.2 | Build `OcrService` — image → extracted text → parsed data | 🟡 | 10.1 | ⬜ TODO |
-| 10.3 | Build scanner screen (camera viewfinder) | 🟡 | 10.2 | ⬜ TODO |
-| 10.4 | Build scan result card (extracted amount, merchant) | 🟡 | 10.3 | ⬜ TODO |
-| 10.5 | Connect scan result → pre-filled add transaction sheet | 🟡 | 10.4, 3.6 | ⬜ TODO |
-| 10.6 | Add gallery picker as alternative to camera | 🟢 | 10.3 | ⬜ TODO |
+| 10.1 | Add Google ML Kit text recognition dependency | 🟢 | 0.3 | ✅ DONE |
+| 10.2 | Build `OcrService` — image → extracted text → parsed data | 🟡 | 10.1 | ✅ DONE |
+| 10.3 | Build scanner screen (camera viewfinder) | 🟡 | 10.2 | ✅ DONE |
+| 10.4 | Build scan result card (extracted amount, merchant) | 🟡 | 10.3 | ✅ DONE |
+| 10.5 | Connect scan result → pre-filled add transaction sheet | 🟡 | 10.4, 3.6 | ✅ DONE |
+| 10.6 | Add gallery picker as alternative to camera | 🟢 | 10.3 | ✅ DONE |
 
 ---
 

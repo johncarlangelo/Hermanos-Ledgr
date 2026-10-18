@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
@@ -52,6 +53,16 @@ class DashboardQuickActions extends StatelessWidget {
                 context,
                 initialType: TransactionType.transfer,
               ),
+            ),
+          ),
+          const SizedBox(width: Spacing.sm),
+          Expanded(
+            child: _buildActionCard(
+              context: context,
+              icon: Icons.document_scanner_rounded,
+              label: 'Scan',
+              color: StashColors.tealAccent,
+              onTap: () => context.push('/scanner'),
             ),
           ),
         ],
