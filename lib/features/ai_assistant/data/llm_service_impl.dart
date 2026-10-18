@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_llama/flutter_llama.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/ai_prompts.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/llm_service.dart';
 
 /// Concrete implementation of [LlmService] running on-chip via flutter_llama (Task 9.5).
@@ -55,34 +56,20 @@ class LlmServiceImpl implements LlmService {
   }) async {
     if (!_isLoaded) return null;
 
-    final systemPrompt = '''
-You are Hermano, an on-device personal financial assistant.
-Extract the financial transaction from the user's message.
-Available Categories: [${categories.join(', ')}]
-Available Accounts: [${accounts.join(', ')}]
-Today's Date: $todayDate
+    final systemPrompt = AiPrompts.buildTransactionSystemPrompt(
+      categories: categories,
+      accounts: accounts,
+      todayDate: todayDate,
+    );
 
-Respond ONLY with valid JSON and NO markdown or explanations:
-{
-  "type": "expense",
-  "amount": 250.0,
-  "category": "Food & Dining",
-  "account": "GCash Wallet",
-  "to_account": null,
-  "date": "$todayDate",
-  "title": "Starbucks Coffee",
-  "note": "caramel macchiato"
-}
-
-If you cannot parse the input as a transaction, respond with:
-{"error": "unclear"}
-''';
-
-    final fullPrompt = '$systemPrompt\n\nUser: $userPrompt\nAssistant:';
+    final chatMlPrompt = AiPrompts.formatQwenChatMl(
+      systemPrompt: systemPrompt,
+      userPrompt: userPrompt,
+    );
 
     try {
       final params = GenerationParams(
-        prompt: fullPrompt,
+        prompt: chatMlPrompt,
         temperature: 0.1,
         maxTokens: 256,
       );
@@ -101,18 +88,13 @@ If you cannot parse the input as a transaction, respond with:
   }) async {
     if (!_isLoaded) return null;
 
-    final prompt = '''
-You are Hermano, a calm personal financial assistant.
-Summarize the following spending data in 2-3 friendly, helpful sentences highlighting where the money went and one actionable tip:
-
-$promptContext
-
-Assistant:
-''';
+    final chatMlPrompt = AiPrompts.buildSpendingSummaryPrompt(
+      spendingContext: promptContext,
+    );
 
     try {
       final params = GenerationParams(
-        prompt: prompt,
+        prompt: chatMlPrompt,
         temperature: 0.7,
         maxTokens: 300,
       );

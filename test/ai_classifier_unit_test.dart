@@ -4,6 +4,7 @@ import 'package:hermanos_ledgr/core/constants/category_defaults.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/classifier_intent.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/classifier_service.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/ai_prompts.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/nlp_parser.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 
@@ -247,6 +248,42 @@ void main() {
         ),
         isNull,
       );
+    });
+  });
+
+  group('AiPrompts System Prompt & ChatML Generation (Task 9.8)', () {
+    test('builds system prompt containing user categories, accounts, and today date', () {
+      final prompt = AiPrompts.buildTransactionSystemPrompt(
+        categories: ['Food & Dining', 'Transportation'],
+        accounts: ['GCash', 'BDO Savings'],
+        todayDate: '2026-10-18',
+      );
+
+      expect(prompt, contains("Today's Date: 2026-10-18"));
+      expect(prompt, contains('Available Categories: [Food & Dining, Transportation]'));
+      expect(prompt, contains('Available Accounts: [GCash, BDO Savings]'));
+      expect(prompt, contains('{"error": "unclear"}'));
+    });
+
+    test('formats prompt into standard Qwen 2.5 ChatML structure', () {
+      final chatMl = AiPrompts.formatQwenChatMl(
+        systemPrompt: 'You are Hermano.',
+        userPrompt: 'Coffee 150 GCash',
+      );
+
+      expect(chatMl, startsWith('<|im_start|>system\nYou are Hermano.<|im_end|>\n'));
+      expect(chatMl, contains('<|im_start|>user\nCoffee 150 GCash<|im_end|>\n'));
+      expect(chatMl, endsWith('<|im_start|>assistant\n'));
+    });
+
+    test('builds spending summary prompt with ChatML format', () {
+      final summaryPrompt = AiPrompts.buildSpendingSummaryPrompt(
+        spendingContext: 'Total: 5000, Top: Food (3000)',
+      );
+
+      expect(summaryPrompt, contains('<|im_start|>system'));
+      expect(summaryPrompt, contains('Total: 5000, Top: Food (3000)'));
+      expect(summaryPrompt, endsWith('<|im_start|>assistant\n'));
     });
   });
 }
