@@ -285,6 +285,32 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - Cloud storage sync (Google Drive / Dropbox API) — violates 100% offline-first and zero-cloud independence principles.
 **Rationale:** JSON serialization provides transparent, readable, and future-proof backup archives that the user can inspect, share, or restore anytime, completely offline.
 
+### D-021: Multi-Profile Support, Multi-Model LLM Lifecycle, and Financial Scratchpad (Quick Notes)
+**Date:** 2026-10-18
+**Status:** Accepted
+**Context:** Personal budgeting requires flexible workspace separation (e.g., personal spending vs side-hustle/freelance) without requiring accounts or cloud synchronization. Samsung Galaxy A36/A55 users also require granular control over their on-device AI brains (switching between ultra-light 360M models, recommended 0.5B Qwen 2.5, and 1.5B models, or importing local GGUFs) and reclaiming storage at will. Lastly, users need a scratchpad to jot down fleeting financial thoughts ("Dentist ₱1200", "Buy grocery 150 GCash") before committing them to ledger accounts.
+**Decision:**
+1. **Multi-Profile Support (`ProfileNotifier`, `ProfileManagerSheet` - Task 12.5):**
+   - Implemented `ProfileModel` with unique ID, display name, accent color, and custom photo path.
+   - Primary default profile is seeded from onboarding and protected from deletion.
+   - 1-tap profile switching atomically synchronizes the active user identity across `onboardingProvider`, dashboard greetings, and settings.
+   - Custom 28dp sheets for profile management and profile creation with interactive accent color chips and 1:1 square photo cropping.
+2. **Multi-Model LLM Lifecycle (`ModelManager`, `ModelDownloadSheet` - Task 12.6):**
+   - Upgraded `ModelManager` to support multi-model specs (`Qwen 2.5 0.5B Instruct` default/recommended, `SmolLM2 360M Instruct` ultra-light, `Qwen 2.5 1.5B Instruct`).
+   - Active brain selection persists across app launches via SharedPreferences.
+   - Streaming download progress with byte counters, cancellation, active model badge indicators, and 1-tap model switching.
+   - Safe deletion unloads active models from memory before deleting local files to reclaim device storage.
+   - Custom GGUF file importer allows advanced users to sideload arbitrary quantized models from device storage.
+3. **Quick Notes & Financial Scratchpad (`NotesDao`, `NotesTable`, `QuickNotesScreen` - Task 12.7):**
+   - Created Drift SQLite `notes` table with reactive `NotesDao` (`watchAllNotes()`).
+   - Pure Dart heuristic regex extractor automatically detects currency amounts (e.g., `₱1,200`, `150 GCash`, `50k`).
+   - Material 3 `NoteCard` with custom 7dp animated checkbox, strikethrough styling, tag badges, and 1-tap "Log to Ledger" opening pre-filled `AddTransactionSheet`.
+   - Included `notes` table in the full database JSON serialization and atomic restore pipeline (`BackupService`).
+**Alternatives Considered:**
+- Storing notes in memory or shared preferences — loses queryability, filtering, and cross-backup persistence.
+- Bundling multiple models in the APK — bloats APK size to over 1GB; modular downloading and local file import keep the app compact.
+**Rationale:** Delivers complete multi-profile customization, flexible on-device LLM management, and a low-friction scratchpad for quick expense tracking.
+
 ---
 
 *Add new decisions below this line.*

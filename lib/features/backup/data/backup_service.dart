@@ -21,6 +21,7 @@ class BackupService {
     final debts = await _db.select(_db.debtsTable).get();
     final recurring = await _db.select(_db.recurringTransactionsTable).get();
     final chatMessages = await _db.select(_db.chatMessagesTable).get();
+    final notes = await _db.select(_db.notesTable).get();
 
     final manifest = BackupManifest(
       exportDate: DateTime.now(),
@@ -148,6 +149,18 @@ class BackupService {
                 'intent': m.intent,
               })
           .toList(),
+      'notes': notes
+          .map((n) => {
+                'id': n.id,
+                'profileId': n.profileId,
+                'content': n.content,
+                'tag': n.tag,
+                'amount': n.amount,
+                'isDone': n.isDone,
+                'createdAt': n.createdAt.toIso8601String(),
+                'updatedAt': n.updatedAt.toIso8601String(),
+              })
+          .toList(),
     };
 
     return const JsonEncoder.withIndent('  ').convert(payload);
@@ -273,11 +286,13 @@ class BackupService {
       'debts': 0,
       'recurring': 0,
       'chatMessages': 0,
+      'notes': 0,
     };
 
     await _db.transaction(() async {
       if (replaceExisting) {
         // Clear all dependent tables first
+        await _db.delete(_db.notesTable).go();
         await _db.delete(_db.chatMessagesTable).go();
         await _db.delete(_db.recurringTransactionsTable).go();
         await _db.delete(_db.debtsTable).go();
@@ -499,6 +514,35 @@ class BackupService {
                   mode: drift.InsertMode.insertOrReplace,
                 );
             restoredCounts['chatMessages'] = (restoredCounts['chatMessages'] ?? 0) + 1;
+          }
+        }
+      }
+
+      // 9. Restore Quick Notes (Task 12.7)
+      if (data['notes'] is List) {
+        for (final raw in (data['notes'] as List).whereType<Map>()) {
+          final m = Map<String, dynamic>.from(raw);
+          if (m['content'] != null) {
+            final cDate = m['createdAt'] != null
+                ? DateTime.tryParse(m['createdAt'].toString()) ?? DateTime.now()
+                : DateTime.now();
+            final uDate = m['updatedAt'] != null
+                ? DateTime.tryParse(m['updatedAt'].toString()) ?? cDate
+                : cDate;
+
+            await _db.into(_db.notesTable).insert(
+                  NotesTableCompanion.insert(
+                    profileId: drift.Value(m['profileId']?.toString() ?? 'default'),
+                    content: m['content'].toString(),
+                    tag: drift.Value(m['tag']?.toString()),
+                    amount: drift.Value((m['amount'] as num?)?.toDouble()),
+                    isDone: drift.Value(m['isDone'] == true),
+                    createdAt: cDate,
+                    updatedAt: uDate,
+                  ),
+                  mode: drift.InsertMode.insertOrReplace,
+                );
+            restoredCounts['notes'] = (restoredCounts['notes'] ?? 0) + 1;
           }
         }
       }

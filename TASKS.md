@@ -236,9 +236,9 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 12.2 | Theme toggle (light/dark/system) | 🟢 | 0.5 | ✅ DONE |
 | 12.3 | AMOLED black mode toggle | 🟢 | 0.5 | ✅ DONE |
 | 12.4 | Build profile manager screen | 🟡 | 1.5 | ✅ DONE |
-| 12.5 | Profile CRUD (create, switch, delete) | 🟡 | 12.4 | ⬜ TODO |
-| 12.6 | LLM model management UI (download, delete, switch model) | 🟡 | 9.2 | ⬜ TODO |
-| 12.7 | Quick notes screen | 🟡 | 1.4 | ⬜ TODO |
+| 12.5 | Profile CRUD (create, switch, delete) | 🟡 | 12.4 | ✅ DONE |
+| 12.6 | LLM model management UI (download, delete, switch model) | 🟡 | 9.2 | ✅ DONE |
+| 12.7 | Quick notes screen | 🟡 | 1.4 | ✅ DONE |
 | 12.8 | About screen (version, build info) | 🟢 | — | ✅ DONE |
 
 ---

@@ -17,6 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/presentation/widgets/model_download_sheet.dart';
 import 'package:hermanos_ledgr/features/backup/presentation/widgets/backup_history_sheet.dart';
 import 'package:hermanos_ledgr/features/backup/providers/backup_provider.dart';
+import 'package:hermanos_ledgr/features/profile/presentation/widgets/profile_manager_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/export_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/import_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_edit_sheet.dart';
@@ -255,6 +256,18 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => ImportDialogSheet.show(context),
               ),
               SettingsTile(
+                icon: Icons.note_alt_outlined,
+                title: 'Quick Notes & Scratchpad',
+                subtitle: 'Jot down unbilled expenses, budget reminders, or ideas',
+                onTap: () => context.push('/notes'),
+              ),
+              SettingsTile(
+                icon: Icons.manage_accounts_outlined,
+                title: 'Profile Manager',
+                subtitle: 'Create, switch, or manage distinct ledger identities',
+                onTap: () => ProfileManagerSheet.show(context),
+              ),
+              SettingsTile(
                 icon: Icons.auto_stories_outlined,
                 title: 'Replay Onboarding Tour',
                 subtitle: 'Review features and philosophy without clearing your data',
@@ -463,11 +476,43 @@ class SettingsScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      'Sovereign Personal Ledger',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: Spacing.xs,
+                      children: [
+                        Text(
+                          'Sovereign Personal Ledger',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => ProfileManagerSheet.show(context),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: StashColors.tealAccent.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.swap_horiz_rounded, size: 12, color: StashColors.tealAccent),
+                                const SizedBox(width: 3),
+                                Text(
+                                  'Profiles',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: StashColors.tealAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

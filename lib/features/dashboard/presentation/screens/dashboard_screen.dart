@@ -95,7 +95,13 @@ class DashboardScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: Spacing.md),
+                    const SizedBox(width: Spacing.sm),
+                    IconButton(
+                      icon: const Icon(Icons.note_alt_outlined, size: 22),
+                      tooltip: 'Quick Notes & Scratchpad',
+                      onPressed: () => context.push('/notes'),
+                    ),
+                    const SizedBox(width: Spacing.xs),
                     ProfileAvatar(
                       size: 44,
                       userName: userName,

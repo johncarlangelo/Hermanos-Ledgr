@@ -10,6 +10,7 @@ import 'package:hermanos_ledgr/features/budget/presentation/screens/budget_scree
 import 'package:hermanos_ledgr/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:hermanos_ledgr/features/debts/presentation/screens/debts_screen.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/screens/goals_screen.dart';
+import 'package:hermanos_ledgr/features/notes/presentation/screens/quick_notes_screen.dart';
 import 'package:hermanos_ledgr/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:hermanos_ledgr/features/receipt_scanner/presentation/screens/receipt_scanner_screen.dart';
 import 'package:hermanos_ledgr/features/recurring/presentation/screens/forecast_screen.dart';
@@ -97,6 +98,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/receipt-scanner',
         builder: (context, state) => const ReceiptScannerScreen(),
+      ),
+      GoRoute(
+        path: '/notes',
+        builder: (context, state) => const QuickNotesScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => ShellScaffold(child: child),

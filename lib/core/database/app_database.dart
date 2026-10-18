@@ -7,6 +7,7 @@ import 'package:hermanos_ledgr/core/database/daos/categories_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/chat_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/debts_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/goals_dao.dart';
+import 'package:hermanos_ledgr/core/database/daos/notes_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/recurring_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/transactions_dao.dart';
 import 'package:hermanos_ledgr/core/database/tables/accounts_table.dart';
@@ -15,6 +16,7 @@ import 'package:hermanos_ledgr/core/database/tables/categories_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/chat_messages_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/debts_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/goals_table.dart';
+import 'package:hermanos_ledgr/core/database/tables/notes_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/recurring_table.dart';
 import 'package:hermanos_ledgr/core/database/tables/transactions_table.dart';
 
@@ -30,6 +32,7 @@ part 'app_database.g.dart';
     DebtsTable,
     RecurringTransactionsTable,
     ChatMessagesTable,
+    NotesTable,
   ],
   daos: [
     AccountsDao,
@@ -40,6 +43,7 @@ part 'app_database.g.dart';
     DebtsDao,
     RecurringDao,
     ChatDao,
+    NotesDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
