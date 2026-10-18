@@ -17,6 +17,20 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+
+    if (project.name == "flutter_llama") {
+        project.plugins.withId("com.android.library") {
+            project.extensions.configure<com.android.build.gradle.LibraryExtension> {
+                defaultConfig {
+                    externalNativeBuild {
+                        cmake {
+                            arguments("-DFLUTTER_LLAMA_ANDROID_VULKAN=OFF")
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {
