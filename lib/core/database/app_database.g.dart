@@ -4081,6 +4081,484 @@ class RecurringTransactionsTableCompanion
   }
 }
 
+class $ChatMessagesTableTable extends ChatMessagesTable
+    with TableInfo<$ChatMessagesTableTable, ChatMessagesTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChatMessagesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isUserMeta = const VerificationMeta('isUser');
+  @override
+  late final GeneratedColumn<bool> isUser = GeneratedColumn<bool>(
+    'is_user',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_user" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _timestampMeta = const VerificationMeta(
+    'timestamp',
+  );
+  @override
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
+    'timestamp',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _parsedTxJsonMeta = const VerificationMeta(
+    'parsedTxJson',
+  );
+  @override
+  late final GeneratedColumn<String> parsedTxJson = GeneratedColumn<String>(
+    'parsed_tx_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isConfirmedMeta = const VerificationMeta(
+    'isConfirmed',
+  );
+  @override
+  late final GeneratedColumn<bool> isConfirmed = GeneratedColumn<bool>(
+    'is_confirmed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_confirmed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _intentMeta = const VerificationMeta('intent');
+  @override
+  late final GeneratedColumn<String> intent = GeneratedColumn<String>(
+    'intent',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    content,
+    isUser,
+    timestamp,
+    parsedTxJson,
+    isConfirmed,
+    intent,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'chat_messages_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChatMessagesTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('is_user')) {
+      context.handle(
+        _isUserMeta,
+        isUser.isAcceptableOrUnknown(data['is_user']!, _isUserMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isUserMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(
+        _timestampMeta,
+        timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('parsed_tx_json')) {
+      context.handle(
+        _parsedTxJsonMeta,
+        parsedTxJson.isAcceptableOrUnknown(
+          data['parsed_tx_json']!,
+          _parsedTxJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_confirmed')) {
+      context.handle(
+        _isConfirmedMeta,
+        isConfirmed.isAcceptableOrUnknown(
+          data['is_confirmed']!,
+          _isConfirmedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('intent')) {
+      context.handle(
+        _intentMeta,
+        intent.isAcceptableOrUnknown(data['intent']!, _intentMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChatMessagesTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChatMessagesTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      isUser: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_user'],
+      )!,
+      timestamp: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}timestamp'],
+      )!,
+      parsedTxJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parsed_tx_json'],
+      ),
+      isConfirmed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_confirmed'],
+      )!,
+      intent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}intent'],
+      ),
+    );
+  }
+
+  @override
+  $ChatMessagesTableTable createAlias(String alias) {
+    return $ChatMessagesTableTable(attachedDatabase, alias);
+  }
+}
+
+class ChatMessagesTableData extends DataClass
+    implements Insertable<ChatMessagesTableData> {
+  final String id;
+  final String content;
+  final bool isUser;
+  final DateTime timestamp;
+  final String? parsedTxJson;
+  final bool isConfirmed;
+  final String? intent;
+  const ChatMessagesTableData({
+    required this.id,
+    required this.content,
+    required this.isUser,
+    required this.timestamp,
+    this.parsedTxJson,
+    required this.isConfirmed,
+    this.intent,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['content'] = Variable<String>(content);
+    map['is_user'] = Variable<bool>(isUser);
+    map['timestamp'] = Variable<DateTime>(timestamp);
+    if (!nullToAbsent || parsedTxJson != null) {
+      map['parsed_tx_json'] = Variable<String>(parsedTxJson);
+    }
+    map['is_confirmed'] = Variable<bool>(isConfirmed);
+    if (!nullToAbsent || intent != null) {
+      map['intent'] = Variable<String>(intent);
+    }
+    return map;
+  }
+
+  ChatMessagesTableCompanion toCompanion(bool nullToAbsent) {
+    return ChatMessagesTableCompanion(
+      id: Value(id),
+      content: Value(content),
+      isUser: Value(isUser),
+      timestamp: Value(timestamp),
+      parsedTxJson: parsedTxJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parsedTxJson),
+      isConfirmed: Value(isConfirmed),
+      intent: intent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(intent),
+    );
+  }
+
+  factory ChatMessagesTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChatMessagesTableData(
+      id: serializer.fromJson<String>(json['id']),
+      content: serializer.fromJson<String>(json['content']),
+      isUser: serializer.fromJson<bool>(json['isUser']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      parsedTxJson: serializer.fromJson<String?>(json['parsedTxJson']),
+      isConfirmed: serializer.fromJson<bool>(json['isConfirmed']),
+      intent: serializer.fromJson<String?>(json['intent']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'content': serializer.toJson<String>(content),
+      'isUser': serializer.toJson<bool>(isUser),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'parsedTxJson': serializer.toJson<String?>(parsedTxJson),
+      'isConfirmed': serializer.toJson<bool>(isConfirmed),
+      'intent': serializer.toJson<String?>(intent),
+    };
+  }
+
+  ChatMessagesTableData copyWith({
+    String? id,
+    String? content,
+    bool? isUser,
+    DateTime? timestamp,
+    Value<String?> parsedTxJson = const Value.absent(),
+    bool? isConfirmed,
+    Value<String?> intent = const Value.absent(),
+  }) => ChatMessagesTableData(
+    id: id ?? this.id,
+    content: content ?? this.content,
+    isUser: isUser ?? this.isUser,
+    timestamp: timestamp ?? this.timestamp,
+    parsedTxJson: parsedTxJson.present ? parsedTxJson.value : this.parsedTxJson,
+    isConfirmed: isConfirmed ?? this.isConfirmed,
+    intent: intent.present ? intent.value : this.intent,
+  );
+  ChatMessagesTableData copyWithCompanion(ChatMessagesTableCompanion data) {
+    return ChatMessagesTableData(
+      id: data.id.present ? data.id.value : this.id,
+      content: data.content.present ? data.content.value : this.content,
+      isUser: data.isUser.present ? data.isUser.value : this.isUser,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      parsedTxJson: data.parsedTxJson.present
+          ? data.parsedTxJson.value
+          : this.parsedTxJson,
+      isConfirmed: data.isConfirmed.present
+          ? data.isConfirmed.value
+          : this.isConfirmed,
+      intent: data.intent.present ? data.intent.value : this.intent,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatMessagesTableData(')
+          ..write('id: $id, ')
+          ..write('content: $content, ')
+          ..write('isUser: $isUser, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('parsedTxJson: $parsedTxJson, ')
+          ..write('isConfirmed: $isConfirmed, ')
+          ..write('intent: $intent')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    content,
+    isUser,
+    timestamp,
+    parsedTxJson,
+    isConfirmed,
+    intent,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChatMessagesTableData &&
+          other.id == this.id &&
+          other.content == this.content &&
+          other.isUser == this.isUser &&
+          other.timestamp == this.timestamp &&
+          other.parsedTxJson == this.parsedTxJson &&
+          other.isConfirmed == this.isConfirmed &&
+          other.intent == this.intent);
+}
+
+class ChatMessagesTableCompanion
+    extends UpdateCompanion<ChatMessagesTableData> {
+  final Value<String> id;
+  final Value<String> content;
+  final Value<bool> isUser;
+  final Value<DateTime> timestamp;
+  final Value<String?> parsedTxJson;
+  final Value<bool> isConfirmed;
+  final Value<String?> intent;
+  final Value<int> rowid;
+  const ChatMessagesTableCompanion({
+    this.id = const Value.absent(),
+    this.content = const Value.absent(),
+    this.isUser = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.parsedTxJson = const Value.absent(),
+    this.isConfirmed = const Value.absent(),
+    this.intent = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ChatMessagesTableCompanion.insert({
+    required String id,
+    required String content,
+    required bool isUser,
+    required DateTime timestamp,
+    this.parsedTxJson = const Value.absent(),
+    this.isConfirmed = const Value.absent(),
+    this.intent = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       content = Value(content),
+       isUser = Value(isUser),
+       timestamp = Value(timestamp);
+  static Insertable<ChatMessagesTableData> custom({
+    Expression<String>? id,
+    Expression<String>? content,
+    Expression<bool>? isUser,
+    Expression<DateTime>? timestamp,
+    Expression<String>? parsedTxJson,
+    Expression<bool>? isConfirmed,
+    Expression<String>? intent,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (content != null) 'content': content,
+      if (isUser != null) 'is_user': isUser,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (parsedTxJson != null) 'parsed_tx_json': parsedTxJson,
+      if (isConfirmed != null) 'is_confirmed': isConfirmed,
+      if (intent != null) 'intent': intent,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ChatMessagesTableCompanion copyWith({
+    Value<String>? id,
+    Value<String>? content,
+    Value<bool>? isUser,
+    Value<DateTime>? timestamp,
+    Value<String?>? parsedTxJson,
+    Value<bool>? isConfirmed,
+    Value<String?>? intent,
+    Value<int>? rowid,
+  }) {
+    return ChatMessagesTableCompanion(
+      id: id ?? this.id,
+      content: content ?? this.content,
+      isUser: isUser ?? this.isUser,
+      timestamp: timestamp ?? this.timestamp,
+      parsedTxJson: parsedTxJson ?? this.parsedTxJson,
+      isConfirmed: isConfirmed ?? this.isConfirmed,
+      intent: intent ?? this.intent,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (isUser.present) {
+      map['is_user'] = Variable<bool>(isUser.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (parsedTxJson.present) {
+      map['parsed_tx_json'] = Variable<String>(parsedTxJson.value);
+    }
+    if (isConfirmed.present) {
+      map['is_confirmed'] = Variable<bool>(isConfirmed.value);
+    }
+    if (intent.present) {
+      map['intent'] = Variable<String>(intent.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChatMessagesTableCompanion(')
+          ..write('id: $id, ')
+          ..write('content: $content, ')
+          ..write('isUser: $isUser, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('parsedTxJson: $parsedTxJson, ')
+          ..write('isConfirmed: $isConfirmed, ')
+          ..write('intent: $intent, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4095,6 +4573,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DebtsTableTable debtsTable = $DebtsTableTable(this);
   late final $RecurringTransactionsTableTable recurringTransactionsTable =
       $RecurringTransactionsTableTable(this);
+  late final $ChatMessagesTableTable chatMessagesTable =
+      $ChatMessagesTableTable(this);
   late final AccountsDao accountsDao = AccountsDao(this as AppDatabase);
   late final TransactionsDao transactionsDao = TransactionsDao(
     this as AppDatabase,
@@ -4104,6 +4584,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final GoalsDao goalsDao = GoalsDao(this as AppDatabase);
   late final DebtsDao debtsDao = DebtsDao(this as AppDatabase);
   late final RecurringDao recurringDao = RecurringDao(this as AppDatabase);
+  late final ChatDao chatDao = ChatDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4116,6 +4597,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     goalsTable,
     debtsTable,
     recurringTransactionsTable,
+    chatMessagesTable,
   ];
 }
 
@@ -6240,6 +6722,272 @@ typedef $$RecurringTransactionsTableTableProcessedTableManager =
       RecurringTransactionsTableData,
       PrefetchHooks Function()
     >;
+typedef $$ChatMessagesTableTableCreateCompanionBuilder =
+    ChatMessagesTableCompanion Function({
+      required String id,
+      required String content,
+      required bool isUser,
+      required DateTime timestamp,
+      Value<String?> parsedTxJson,
+      Value<bool> isConfirmed,
+      Value<String?> intent,
+      Value<int> rowid,
+    });
+typedef $$ChatMessagesTableTableUpdateCompanionBuilder =
+    ChatMessagesTableCompanion Function({
+      Value<String> id,
+      Value<String> content,
+      Value<bool> isUser,
+      Value<DateTime> timestamp,
+      Value<String?> parsedTxJson,
+      Value<bool> isConfirmed,
+      Value<String?> intent,
+      Value<int> rowid,
+    });
+
+class $$ChatMessagesTableTableFilterComposer
+    extends Composer<_$AppDatabase, $ChatMessagesTableTable> {
+  $$ChatMessagesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isUser => $composableBuilder(
+    column: $table.isUser,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parsedTxJson => $composableBuilder(
+    column: $table.parsedTxJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isConfirmed => $composableBuilder(
+    column: $table.isConfirmed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get intent => $composableBuilder(
+    column: $table.intent,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ChatMessagesTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChatMessagesTableTable> {
+  $$ChatMessagesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isUser => $composableBuilder(
+    column: $table.isUser,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parsedTxJson => $composableBuilder(
+    column: $table.parsedTxJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isConfirmed => $composableBuilder(
+    column: $table.isConfirmed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get intent => $composableBuilder(
+    column: $table.intent,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ChatMessagesTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChatMessagesTableTable> {
+  $$ChatMessagesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<bool> get isUser =>
+      $composableBuilder(column: $table.isUser, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<String> get parsedTxJson => $composableBuilder(
+    column: $table.parsedTxJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isConfirmed => $composableBuilder(
+    column: $table.isConfirmed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get intent =>
+      $composableBuilder(column: $table.intent, builder: (column) => column);
+}
+
+class $$ChatMessagesTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ChatMessagesTableTable,
+          ChatMessagesTableData,
+          $$ChatMessagesTableTableFilterComposer,
+          $$ChatMessagesTableTableOrderingComposer,
+          $$ChatMessagesTableTableAnnotationComposer,
+          $$ChatMessagesTableTableCreateCompanionBuilder,
+          $$ChatMessagesTableTableUpdateCompanionBuilder,
+          (
+            ChatMessagesTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $ChatMessagesTableTable,
+              ChatMessagesTableData
+            >,
+          ),
+          ChatMessagesTableData,
+          PrefetchHooks Function()
+        > {
+  $$ChatMessagesTableTableTableManager(
+    _$AppDatabase db,
+    $ChatMessagesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChatMessagesTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChatMessagesTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChatMessagesTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<bool> isUser = const Value.absent(),
+                Value<DateTime> timestamp = const Value.absent(),
+                Value<String?> parsedTxJson = const Value.absent(),
+                Value<bool> isConfirmed = const Value.absent(),
+                Value<String?> intent = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ChatMessagesTableCompanion(
+                id: id,
+                content: content,
+                isUser: isUser,
+                timestamp: timestamp,
+                parsedTxJson: parsedTxJson,
+                isConfirmed: isConfirmed,
+                intent: intent,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String content,
+                required bool isUser,
+                required DateTime timestamp,
+                Value<String?> parsedTxJson = const Value.absent(),
+                Value<bool> isConfirmed = const Value.absent(),
+                Value<String?> intent = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ChatMessagesTableCompanion.insert(
+                id: id,
+                content: content,
+                isUser: isUser,
+                timestamp: timestamp,
+                parsedTxJson: parsedTxJson,
+                isConfirmed: isConfirmed,
+                intent: intent,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ChatMessagesTableTable, ChatMessagesTableData>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ChatMessagesTableTable,
+                    ChatMessagesTableData
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ChatMessagesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ChatMessagesTableTable,
+      ChatMessagesTableData,
+      $$ChatMessagesTableTableFilterComposer,
+      $$ChatMessagesTableTableOrderingComposer,
+      $$ChatMessagesTableTableAnnotationComposer,
+      $$ChatMessagesTableTableCreateCompanionBuilder,
+      $$ChatMessagesTableTableUpdateCompanionBuilder,
+      (
+        ChatMessagesTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $ChatMessagesTableTable,
+          ChatMessagesTableData
+        >,
+      ),
+      ChatMessagesTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6262,4 +7010,6 @@ class $AppDatabaseManager {
         _db,
         _db.recurringTransactionsTable,
       );
+  $$ChatMessagesTableTableTableManager get chatMessagesTable =>
+      $$ChatMessagesTableTableTableManager(_db, _db.chatMessagesTable);
 }

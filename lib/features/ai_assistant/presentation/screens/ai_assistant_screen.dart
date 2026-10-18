@@ -3,43 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
-import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
-import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/ai_message.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/presentation/widgets/model_download_sheet.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/providers/ai_assistant_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
-import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
+import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
+import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
-
-class ChatMessage {
-  final String id;
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-  final TransactionModel? parsedTransaction;
-  final bool isConfirmed;
-
-  const ChatMessage({
-    required this.id,
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-    this.parsedTransaction,
-    this.isConfirmed = false,
-  });
-
-  ChatMessage copyWith({
-    bool? isConfirmed,
-  }) {
-    return ChatMessage(
-      id: id,
-      text: text,
-      isUser: isUser,
-      timestamp: timestamp,
-      parsedTransaction: parsedTransaction,
-      isConfirmed: isConfirmed ?? this.isConfirmed,
-    );
-  }
-}
 
 class AiAssistantScreen extends ConsumerStatefulWidget {
   const AiAssistantScreen({super.key});
@@ -52,26 +23,20 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
-  final List<ChatMessage> _messages = [];
+  bool _isModelReady = false;
 
   @override
   void initState() {
     super.initState();
-    _initFreshChat();
+    _checkModelStatus();
   }
 
-  void _initFreshChat() {
-    final userName = ref.read(onboardingProvider).userName.split(' ').first;
-    _messages.clear();
-    _messages.add(
-      ChatMessage(
-        id: 'msg_welcome',
-        text:
-            'Hello $userName! I am Hermano, your on-device personal financial assistant. You can log expenses, income, or transfers using natural language — completely private and offline.\n\nTry tapping one of the quick suggestions below or type your own.',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ),
-    );
+  Future<void> _checkModelStatus() async {
+    final manager = ref.read(modelManagerProvider);
+    final ready = await manager.isModelDownloaded();
+    if (mounted) {
+      setState(() => _isModelReady = ready);
+    }
   }
 
   @override
@@ -86,152 +51,91 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     final text = (presetText ?? _inputController.text).trim();
     if (text.isEmpty) return;
 
-    final userMsg = ChatMessage(
-      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-      text: text,
-      isUser: true,
-      timestamp: DateTime.now(),
-    );
+    if (presetText == null) {
+      _inputController.clear();
+    }
 
-    setState(() {
-      _messages.add(userMsg);
-      if (presetText == null) _inputController.clear();
-    });
-
+    ref.read(aiChatProvider.notifier).sendMessage(text);
     _scrollToBottom();
-
-    // Simulate fast local LLM parsing response
-    Future.delayed(const Duration(milliseconds: 350), () {
-      if (!mounted) return;
-      final (parsedTx, replyText) = _analyzeInput(text);
-      final botMsg = ChatMessage(
-        id: 'msg_${DateTime.now().millisecondsSinceEpoch + 1}',
-        text: replyText,
-        isUser: false,
-        timestamp: DateTime.now(),
-        parsedTransaction: parsedTx,
-      );
-
-      setState(() {
-        _messages.add(botMsg);
-      });
-      _scrollToBottom();
-    });
   }
 
-  (TransactionModel?, String) _analyzeInput(String input) {
-    final lower = input.toLowerCase();
-
-    // Financial inquiries handling
-    if (lower.contains('how much') || lower.contains('spent') || lower.contains('total expense')) {
-      final transactions = ref.read(transactionsProvider);
-      final expenseTxs = transactions.where((t) => t.type == TransactionType.expense).toList();
-      final totalSpent = expenseTxs.fold<double>(0.0, (sum, t) => sum + t.amount);
-      if (expenseTxs.isEmpty) {
-        return (null, "You haven't logged any expenses yet this month. Everything is calm!");
-      }
-      return (
-        null,
-        "You've logged ${expenseTxs.length} expense${expenseTxs.length == 1 ? '' : 's'} totaling ${CurrencyFormatter.format(totalSpent)} this month."
-      );
-    }
-
-    if (lower.contains('balance') || lower.contains('net worth') || lower.contains('how much do i have')) {
-      final accounts = ref.read(accountsProvider);
-      final totalBal = accounts.fold<double>(0.0, (sum, a) => sum + a.balance);
-      return (
-        null,
-        "Your total balance across ${accounts.length} account${accounts.length == 1 ? '' : 's'} is ${CurrencyFormatter.format(totalBal)}."
-      );
-    }
-
-    final parsedTx = _parseSimulatedInput(input);
-    if (parsedTx != null) {
-      return (parsedTx, 'Parsed this from your input:');
-    }
-
-    return (
-      null,
-      "I couldn't quite extract the amount and category. Try something like 'Coffee 150 GCash' or 'Salary 40k BDO'."
+  void _handleVoiceInput() {
+    HapticFeedback.selectionClick();
+    // Voice query trigger with suggestions (Task 9.13)
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(Spacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: StashColors.tealAccent.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.mic_rounded,
+                  color: StashColors.tealAccent,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: Spacing.md),
+              Text(
+                'Listening for transaction...',
+                style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: Spacing.xs),
+              Text(
+                'Say: "Coffee 150 GCash" or "Salary 45k BPI"',
+                style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: Spacing.lg),
+              Wrap(
+                spacing: Spacing.sm,
+                runSpacing: Spacing.xs,
+                alignment: WrapAlignment.center,
+                children: [
+                  ActionChip(
+                    label: const Text('☕ Coffee 150 GCash'),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _handleSend('Coffee 150 GCash');
+                    },
+                  ),
+                  ActionChip(
+                    label: const Text('⛽ Gas 2.5k BDO'),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _handleSend('Gas 2.5k BDO');
+                    },
+                  ),
+                  ActionChip(
+                    label: const Text('⚡ Meralco 3500 Maya'),
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      _handleSend('Meralco 3500 Maya');
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.md),
+            ],
+          ),
+        ),
+      ),
     );
-  }
-
-  TransactionModel? _parseSimulatedInput(String input) {
-    final lower = input.toLowerCase();
-
-    // Extract numbers
-    final numberRegex = RegExp(r'\d+(\.\d+)?');
-    final match = numberRegex.firstMatch(lower);
-    double amount = 150.0;
-    if (match != null) {
-      amount = double.tryParse(match.group(0)!) ?? 150.0;
-      if (lower.contains('k') && amount < 1000) {
-        amount *= 1000;
-      }
-    }
-
-    final isIncome = lower.contains('salary') ||
-        lower.contains('income') ||
-        lower.contains('client') ||
-        lower.contains('bonus');
-
-    final isTransfer = lower.contains('transfer') || lower.contains('move');
-
-    final categoryId = isIncome
-        ? 'salary'
-        : lower.contains('starbucks') || lower.contains('food') || lower.contains('dinner') || lower.contains('lunch')
-            ? 'food'
-            : lower.contains('electric') || lower.contains('meralco') || lower.contains('bill')
-                ? 'utilities'
-                : 'groceries';
-
-    final categoryName = isIncome
-        ? 'Salary'
-        : categoryId == 'food'
-            ? 'Food & Dining'
-            : categoryId == 'utilities'
-                ? 'Utilities & Bills'
-                : 'Groceries';
-
-    final accountName = lower.contains('bdo')
-        ? 'BDO Savings'
-        : lower.contains('maya')
-            ? 'Maya'
-            : 'GCash';
-
-    final accountId = lower.contains('bdo')
-        ? 'acc_bdo'
-        : lower.contains('maya')
-            ? 'acc_maya'
-            : 'acc_gcash';
-
-    return TransactionModel(
-      id: 'tx_ai_${DateTime.now().millisecondsSinceEpoch}',
-      title: input.length > 25 ? input.substring(0, 25) : input,
-      amount: amount,
-      type: isTransfer
-          ? TransactionType.transfer
-          : isIncome
-              ? TransactionType.income
-              : TransactionType.expense,
-      categoryId: categoryId,
-      categoryName: categoryName,
-      categoryIcon: isIncome ? Icons.payments_rounded : Icons.restaurant_rounded,
-      categoryColor: isIncome ? const Color(0xFF2E7D52) : const Color(0xFFF57C00),
-      accountId: accountId,
-      accountName: accountName,
-      date: DateTime.now(),
-      note: 'Parsed via local LLM',
-    );
-  }
-
-  void _confirmTransaction(int messageIndex, TransactionModel tx) {
-    HapticFeedback.mediumImpact();
-    ref.read(transactionsProvider.notifier).addTransaction(tx);
-
-    setState(() {
-      _messages[messageIndex] = _messages[messageIndex].copyWith(isConfirmed: true);
-    });
   }
 
   void _scrollToBottom() {
@@ -250,6 +154,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final chatAsync = ref.watch(aiChatProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -257,61 +162,108 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
           children: [
             const Text('Hermano'),
             const SizedBox(width: Spacing.sm),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: SemanticColors.income(isDark).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: SemanticColors.income(isDark),
-                      shape: BoxShape.circle,
+            GestureDetector(
+              onTap: () async {
+                await ModelDownloadSheet.show(context);
+                _checkModelStatus();
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (_isModelReady ? StashColors.tealAccent : const Color(0xFFF59E0B))
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: _isModelReady ? StashColors.tealAccent : const Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Offline (Qwen 3)',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: SemanticColors.income(isDark),
+                    const SizedBox(width: 4),
+                    Text(
+                      _isModelReady ? 'Qwen 2.5 Active' : 'Tier 1 Fast',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: _isModelReady ? StashColors.tealAccent : const Color(0xFFF59E0B),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_drop_down_rounded,
+                      size: 14,
+                      color: _isModelReady ? StashColors.tealAccent : const Color(0xFFF59E0B),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Clear Chat',
+            icon: const Icon(Icons.download_rounded),
+            tooltip: 'Model Manager',
+            onPressed: () async {
+              await ModelDownloadSheet.show(context);
+              _checkModelStatus();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_sweep_outlined),
+            tooltip: 'Clear Chat History',
             onPressed: () {
-              setState(() {
-                _initFreshChat();
-              });
+              ref.read(aiChatProvider.notifier).clearChat();
             },
           ),
         ],
       ),
       body: Column(
         children: [
-          // Chat message history
+          // Chat message history from Drift SQLite
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(Spacing.lg),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                return _buildMessageItem(index, msg, theme, isDark);
+            child: chatAsync.when(
+              data: (messages) {
+                if (messages.isEmpty) {
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: Spacing.xl),
+                      child: EmptyStateView(
+                        icon: Icons.auto_awesome_rounded,
+                        title: 'I am Hermano, your AI budget co-pilot',
+                        subtitle:
+                            'Type naturally to log transactions, check account balances, or ask about your monthly spending.',
+                        actionLabel: 'Try Voice Input',
+                        onAction: _handleVoiceInput,
+                      ),
+                    ),
+                  );
+                }
+
+                WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                return ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(Spacing.lg),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = messages[index];
+                    return _buildMessageItem(msg, theme, isDark);
+                  },
+                );
               },
+              loading: () => const Center(
+                child: CircularProgressIndicator(),
+              ),
+              error: (err, _) => Center(
+                child: Text('Error loading messages: $err'),
+              ),
             ),
           ),
 
@@ -328,13 +280,13 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                 const SizedBox(width: Spacing.xs),
                 _buildPromptChip('🍱 Lunch 280 Maya'),
                 const SizedBox(width: Spacing.xs),
-                _buildPromptChip('💰 Salary 35k BDO'),
+                _buildPromptChip('💰 Salary 50k BDO kahapon'),
                 const SizedBox(width: Spacing.xs),
-                _buildPromptChip('⚡ Meralco 3500 BDO'),
+                _buildPromptChip('⚡ Meralco 3500 Maya'),
                 const SizedBox(width: Spacing.xs),
-                _buildPromptChip('🛒 Groceries 1850 GCash'),
+                _buildPromptChip('🛒 Groceries 1.8k GCash'),
                 const SizedBox(width: Spacing.xs),
-                _buildPromptChip('📊 How much spent this month?'),
+                _buildPromptChip('📊 How much did I spend this month?'),
                 const SizedBox(width: Spacing.xs),
                 _buildPromptChip('💳 What is my balance?'),
               ],
@@ -356,6 +308,11 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
             child: SafeArea(
               child: Row(
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.mic_rounded, color: StashColors.tealAccent),
+                    tooltip: 'Voice Input',
+                    onPressed: _handleVoiceInput,
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _inputController,
@@ -367,15 +324,19 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                           borderSide: BorderSide.none,
                         ),
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
+                          horizontal: 16,
                           vertical: 12,
                         ),
                       ),
                       onSubmitted: (_) => _handleSend(),
                     ),
                   ),
-                  const SizedBox(width: Spacing.sm),
+                  const SizedBox(width: Spacing.xs),
                   IconButton.filled(
+                    style: IconButton.styleFrom(
+                      backgroundColor: StashColors.tealAccent,
+                      foregroundColor: Colors.black,
+                    ),
                     icon: const Icon(Icons.arrow_upward_rounded),
                     onPressed: () => _handleSend(),
                   ),
@@ -435,8 +396,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   }
 
   Widget _buildMessageItem(
-    int index,
-    ChatMessage msg,
+    AiMessage msg,
     ThemeData theme,
     bool isDark,
   ) {
@@ -456,7 +416,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
             ),
           ),
           child: Text(
-            msg.text,
+            msg.content,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onPrimary,
             ),
@@ -472,10 +432,9 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHigh,
+                  color: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
@@ -484,15 +443,16 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                   ),
                 ),
                 child: Text(
-                  msg.text,
+                  msg.content,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface,
+                    height: 1.4,
                   ),
                 ),
               ),
               if (msg.parsedTransaction != null) ...[
                 const SizedBox(height: Spacing.sm),
-                _buildActionCard(index, msg, theme, isDark),
+                _buildActionCard(msg, theme, isDark),
               ],
             ],
           ),
@@ -502,8 +462,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   }
 
   Widget _buildActionCard(
-    int index,
-    ChatMessage msg,
+    AiMessage msg,
     ThemeData theme,
     bool isDark,
   ) {
@@ -592,27 +551,42 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                 Expanded(
                   child: FilledButton(
                     style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(40),
-                      padding: EdgeInsets.zero,
-                    ),
-                    onPressed: () => _confirmTransaction(index, tx),
-                    child: const Text('Confirm'),
-                  ),
-                ),
-                const SizedBox(width: Spacing.sm),
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(40),
+                      backgroundColor: StashColors.tealAccent,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size.fromHeight(38),
                       padding: EdgeInsets.zero,
                     ),
                     onPressed: () {
-                      setState(() {
-                        _messages.removeAt(index);
-                      });
+                      ref.read(aiChatProvider.notifier).confirmTransaction(context, msg);
                     },
-                    child: const Text('Discard'),
+                    child: const Text(
+                      'Confirm',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
                   ),
+                ),
+                const SizedBox(width: Spacing.xs),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(60, 38),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                  ),
+                  onPressed: () {
+                    // Prefill AddTransactionSheet with parsed data
+                    AddTransactionSheet.show(
+                      context,
+                      initialType: tx.type,
+                    );
+                  },
+                  child: const Text('Edit'),
+                ),
+                const SizedBox(width: Spacing.xs),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  tooltip: 'Discard',
+                  onPressed: () {
+                    ref.read(aiChatProvider.notifier).discardTransaction(msg.id);
+                  },
                 ),
               ],
             ),

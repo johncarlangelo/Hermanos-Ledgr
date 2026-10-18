@@ -238,6 +238,20 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 - Static monthly multiplier without day-by-day simulation — fails to depict mid-month cash dips or account for bi-weekly paychecks.
 **Rationale:** Delivers high-precision predictive cashflow visualization, zero battery overhead, zero stock Android UI, and seamless offline SQLite persistence.
 
+### D-018: Cascaded Hybrid AI Assistant (Tier 1 Classifier + Light Qwen 2.5 LLM)
+**Date:** 2026-10-18
+**Status:** Accepted
+**Context:** Natural language logging and chat assistance require immediate (<20ms) responsiveness, zero battery drain, and zero hallucinations, while supporting complex queries, split allocations, and natural conversational summaries offline on Samsung Galaxy A36/A55 devices.
+**Decision:** Adopt a two-tier Cascaded Hybrid AI architecture:
+1. **Tier 1 Fast Rule/Classifier Engine (`ClassifierService`):** Pure Dart entity extractor with regex and keyword matching. Handles 90%+ of standard transaction inputs ("Coffee 150 GCash", "Salary 50k BDO kahapon") in <15ms with 0MB memory overhead. Strictly rejects gibberish or inputs without valid amounts (`ClassifierIntent.unclearOrGibberish`), completely eliminating hallucinations and fake transaction generation.
+2. **Tier 2 Light On-Device LLM (`Qwen 2.5 0.5B Instruct` via `flutter_llama`):** An optional GGUF model (~380MB Q4_K_M) downloaded on-demand directly on the device or imported from local storage (never bundled in the APK to keep the app featherweight at ~25-35MB). Invoked when Tier 1 detects `complexOrSplit` transactions, ambiguous multi-line expenses, or requests for natural language spending summaries.
+3. **Clean Action Card Flow & Persistence:** Transactions parsed by either tier are presented as an interactive Action Card (amount, category, account, date) with `[Confirm]`, `[Edit]`, and `[Discard]`. Confirming atomically logs the transaction to the real Drift SQLite database, updates account balances, and shows an `UndoSnackbar` with a 5-second rollback window. Full chat conversation history persists in Drift (`chat_messages` table).
+**Alternatives Considered:**
+- Pure cloud LLM (OpenAI/Anthropic API) — violates 100% offline-first and zero-cloud privacy architecture.
+- Bundling GGUF model directly in the APK assets — inflates APK size from ~30MB to 400MB+, creating slow sideloading and storage bloat.
+- Relying exclusively on an LLM for simple inputs — introduces 1-2s latency and non-deterministic behavior for trivial 3-word expense logs.
+**Rationale:** Gives the user instant sub-20ms responsiveness for daily transaction logging while providing full natural language reasoning and offline on-device AI capabilities when needed.
+
 ---
 
 *Add new decisions below this line.*

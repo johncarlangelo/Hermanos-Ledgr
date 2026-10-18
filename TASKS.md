@@ -178,23 +178,23 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 9.1 | Build `ClassifierService` — Tier 1 fast decision model & entity extractor (<30MB) | 🟡 | 3.1 | ⬜ TODO |
-| 9.2 | Build hybrid router logic — direct map high-confidence inputs vs delegate complex/summaries to Tier 2 | 🟡 | 9.1 | ⬜ TODO |
-| 9.3 | Add `flutter_llama` dependency and configure Android Vulkan/OpenCL build | 🟡 | 0.3 | ⬜ TODO |
-| 9.4 | Build `ModelManager` — download, store, and manage Sub-1B light GGUF model (`Qwen 2.5 0.5B` / `SmolLM 2 360M`) | 🔴 | 9.3 | ⬜ TODO |
-| 9.5 | Build `LlmService` — background isolate inference wrapper with token streaming for complex queries | 🔴 | 9.4 | ⬜ TODO |
-| 9.6 | Build `NlpParser` — unified parser standardizing Tier 1 & Tier 2 outputs → `ParsedTransaction` | 🟡 | 9.1, 9.5 | ⬜ TODO |
-| 9.7 | Create hybrid AI providers (`ClassifierProvider`, `LlmProvider`, `ChatProvider`) | 🟡 | 9.2, 9.6 | ⬜ TODO |
-| 9.8 | Design and benchmark optimized system prompt for sub-1B model | 🟡 | 9.5 | ⬜ TODO |
+| 9.1 | Build `ClassifierService` — Tier 1 fast decision model & entity extractor (<30MB) | 🟡 | 3.1 | ✅ DONE |
+| 9.2 | Build hybrid router logic — direct map high-confidence inputs vs delegate complex/summaries to Tier 2 | 🟡 | 9.1 | ✅ DONE |
+| 9.3 | Add `flutter_llama` dependency and configure Android Vulkan/OpenCL build | 🟡 | 0.3 | ✅ DONE |
+| 9.4 | Build `ModelManager` — download, store, and manage Sub-1B light GGUF model (`Qwen 2.5 0.5B` / `SmolLM 2 360M`) | 🔴 | 9.4 | ✅ DONE |
+| 9.5 | Build `LlmService` — background isolate inference wrapper with token streaming for complex queries | 🔴 | 9.4 | ✅ DONE |
+| 9.6 | Build `NlpParser` — unified parser standardizing Tier 1 & Tier 2 outputs → `ParsedTransaction` | 🟡 | 9.1, 9.5 | ✅ DONE |
+| 9.7 | Create hybrid AI providers (`ClassifierProvider`, `LlmProvider`, `ChatProvider`) | 🟡 | 9.2, 9.6 | ✅ DONE |
+| 9.8 | Design and benchmark optimized system prompt for sub-1B model | 🟡 | 9.5 | ✅ DONE |
 | 9.9 | Build chat screen UI (offline badge, message list, prompt chips, input bar) | 🔴 | 9.7 | ✅ DONE |
 | 9.10 | Build chat bubble widget (user messages + assistant responses) | 🟡 | 9.9 | ✅ DONE |
 | 9.11 | Build transaction action card (amount, category, account preview with confirm/edit/discard) | 🟡 | 9.9, 3.6 | ✅ DONE |
-| 9.12 | Implement confirm flow (action card → save transaction to Drift DB with 5s undo toast) | 🟡 | 9.11, 3.10 | ⬜ TODO |
-| 9.13 | Add voice input button (Android speech-to-text → hybrid pipeline) | 🟡 | 9.9 | ⬜ TODO |
-| 9.14 | Build model download dialog with progress indicator (for optional Tier 2 Sub-1B model) | 🟡 | 9.4 | ⬜ TODO |
-| 9.15 | Implement daily spending summary generation (via Tier 2 LLM) | 🟡 | 9.5, 3.3 | ⬜ TODO |
-| 9.16 | Chat history persistence in Drift database (`chat_messages` table) | 🟢 | 9.9, 1.4 | ⬜ TODO |
-| 9.17 | Benchmark & test on Samsung Galaxy A36 (Tier 1 <20ms, Tier 2 <1.5s, edge case splits) | 🟡 | 9.12 | ⬜ TODO |
+| 9.12 | Implement confirm flow (action card → save transaction to Drift DB with 5s undo toast) | 🟡 | 9.11, 3.10 | ✅ DONE |
+| 9.13 | Add voice input button (Android speech-to-text → hybrid pipeline) | 🟡 | 9.9 | ✅ DONE |
+| 9.14 | Build model download dialog with progress indicator (for optional Tier 2 Sub-1B model) | 🟡 | 9.4 | ✅ DONE |
+| 9.15 | Implement daily spending summary generation (via Tier 2 LLM) | 🟡 | 9.5, 3.3 | ✅ DONE |
+| 9.16 | Chat history persistence in Drift database (`chat_messages` table) | 🟢 | 9.9, 1.4 | ✅ DONE |
+| 9.17 | Benchmark & test on Samsung Galaxy A36 (Tier 1 <20ms, Tier 2 <1.5s, edge case splits) | 🟡 | 9.12 | ✅ DONE |
 
 ---
 

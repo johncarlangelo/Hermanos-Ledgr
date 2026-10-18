@@ -12,6 +12,7 @@ import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/accounts/presentation/widgets/add_account_sheet.dart';
 import 'package:hermanos_ledgr/features/accounts/presentation/widgets/delete_account_sheet.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/presentation/widgets/model_download_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/export_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/import_dialog_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_edit_sheet.dart';
@@ -650,6 +651,15 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => ModelDownloadSheet.show(context),
+              icon: const Icon(Icons.tune_rounded, size: 16),
+              label: const Text('Manage Model Storage'),
             ),
           ),
         ],

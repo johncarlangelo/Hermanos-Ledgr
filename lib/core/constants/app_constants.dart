@@ -7,9 +7,9 @@ class AppConstants {
   static const String currencyCode = 'PHP';
   static const String defaultProfileName = 'John C.';
 
-  static const String appVersion = '0.12.0';
-  static const int appBuildNumber = 29;
-  static const String appVersionDisplay = 'v0.12.0-alpha';
+  static const String appVersion = '0.13.0';
+  static const int appBuildNumber = 30;
+  static const String appVersionDisplay = 'v0.13.0-alpha';
 
   // Target device info
   static const String targetDevice = 'Samsung Galaxy A36 5G';

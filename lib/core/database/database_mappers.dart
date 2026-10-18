@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:hermanos_ledgr/core/database/app_database.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/ai_message.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/classifier_intent.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/parsed_transaction.dart';
 import 'package:hermanos_ledgr/features/budget/domain/budget_model.dart';
 import 'package:hermanos_ledgr/features/debts/domain/debt_model.dart';
 import 'package:hermanos_ledgr/features/goals/domain/goal_model.dart';
@@ -201,6 +205,51 @@ class DatabaseMappers {
       startDate: model.startDate,
       nextDueDate: model.nextDueDate,
       isActive: Value(model.isActive),
+    );
+  }
+
+  static AiMessage chatMessageFromDrift(ChatMessagesTableData row) {
+    ParsedTransaction? parsedTx;
+    if (row.parsedTxJson != null && row.parsedTxJson!.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(row.parsedTxJson!) as Map<String, dynamic>;
+        parsedTx = ParsedTransaction.fromJson(decoded);
+      } catch (_) {}
+    }
+
+    ClassifierIntent? intent;
+    if (row.intent != null) {
+      intent = ClassifierIntent.values.cast<ClassifierIntent?>().firstWhere(
+            (e) => e?.name == row.intent,
+            orElse: () => null,
+          );
+    }
+
+    return AiMessage(
+      id: row.id,
+      content: row.content,
+      isUser: row.isUser,
+      timestamp: row.timestamp,
+      parsedTransaction: parsedTx,
+      isConfirmed: row.isConfirmed,
+      intent: intent,
+    );
+  }
+
+  static ChatMessagesTableCompanion chatMessageToCompanion(AiMessage msg) {
+    String? txJson;
+    if (msg.parsedTransaction != null) {
+      txJson = jsonEncode(msg.parsedTransaction!.toJson());
+    }
+
+    return ChatMessagesTableCompanion.insert(
+      id: msg.id,
+      content: msg.content,
+      isUser: msg.isUser,
+      timestamp: msg.timestamp,
+      parsedTxJson: Value(txJson),
+      isConfirmed: Value(msg.isConfirmed),
+      intent: Value(msg.intent?.name),
     );
   }
 }
