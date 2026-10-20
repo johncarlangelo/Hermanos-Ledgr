@@ -142,19 +142,6 @@ class _AddContributionSheetState extends ConsumerState<AddContributionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle Bar
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: Spacing.md),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
             // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

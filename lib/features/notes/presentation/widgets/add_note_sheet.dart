@@ -108,19 +108,6 @@ class _AddNoteSheetState extends ConsumerState<AddNoteSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: Spacing.md),
-
               // Title
               Text(
                 isEditing ? 'Edit Quick Note' : 'Add Financial Note',

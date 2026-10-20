@@ -166,15 +166,6 @@ class _AddDebtSheetState extends ConsumerState<AddDebtSheet> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.md),
                     Text(
                       'Select Due Date',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -241,19 +232,6 @@ class _AddDebtSheetState extends ConsumerState<AddDebtSheet> {
           vertical: Spacing.md,
         ),
         children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: Spacing.md),
-
           // Title
           Text(
             isEditing

@@ -121,19 +121,6 @@ class _RecordPaymentSheetState extends ConsumerState<RecordPaymentSheet> {
           vertical: Spacing.md,
         ),
         children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: Spacing.md),
-
           // Title
           Text(
             isReceivable ? 'Record Collected Payment' : 'Record Debt Repayment',

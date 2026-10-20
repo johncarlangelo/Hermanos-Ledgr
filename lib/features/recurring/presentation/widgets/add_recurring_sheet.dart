@@ -176,19 +176,6 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
             vertical: Spacing.md,
           ),
           children: [
-            // Drag handle
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: Spacing.md),
-
             // Header Title
             Text(
               widget.initialRule != null ? 'Edit Recurring Rule' : 'New Recurring Rule',
@@ -624,17 +611,6 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
           shrinkWrap: true,
           padding: const EdgeInsets.all(Spacing.md),
           children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: Spacing.md),
             const Text(
               'Select Account',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
@@ -685,17 +661,6 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
           shrinkWrap: true,
           padding: const EdgeInsets.all(Spacing.md),
           children: [
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: Spacing.md),
             const Text(
               'Select Category',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
@@ -747,17 +712,6 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: Spacing.md),
                 Text(
                   'Select Due Date',
                   style: theme.textTheme.titleMedium?.copyWith(
