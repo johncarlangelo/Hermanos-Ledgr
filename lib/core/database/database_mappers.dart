@@ -188,6 +188,7 @@ class DatabaseMappers {
       startDate: row.startDate,
       nextDueDate: row.nextDueDate,
       isActive: row.isActive,
+      enableNotifications: row.enableNotifications,
     );
   }
 
@@ -205,6 +206,7 @@ class DatabaseMappers {
       startDate: model.startDate,
       nextDueDate: model.nextDueDate,
       isActive: Value(model.isActive),
+      enableNotifications: Value(model.enableNotifications),
     );
   }
 

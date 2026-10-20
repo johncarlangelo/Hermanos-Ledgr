@@ -14,6 +14,7 @@ class RecurringTransactionsTable extends Table {
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get nextDueDate => dateTime()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  BoolColumn get enableNotifications => boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -3492,6 +3492,20 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _enableNotificationsMeta =
+      const VerificationMeta('enableNotifications');
+  @override
+  late final GeneratedColumn<bool> enableNotifications = GeneratedColumn<bool>(
+    'enable_notifications',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_notifications" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3506,6 +3520,7 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
     startDate,
     nextDueDate,
     isActive,
+    enableNotifications,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3619,6 +3634,15 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('enable_notifications')) {
+      context.handle(
+        _enableNotificationsMeta,
+        enableNotifications.isAcceptableOrUnknown(
+          data['enable_notifications']!,
+          _enableNotificationsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3679,6 +3703,10 @@ class $RecurringTransactionsTableTable extends RecurringTransactionsTable
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      enableNotifications: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_notifications'],
+      )!,
     );
   }
 
@@ -3702,6 +3730,7 @@ class RecurringTransactionsTableData extends DataClass
   final DateTime startDate;
   final DateTime nextDueDate;
   final bool isActive;
+  final bool enableNotifications;
   const RecurringTransactionsTableData({
     required this.id,
     required this.title,
@@ -3715,6 +3744,7 @@ class RecurringTransactionsTableData extends DataClass
     required this.startDate,
     required this.nextDueDate,
     required this.isActive,
+    required this.enableNotifications,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3731,6 +3761,7 @@ class RecurringTransactionsTableData extends DataClass
     map['start_date'] = Variable<DateTime>(startDate);
     map['next_due_date'] = Variable<DateTime>(nextDueDate);
     map['is_active'] = Variable<bool>(isActive);
+    map['enable_notifications'] = Variable<bool>(enableNotifications);
     return map;
   }
 
@@ -3748,6 +3779,7 @@ class RecurringTransactionsTableData extends DataClass
       startDate: Value(startDate),
       nextDueDate: Value(nextDueDate),
       isActive: Value(isActive),
+      enableNotifications: Value(enableNotifications),
     );
   }
 
@@ -3769,6 +3801,9 @@ class RecurringTransactionsTableData extends DataClass
       startDate: serializer.fromJson<DateTime>(json['startDate']),
       nextDueDate: serializer.fromJson<DateTime>(json['nextDueDate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      enableNotifications: serializer.fromJson<bool>(
+        json['enableNotifications'],
+      ),
     );
   }
   @override
@@ -3787,6 +3822,7 @@ class RecurringTransactionsTableData extends DataClass
       'startDate': serializer.toJson<DateTime>(startDate),
       'nextDueDate': serializer.toJson<DateTime>(nextDueDate),
       'isActive': serializer.toJson<bool>(isActive),
+      'enableNotifications': serializer.toJson<bool>(enableNotifications),
     };
   }
 
@@ -3803,6 +3839,7 @@ class RecurringTransactionsTableData extends DataClass
     DateTime? startDate,
     DateTime? nextDueDate,
     bool? isActive,
+    bool? enableNotifications,
   }) => RecurringTransactionsTableData(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -3816,6 +3853,7 @@ class RecurringTransactionsTableData extends DataClass
     startDate: startDate ?? this.startDate,
     nextDueDate: nextDueDate ?? this.nextDueDate,
     isActive: isActive ?? this.isActive,
+    enableNotifications: enableNotifications ?? this.enableNotifications,
   );
   RecurringTransactionsTableData copyWithCompanion(
     RecurringTransactionsTableCompanion data,
@@ -3841,6 +3879,9 @@ class RecurringTransactionsTableData extends DataClass
           ? data.nextDueDate.value
           : this.nextDueDate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      enableNotifications: data.enableNotifications.present
+          ? data.enableNotifications.value
+          : this.enableNotifications,
     );
   }
 
@@ -3858,7 +3899,8 @@ class RecurringTransactionsTableData extends DataClass
           ..write('frequency: $frequency, ')
           ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('enableNotifications: $enableNotifications')
           ..write(')'))
         .toString();
   }
@@ -3877,6 +3919,7 @@ class RecurringTransactionsTableData extends DataClass
     startDate,
     nextDueDate,
     isActive,
+    enableNotifications,
   );
   @override
   bool operator ==(Object other) =>
@@ -3893,7 +3936,8 @@ class RecurringTransactionsTableData extends DataClass
           other.frequency == this.frequency &&
           other.startDate == this.startDate &&
           other.nextDueDate == this.nextDueDate &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.enableNotifications == this.enableNotifications);
 }
 
 class RecurringTransactionsTableCompanion
@@ -3910,6 +3954,7 @@ class RecurringTransactionsTableCompanion
   final Value<DateTime> startDate;
   final Value<DateTime> nextDueDate;
   final Value<bool> isActive;
+  final Value<bool> enableNotifications;
   final Value<int> rowid;
   const RecurringTransactionsTableCompanion({
     this.id = const Value.absent(),
@@ -3924,6 +3969,7 @@ class RecurringTransactionsTableCompanion
     this.startDate = const Value.absent(),
     this.nextDueDate = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.enableNotifications = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RecurringTransactionsTableCompanion.insert({
@@ -3939,6 +3985,7 @@ class RecurringTransactionsTableCompanion
     required DateTime startDate,
     required DateTime nextDueDate,
     this.isActive = const Value.absent(),
+    this.enableNotifications = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
@@ -3964,6 +4011,7 @@ class RecurringTransactionsTableCompanion
     Expression<DateTime>? startDate,
     Expression<DateTime>? nextDueDate,
     Expression<bool>? isActive,
+    Expression<bool>? enableNotifications,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3979,6 +4027,8 @@ class RecurringTransactionsTableCompanion
       if (startDate != null) 'start_date': startDate,
       if (nextDueDate != null) 'next_due_date': nextDueDate,
       if (isActive != null) 'is_active': isActive,
+      if (enableNotifications != null)
+        'enable_notifications': enableNotifications,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3996,6 +4046,7 @@ class RecurringTransactionsTableCompanion
     Value<DateTime>? startDate,
     Value<DateTime>? nextDueDate,
     Value<bool>? isActive,
+    Value<bool>? enableNotifications,
     Value<int>? rowid,
   }) {
     return RecurringTransactionsTableCompanion(
@@ -4011,6 +4062,7 @@ class RecurringTransactionsTableCompanion
       startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       isActive: isActive ?? this.isActive,
+      enableNotifications: enableNotifications ?? this.enableNotifications,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4054,6 +4106,9 @@ class RecurringTransactionsTableCompanion
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (enableNotifications.present) {
+      map['enable_notifications'] = Variable<bool>(enableNotifications.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4075,6 +4130,7 @@ class RecurringTransactionsTableCompanion
           ..write('startDate: $startDate, ')
           ..write('nextDueDate: $nextDueDate, ')
           ..write('isActive: $isActive, ')
+          ..write('enableNotifications: $enableNotifications, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6862,6 +6918,7 @@ typedef $$RecurringTransactionsTableTableCreateCompanionBuilder =
       required DateTime startDate,
       required DateTime nextDueDate,
       Value<bool> isActive,
+      Value<bool> enableNotifications,
       Value<int> rowid,
     });
 typedef $$RecurringTransactionsTableTableUpdateCompanionBuilder =
@@ -6878,6 +6935,7 @@ typedef $$RecurringTransactionsTableTableUpdateCompanionBuilder =
       Value<DateTime> startDate,
       Value<DateTime> nextDueDate,
       Value<bool> isActive,
+      Value<bool> enableNotifications,
       Value<int> rowid,
     });
 
@@ -6947,6 +7005,11 @@ class $$RecurringTransactionsTableTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableNotifications => $composableBuilder(
+    column: $table.enableNotifications,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -7019,6 +7082,11 @@ class $$RecurringTransactionsTableTableOrderingComposer
     column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get enableNotifications => $composableBuilder(
+    column: $table.enableNotifications,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RecurringTransactionsTableTableAnnotationComposer
@@ -7073,6 +7141,11 @@ class $$RecurringTransactionsTableTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get enableNotifications => $composableBuilder(
+    column: $table.enableNotifications,
+    builder: (column) => column,
+  );
 }
 
 class $$RecurringTransactionsTableTableTableManager
@@ -7133,6 +7206,7 @@ class $$RecurringTransactionsTableTableTableManager
                 Value<DateTime> startDate = const Value.absent(),
                 Value<DateTime> nextDueDate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> enableNotifications = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecurringTransactionsTableCompanion(
                 id: id,
@@ -7147,6 +7221,7 @@ class $$RecurringTransactionsTableTableTableManager
                 startDate: startDate,
                 nextDueDate: nextDueDate,
                 isActive: isActive,
+                enableNotifications: enableNotifications,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -7163,6 +7238,7 @@ class $$RecurringTransactionsTableTableTableManager
                 required DateTime startDate,
                 required DateTime nextDueDate,
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> enableNotifications = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecurringTransactionsTableCompanion.insert(
                 id: id,
@@ -7177,6 +7253,7 @@ class $$RecurringTransactionsTableTableTableManager
                 startDate: startDate,
                 nextDueDate: nextDueDate,
                 isActive: isActive,
+                enableNotifications: enableNotifications,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

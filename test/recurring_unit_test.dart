@@ -289,8 +289,15 @@ void main() {
       expect(all.first.title, 'Meralco Electric Bill');
       expect(all.first.amount, 4200.0);
       expect(all.first.frequency, RecurringFrequency.monthly);
+      expect(all.first.enableNotifications, isTrue);
 
-      // 3. Toggle active
+      // 3. Update notification state
+      final updatedNotificationRule = all.first.copyWith(enableNotifications: false);
+      await repository.updateRecurring(updatedNotificationRule);
+      final fetchedAfterNotifToggle = await repository.getRecurringById('rec_sql_1');
+      expect(fetchedAfterNotifToggle!.enableNotifications, isFalse);
+
+      // 4. Toggle active
       await repository.toggleActive('rec_sql_1', false);
       final paused = await repository.getRecurringById('rec_sql_1');
       expect(paused!.isActive, isFalse);

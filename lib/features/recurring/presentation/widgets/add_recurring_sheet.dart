@@ -52,6 +52,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
   AccountModel? _selectedAccount;
   late DateTime _startDate;
   late DateTime _nextDueDate;
+  late bool _enableNotifications;
 
   @override
   void initState() {
@@ -64,6 +65,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
     );
     _type = rule?.type ?? TransactionType.expense;
     _frequency = rule?.frequency ?? RecurringFrequency.monthly;
+    _enableNotifications = rule?.enableNotifications ?? true;
 
     _selectedCategory = rule != null
         ? CategoryDefaults.defaultCategories.firstWhere(
@@ -118,6 +120,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
       startDate: _startDate,
       nextDueDate: _nextDueDate,
       isActive: widget.initialRule?.isActive ?? true,
+      enableNotifications: _enableNotifications,
     );
 
     if (isEditing) {
@@ -434,6 +437,10 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                 ),
               ),
             ),
+            const SizedBox(height: Spacing.md),
+
+            // 7. Notification Reminders Toggle (Zero stock switch rule)
+            _buildNotificationToggle(theme, isDark),
             const SizedBox(height: Spacing.xl),
 
             // Save Action Button
@@ -451,6 +458,112 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
               ),
             ),
             const SizedBox(height: Spacing.lg),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationToggle(ThemeData theme, bool isDark) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _enableNotifications = !_enableNotifications);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.md,
+        ),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: _enableNotifications
+                ? StashColors.tealAccent.withValues(alpha: 0.35)
+                : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: _enableNotifications
+                    ? StashColors.tealAccent.withValues(alpha: 0.15)
+                    : theme.colorScheme.surfaceContainerHighest,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _enableNotifications
+                    ? Icons.notifications_active_rounded
+                    : Icons.notifications_off_outlined,
+                size: 20,
+                color: _enableNotifications
+                    ? StashColors.tealAccent
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: Spacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Due Date Reminders',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _enableNotifications
+                        ? 'Notify 1 week, 3 days, & 1 day before'
+                        : 'Reminders are turned off',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Custom Animated Toggle Switch (Zero stock Switch rule)
+            Container(
+              width: 44,
+              height: 24,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: _enableNotifications
+                    ? StashColors.tealAccent
+                    : (isDark ? StashColors.dim : theme.colorScheme.outlineVariant),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                alignment: _enableNotifications
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 3,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

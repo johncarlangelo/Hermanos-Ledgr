@@ -13,6 +13,7 @@ import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 class RecurringRuleCard extends StatelessWidget {
   final RecurringModel rule;
   final VoidCallback? onToggleActive;
+  final VoidCallback? onToggleNotifications;
   final VoidCallback? onEdit;
   final VoidCallback? onLogNow;
   final VoidCallback? onDelete;
@@ -21,6 +22,7 @@ class RecurringRuleCard extends StatelessWidget {
     super.key,
     required this.rule,
     this.onToggleActive,
+    this.onToggleNotifications,
     this.onEdit,
     this.onLogNow,
     this.onDelete,
@@ -228,6 +230,26 @@ class RecurringRuleCard extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
+                  const SizedBox(width: Spacing.xs),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onToggleNotifications?.call();
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      child: Icon(
+                        rule.enableNotifications
+                            ? Icons.notifications_active_rounded
+                            : Icons.notifications_off_outlined,
+                        size: 14,
+                        color: rule.enableNotifications
+                            ? StashColors.tealAccent
+                            : theme.colorScheme.outlineVariant,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               _buildDueBadge(theme, isDark, daysUntil),
@@ -379,6 +401,28 @@ class RecurringRuleCard extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(sheetContext);
                   onToggleActive?.call();
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  rule.enableNotifications
+                      ? Icons.notifications_off_outlined
+                      : Icons.notifications_active_rounded,
+                  color: rule.enableNotifications
+                      ? theme.colorScheme.onSurfaceVariant
+                      : StashColors.tealAccent,
+                ),
+                title: Text(
+                  rule.enableNotifications ? 'Mute Reminders' : 'Enable Reminders',
+                ),
+                subtitle: Text(
+                  rule.enableNotifications
+                      ? 'Turn off 7-day, 3-day, and 1-day reminders'
+                      : 'Notify 7 days, 3 days, and 1 day before due date',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onToggleNotifications?.call();
                 },
               ),
               ListTile(

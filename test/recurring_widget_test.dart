@@ -38,6 +38,14 @@ class _MockRecurringNotifier extends RecurringNotifier {
   }
 
   @override
+  Future<void> toggleNotifications(String id) async {
+    state = [
+      for (final r in state)
+        if (r.id == id) r.copyWith(enableNotifications: !r.enableNotifications) else r,
+    ];
+  }
+
+  @override
   Future<RecurringModel?> deleteRule(String id) async {
     final match = state.cast<RecurringModel?>().firstWhere((r) => r?.id == id, orElse: () => null);
     state = state.where((r) => r.id != id).toList();
@@ -129,6 +137,9 @@ void main() {
     await tester.pump();
     expect(toggleClicked, isTrue);
 
+    // Verify reminder notification bell is visible
+    expect(find.byIcon(Icons.notifications_active_rounded), findsOneWidget);
+
     // Open options sheet via more_vert_rounded
     await tester.tap(find.byIcon(Icons.more_vert_rounded));
     await tester.pumpAndSettle();
@@ -136,6 +147,7 @@ void main() {
     expect(find.text('Log Instance Now'), findsOneWidget);
     expect(find.text('Edit Rule'), findsOneWidget);
     expect(find.text('Pause Rule'), findsOneWidget);
+    expect(find.text('Mute Reminders'), findsOneWidget);
 
     // Tap Log Instance Now
     await tester.tap(find.text('Log Instance Now'));
@@ -258,6 +270,16 @@ void main() {
     await tester.ensureVisible(find.text('Weekly'));
     await tester.tap(find.text('Weekly'));
     await tester.pumpAndSettle();
+
+    // Verify Due Date Reminders toggle is present
+    await tester.ensureVisible(find.text('Due Date Reminders'));
+    expect(find.text('Due Date Reminders'), findsOneWidget);
+    expect(find.text('Notify 1 week, 3 days, & 1 day before'), findsOneWidget);
+
+    // Toggle reminders off
+    await tester.tap(find.text('Due Date Reminders'));
+    await tester.pumpAndSettle();
+    expect(find.text('Reminders are turned off'), findsOneWidget);
 
     // Tap save without filling title
     await tester.ensureVisible(find.text('Create Recurring Rule'));

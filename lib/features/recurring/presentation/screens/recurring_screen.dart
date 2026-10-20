@@ -257,6 +257,19 @@ class _RecurringScreenState extends ConsumerState<RecurringScreen>
             child: RecurringRuleCard(
               rule: rule,
               onToggleActive: () => ref.read(recurringProvider.notifier).toggleActive(rule.id),
+              onToggleNotifications: () async {
+                await ref.read(recurringProvider.notifier).toggleNotifications(rule.id);
+                if (mounted) {
+                  final willEnable = !rule.enableNotifications;
+                  UndoSnackbar.show(
+                    context,
+                    message: willEnable
+                        ? 'Reminders enabled (7d, 3d, 1d) for "${rule.title}"'
+                        : 'Reminders muted for "${rule.title}"',
+                    onUndo: () => ref.read(recurringProvider.notifier).toggleNotifications(rule.id),
+                  );
+                }
+              },
               onEdit: () => AddRecurringSheet.show(context, rule: rule),
               onLogNow: () => ref.read(recurringAutoLogProvider.notifier).manuallyLogRule(context, rule),
               onDelete: () async {

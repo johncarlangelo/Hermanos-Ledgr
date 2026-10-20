@@ -83,6 +83,7 @@ class RecurringModel {
   final DateTime startDate;
   final DateTime nextDueDate;
   final bool isActive;
+  final bool enableNotifications;
 
   const RecurringModel({
     required this.id,
@@ -97,6 +98,7 @@ class RecurringModel {
     required this.startDate,
     required this.nextDueDate,
     this.isActive = true,
+    this.enableNotifications = true,
   });
 
   /// Monthly equivalent amount (Task 8.3 & 8.7)
@@ -138,6 +140,7 @@ class RecurringModel {
     DateTime? startDate,
     DateTime? nextDueDate,
     bool? isActive,
+    bool? enableNotifications,
   }) {
     return RecurringModel(
       id: id ?? this.id,
@@ -152,6 +155,7 @@ class RecurringModel {
       startDate: startDate ?? this.startDate,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       isActive: isActive ?? this.isActive,
+      enableNotifications: enableNotifications ?? this.enableNotifications,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/core/providers/database_provider.dart';
+import 'package:hermanos_ledgr/core/services/notification_service.dart';
 import 'package:hermanos_ledgr/features/recurring/data/recurring_repository_impl.dart';
 import 'package:hermanos_ledgr/features/recurring/domain/recurring_model.dart';
 import 'package:hermanos_ledgr/features/recurring/domain/recurring_repository.dart';
@@ -16,6 +17,7 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
   StreamSubscription? _sub;
 
   RecurringRepository get _repository => ref.read(recurringRepositoryProvider);
+  NotificationService get _notifications => ref.read(notificationServiceProvider);
 
   @override
   List<RecurringModel> build() {
@@ -24,6 +26,7 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
     _sub?.cancel();
     _sub = repo.watchAllRecurring().listen((rules) {
       state = rules;
+      _notifications.syncAllReminders(rules);
     });
 
     ref.onDispose(() => _sub?.cancel());
@@ -34,6 +37,7 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
   Future<void> addRule(RecurringModel rule) async {
     state = [...state, rule];
     await _repository.addRecurring(rule);
+    _notifications.scheduleSubscriptionReminders(rule);
   }
 
   /// Update an existing recurring rule with optimistic UI update.
@@ -43,6 +47,7 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
         if (r.id == rule.id) rule else r,
     ];
     await _repository.updateRecurring(rule);
+    _notifications.scheduleSubscriptionReminders(rule);
   }
 
   /// Toggle active state of a recurring rule with optimistic UI update.
@@ -51,11 +56,29 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
     if (index != -1) {
       final old = state[index];
       final newActive = !old.isActive;
+      final updated = old.copyWith(isActive: newActive);
       state = [
         for (final r in state)
-          if (r.id == id) r.copyWith(isActive: newActive) else r,
+          if (r.id == id) updated else r,
       ];
       await _repository.toggleActive(id, newActive);
+      _notifications.scheduleSubscriptionReminders(updated);
+    }
+  }
+
+  /// Toggle notification reminder triggers for a specific recurring rule.
+  Future<void> toggleNotifications(String id) async {
+    final index = state.indexWhere((r) => r.id == id);
+    if (index != -1) {
+      final old = state[index];
+      final newNotif = !old.enableNotifications;
+      final updated = old.copyWith(enableNotifications: newNotif);
+      state = [
+        for (final r in state)
+          if (r.id == id) updated else r,
+      ];
+      await _repository.updateRecurring(updated);
+      _notifications.scheduleSubscriptionReminders(updated);
     }
   }
 
@@ -63,11 +86,13 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
   Future<void> advanceDueDate(String id, DateTime newDueDate) async {
     final index = state.indexWhere((r) => r.id == id);
     if (index != -1) {
+      final updated = state[index].copyWith(nextDueDate: newDueDate);
       state = [
         for (final r in state)
-          if (r.id == id) r.copyWith(nextDueDate: newDueDate) else r,
+          if (r.id == id) updated else r,
       ];
       await _repository.advanceNextDueDate(id, newDueDate);
+      _notifications.scheduleSubscriptionReminders(updated);
     }
   }
 
@@ -79,6 +104,7 @@ class RecurringNotifier extends Notifier<List<RecurringModel>> {
     final ruleToDelete = state[index];
     state = state.where((r) => r.id != id).toList();
     await _repository.deleteRecurring(id);
+    _notifications.cancelSubscriptionReminders(id);
     return ruleToDelete;
   }
 }
