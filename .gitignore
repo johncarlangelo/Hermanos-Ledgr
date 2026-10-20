@@ -55,3 +55,6 @@ app.*.map.json
 
 # Local generation scripts
 gen.py
+
+# Local audit and testing checklist
+AUDIT_CHECKLIST.md
