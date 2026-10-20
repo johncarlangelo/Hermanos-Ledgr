@@ -154,6 +154,12 @@ class NotificationService {
     }
   }
 
+  /// Cancels all scheduled notifications across all rules and features.
+  Future<void> cancelAllReminders() async {
+    if (!_isInitialized) await initialize();
+    await _plugin.cancelAll();
+  }
+
   /// Synchronizes reminders for all active rules with notifications enabled.
   Future<void> syncAllReminders(List<RecurringModel> rules) async {
     for (final rule in rules) {

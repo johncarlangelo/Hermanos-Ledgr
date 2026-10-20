@@ -1,43 +1,12 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hermanos_ledgr/core/constants/account_defaults.dart';
 import 'package:hermanos_ledgr/features/accounts/data/account_repository_impl.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_repository.dart';
 
 /// Clean starter accounts with zero balances for initial setup.
-const List<AccountModel> starterCleanAccounts = [
-  AccountModel(
-    id: 'acc_gcash',
-    name: 'GCash',
-    type: AccountType.eWallet,
-    balance: 0.0,
-    icon: Icons.account_balance_wallet_rounded,
-    color: Color(0xFF005CEE),
-    institution: 'Mynt',
-    monthlyChange: 0.0,
-  ),
-  AccountModel(
-    id: 'acc_cash',
-    name: 'Cash Wallet',
-    type: AccountType.cash,
-    balance: 0.0,
-    icon: Icons.payments_rounded,
-    color: Color(0xFF00897B),
-    institution: 'Cash',
-    monthlyChange: 0.0,
-  ),
-  AccountModel(
-    id: 'acc_bdo',
-    name: 'BDO Savings',
-    type: AccountType.bank,
-    balance: 0.0,
-    icon: Icons.account_balance_rounded,
-    color: Color(0xFF0038A8),
-    institution: 'BDO Unibank',
-    monthlyChange: 0.0,
-  ),
-];
+const List<AccountModel> starterCleanAccounts = AccountDefaults.starterCleanAccounts;
 
 class AccountsNotifier extends Notifier<List<AccountModel>> {
   StreamSubscription? _sub;

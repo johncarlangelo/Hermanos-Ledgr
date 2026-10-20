@@ -61,7 +61,7 @@ void main() {
     expect(remaining, isEmpty);
   });
 
-  test('clearAndReseed clears user data and preserves categories', () async {
+  test('clearAndReseed clears user data, preserves categories, and reseeds starter accounts', () async {
     final now = DateTime.now();
     await db.into(db.transactionsTable).insert(
       TransactionsTableCompanion.insert(
@@ -78,15 +78,30 @@ void main() {
         date: now,
       ),
     );
+    await db.into(db.notesTable).insert(
+      NotesTableCompanion.insert(
+        content: 'Apples, Milk',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
     var txs = await db.select(db.transactionsTable).get();
     expect(txs.length, 1);
+    var notes = await db.select(db.notesTable).get();
+    expect(notes.length, 1);
 
     await db.clearAndReseed();
     txs = await db.select(db.transactionsTable).get();
     expect(txs, isEmpty);
+    notes = await db.select(db.notesTable).get();
+    expect(notes, isEmpty);
 
     final cats = await db.select(db.categoriesTable).get();
     expect(cats.isNotEmpty, isTrue);
+
+    final accounts = await db.select(db.accountsTable).get();
+    expect(accounts.length, 3);
   });
 
   test('TransactionsNotifier persists to SQLite and reactively updates Accounts', () async {

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/core/providers/database_provider.dart';
 import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
+import 'package:hermanos_ledgr/core/services/notification_service.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 /// Custom bottom sheet for confirming data reset operations.
@@ -134,6 +135,7 @@ class ResetConfirmSheet extends ConsumerWidget {
                     onPressed: () async {
                       Navigator.of(context).pop();
                       if (isFullReset) {
+                        await NotificationService().cancelAllReminders();
                         await ref.read(databaseProvider).clearAndReseed();
                         if (context.mounted) {
                           UndoSnackbar.info(
