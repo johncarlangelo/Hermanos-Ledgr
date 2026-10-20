@@ -166,8 +166,10 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardHeight),
-      child: Form(
-        key: _formKey,
+      child: SafeArea(
+        top: false,
+        child: Form(
+          key: _formKey,
         child: ListView(
           shrinkWrap: true,
           physics: const BouncingScrollPhysics(),
@@ -448,7 +450,8 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildNotificationToggle(ThemeData theme, bool isDark) {

@@ -159,7 +159,9 @@ class _EditBudgetSheetState extends ConsumerState<EditBudgetSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardHeight),
-      child: ListView(
+      child: SafeArea(
+        top: false,
+        child: ListView(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(
@@ -411,6 +413,7 @@ class _EditBudgetSheetState extends ConsumerState<EditBudgetSheet> {
           const SizedBox(height: Spacing.lg),
         ],
       ),
-    );
+    ),
+  );
   }
 }

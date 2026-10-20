@@ -178,7 +178,9 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return SingleChildScrollView(
+        return SafeArea(
+          top: false,
+          child: SingleChildScrollView(
           controller: scrollController,
           padding: EdgeInsets.fromLTRB(
             Spacing.lg,
@@ -367,10 +369,11 @@ class _AddAccountSheetState extends ConsumerState<AddAccountSheet> {
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildPresetChip(String name, AccountType type) {
     final isSelected = _nameController.text.toLowerCase().trim() == name.toLowerCase();

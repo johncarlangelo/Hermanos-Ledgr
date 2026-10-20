@@ -130,7 +130,9 @@ class _BillSplitSheetState extends ConsumerState<BillSplitSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardHeight),
-      child: ListView(
+      child: SafeArea(
+        top: false,
+        child: ListView(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(
@@ -357,6 +359,7 @@ class _BillSplitSheetState extends ConsumerState<BillSplitSheet> {
           const SizedBox(height: Spacing.lg),
         ],
       ),
-    );
+    ),
+  );
   }
 }

@@ -133,7 +133,9 @@ class _AddContributionSheetState extends ConsumerState<AddContributionSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardHeight),
-      child: SingleChildScrollView(
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(
           horizontal: Spacing.lg,
           vertical: Spacing.md,
@@ -385,7 +387,8 @@ class _AddContributionSheetState extends ConsumerState<AddContributionSheet> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildPresetChip(String label, double amount) {

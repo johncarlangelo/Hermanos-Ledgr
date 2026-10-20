@@ -393,7 +393,9 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardHeight),
-      child: SingleChildScrollView(
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(
           horizontal: Spacing.lg,
           vertical: Spacing.md,
@@ -844,6 +846,7 @@ class _AddGoalSheetState extends ConsumerState<AddGoalSheet> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
