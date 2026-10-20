@@ -20,6 +20,19 @@ class NotificationService {
   static const String channelName = 'Subscription & Bill Reminders';
   static const String channelDesc = 'Alerts for upcoming recurring subscriptions and bills';
 
+  static const NotificationDetails _notificationDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription: channelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      icon: '@mipmap/ic_launcher',
+    ),
+  );
+
   /// Initialize local notifications and timezone data.
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -47,6 +60,8 @@ class NotificationService {
           channelName,
           description: channelDesc,
           importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
         );
 
         await androidImpl?.createNotificationChannel(channel);
@@ -105,16 +120,7 @@ class NotificationService {
             title: title,
             body: body,
             scheduledDate: tz.TZDateTime.from(targetDate, tz.local),
-            notificationDetails: const NotificationDetails(
-              android: AndroidNotificationDetails(
-                channelId,
-                channelName,
-                channelDescription: channelDesc,
-                importance: Importance.high,
-                priority: Priority.high,
-                icon: '@mipmap/ic_launcher',
-              ),
-            ),
+            notificationDetails: _notificationDetails,
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           );
         } catch (e) {
@@ -125,16 +131,7 @@ class NotificationService {
               title: title,
               body: body,
               scheduledDate: tz.TZDateTime.from(targetDate, tz.local),
-              notificationDetails: const NotificationDetails(
-                android: AndroidNotificationDetails(
-                  channelId,
-                  channelName,
-                  channelDescription: channelDesc,
-                  importance: Importance.high,
-                  priority: Priority.high,
-                  icon: '@mipmap/ic_launcher',
-                ),
-              ),
+              notificationDetails: _notificationDetails,
               androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
             );
           } catch (e2) {
