@@ -21,6 +21,28 @@ class BudgetModel {
     this.daysLeft = 12,
   });
 
+  BudgetModel copyWith({
+    String? id,
+    String? categoryId,
+    String? categoryName,
+    IconData? categoryIcon,
+    Color? categoryColor,
+    double? limitAmount,
+    double? spentAmount,
+    int? daysLeft,
+  }) {
+    return BudgetModel(
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
+      categoryIcon: categoryIcon ?? this.categoryIcon,
+      categoryColor: categoryColor ?? this.categoryColor,
+      limitAmount: limitAmount ?? this.limitAmount,
+      spentAmount: spentAmount ?? this.spentAmount,
+      daysLeft: daysLeft ?? this.daysLeft,
+    );
+  }
+
   double get percentage {
     if (limitAmount <= 0) return spentAmount > 0 ? 2.0 : 0.0;
     return (spentAmount / limitAmount).clamp(0.0, 2.0);

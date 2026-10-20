@@ -7,6 +7,7 @@ import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/budget/presentation/widgets/budget_progress_card.dart';
+import 'package:hermanos_ledgr/features/budget/presentation/widgets/edit_budget_sheet.dart';
 import 'package:hermanos_ledgr/features/budget/providers/mock_budgets_provider.dart';
 import 'package:hermanos_ledgr/features/debts/providers/debts_provider.dart';
 import 'package:hermanos_ledgr/features/recurring/providers/recurring_provider.dart';
@@ -15,7 +16,6 @@ import 'package:hermanos_ledgr/features/goals/presentation/widgets/add_goal_shee
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/delete_goal_sheet.dart';
 import 'package:hermanos_ledgr/features/goals/presentation/widgets/goal_card.dart';
 import 'package:hermanos_ledgr/features/goals/providers/goals_provider.dart';
-import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
@@ -246,11 +246,25 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
           const SizedBox(height: Spacing.xl),
 
           // 3. Category Budgets Header & List
-          Text(
-            'Category Budgets',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Category Budgets',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: Spacing.sm),
+                ),
+                onPressed: () => EditBudgetSheet.show(context),
+                icon: const Icon(Icons.tune_rounded, size: 16),
+                label: const Text('Set Limit'),
+              ),
+            ],
           ),
           const SizedBox(height: Spacing.sm),
 
@@ -261,9 +275,9 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                 icon: Icons.track_changes_rounded,
                 title: 'No category budgets active',
                 subtitle:
-                    'Budgets and category spending will appear as you log transactions.',
-                actionLabel: 'Log Expense',
-                onAction: () => AddTransactionSheet.show(context),
+                    'Set monthly spending limits for categories like Food, Utilities, or Shopping.',
+                actionLabel: 'Set Budget Limit',
+                onAction: () => EditBudgetSheet.show(context),
               ),
             )
           else
@@ -272,7 +286,10 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                 padding: const EdgeInsets.only(bottom: Spacing.sm),
                 child: StaggeredEntrance(
                   index: i.clamp(0, 10),
-                  child: BudgetProgressCard(budget: budgets[i]),
+                  child: BudgetProgressCard(
+                    budget: budgets[i],
+                    onTap: () => EditBudgetSheet.show(context, budget: budgets[i]),
+                  ),
                 ),
               ),
             ],

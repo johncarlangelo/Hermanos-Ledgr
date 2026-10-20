@@ -7,6 +7,7 @@ import 'package:hermanos_ledgr/core/providers/onboarding_provider.dart';
 import 'package:hermanos_ledgr/core/providers/theme_provider.dart';
 import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/mock_accounts_provider.dart';
+import 'package:hermanos_ledgr/features/budget/providers/budgets_provider.dart';
 import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 
@@ -142,6 +143,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       accountsNotifier.addAccount(newAcc);
     }
+
+    try {
+      await ref.read(budgetsProvider.notifier).seedDefaultBudgets();
+    } catch (_) {}
 
     await ref.read(onboardingProvider.notifier).completeOnboarding();
     if (mounted) {

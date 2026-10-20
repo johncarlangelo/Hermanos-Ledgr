@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:hermanos_ledgr/core/constants/account_defaults.dart';
+import 'package:hermanos_ledgr/core/constants/budget_defaults.dart';
 import 'package:hermanos_ledgr/core/constants/category_defaults.dart';
 import 'package:hermanos_ledgr/core/database/daos/accounts_dao.dart';
 import 'package:hermanos_ledgr/core/database/daos/budgets_dao.dart';
@@ -86,6 +87,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> seedDefaults() async {
     await seedCategories();
     await seedStarterAccounts();
+    await seedBudgets();
   }
 
   Future<void> seedCategories() async {
@@ -122,6 +124,23 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  Future<void> seedBudgets() async {
+    final now = DateTime.now();
+    for (final b in BudgetDefaults.defaultCategoryBudgets) {
+      await into(budgetsTable).insert(
+        BudgetsTableCompanion.insert(
+          id: 'budget_${b.categoryId}',
+          categoryId: b.categoryId,
+          categoryName: b.categoryName,
+          monthlyLimit: b.monthlyLimit,
+          month: now.month,
+          year: now.year,
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+    }
+  }
+
   Future<void> clearAndReseed() async {
     await delete(notesTable).go();
     await delete(chatMessagesTable).go();
@@ -134,5 +153,6 @@ class AppDatabase extends _$AppDatabase {
     await delete(categoriesTable).go();
     await seedCategories();
     await seedStarterAccounts();
+    await seedBudgets();
   }
 }
