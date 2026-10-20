@@ -188,4 +188,27 @@ void main() {
     expect(updatedGoal!.currentAmount, 30000.0);
     expect(updatedGoal.isCompleted, isFalse);
   });
+
+  test('Account initial balance is strictly preserved across beforeOpen lifecycle', () async {
+    // Insert an account with an initial balance and ZERO transactions
+    await db.accountsDao.insertOrUpdateAccount(
+      const AccountsTableCompanion(
+        id: Value('acc_persisted'),
+        name: Value('MariBank Savings'),
+        type: Value('bank'),
+        balance: Value(7500.0),
+        iconCode: Value(0),
+        colorValue: Value(0xFFE91E63),
+        institution: Value('MariBank'),
+      ),
+    );
+
+    // Run beforeOpen (simulating app restart)
+    await db.migration.beforeOpen?.call(const OpeningDetails(null, 1));
+
+    // Verify balance is STILL 7500.0 (NOT reset to 0.0)
+    final acc = await db.accountsDao.getAccountById('acc_persisted');
+    expect(acc, isNotNull);
+    expect(acc!.balance, equals(7500.0));
+  });
 }

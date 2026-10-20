@@ -71,17 +71,6 @@ class AppDatabase extends _$AppDatabase {
           if (cats.isEmpty) {
             await seedCategories();
           }
-          // Purge lingering mock data from early pre-alpha testing
-          await (delete(transactionsTable)..where((t) => t.id.like('tx_ai_%') | t.id.isIn(['tx_1', 'tx_2', 'tx_3', 'tx_4', 'tx_5', 'tx_6', 'tx_7']))).go();
-          await (delete(budgetsTable)..where((t) => t.id.isIn(['bg_food', 'bg_groceries', 'bg_utilities', 'bg_transport', 'bg_entertainment']))).go();
-
-          // If there are zero transactions, reset all account balances to 0.0
-          final allTxs = await select(transactionsTable).get();
-          if (allTxs.isEmpty) {
-            await update(accountsTable).write(
-              const AccountsTableCompanion(balance: Value(0.0), monthlyChange: Value(0.0)),
-            );
-          }
         },
       );
 
