@@ -48,7 +48,7 @@ class ClassifierService {
       'tuition', 'school', 'books', 'supplies', 'course', 'training',
     ],
     'salary': [
-      'salary', 'sahod', 'sweldo', 'payroll', 'paycheck', 'cutoff',
+      'salary', 'sallary', 'sahod', 'sweldo', 'payroll', 'paycheck', 'cutoff',
     ],
     'freelance': [
       'client', 'freelance', 'project', 'gig', 'upwork', 'fiverr',
@@ -67,7 +67,7 @@ class ClassifierService {
   }) {
     final input = rawInput.trim();
     if (input.isEmpty) {
-      return const ClassifierResult(
+      return ClassifierResult(
         intent: ClassifierIntent.unclearOrGibberish,
         confidence: 0.0,
         conversationalReply: "Please enter a message or transaction to log.",
@@ -79,7 +79,7 @@ class ClassifierService {
 
     // 1. Check for Greeting or Help
     if (_isGreetingOrHelp(lower)) {
-      return const ClassifierResult(
+      return ClassifierResult(
         intent: ClassifierIntent.greetingOrHelp,
         confidence: 1.0,
         conversationalReply:
@@ -89,7 +89,7 @@ class ClassifierService {
             "• 'Salary 50k BDO kahapon'\n"
             "• 'Meralco 3500 via Maya'\n\n"
             "Or ask me questions like 'How much did I spend this month?' or 'What is my total balance?'",
-        suggestedPromptChips: [
+        suggestedPromptChips: const [
           'Coffee 150 GCash',
           'Salary 45k BDO',
           'Total balance?',
@@ -100,7 +100,7 @@ class ClassifierService {
 
     // 2. Check for Balance / Net Worth Inquiries
     if (_isBalanceInquiry(lower)) {
-      return const ClassifierResult(
+      return ClassifierResult(
         intent: ClassifierIntent.queryBalance,
         confidence: 0.95,
       );
@@ -108,7 +108,7 @@ class ClassifierService {
 
     // 3. Check for Spending / Expenses Inquiries
     if (_isSpendingInquiry(lower)) {
-      return const ClassifierResult(
+      return ClassifierResult(
         intent: ClassifierIntent.querySpending,
         confidence: 0.95,
       );
@@ -122,6 +122,17 @@ class ClassifierService {
         conversationalReply:
             "This looks like a multi-item transaction or complex request. Delegating to Tier 2 LLM...",
       );
+    }
+
+    // 5. Check for Multi-Transaction Batch (sub-15ms direct batch extraction)
+    final multiResult = _tryClassifyMultiple(
+      rawInput: input,
+      accounts: accounts,
+      categories: categories,
+      effectiveNow: effectiveNow,
+    );
+    if (multiResult != null) {
+      return multiResult;
     }
 
     // 5. Extract Amount - STRICT CHECK (No default amounts!)
@@ -229,7 +240,126 @@ class ClassifierService {
     );
   }
 
+  /// Attempts to classify multiple transactions from a single sentence (Tier 1 sub-15ms parser).
+  ClassifierResult? classifyMultiple({
+    required String rawInput,
+    required List<AccountModel> accounts,
+    List<CategoryItem> categories = const [],
+    DateTime? now,
+  }) {
+    return _tryClassifyMultiple(
+      rawInput: rawInput,
+      accounts: accounts,
+      categories: categories,
+      effectiveNow: now ?? DateTime.now(),
+    );
+  }
+
   // --- Private Helpers ---
+
+  static ClassifierResult? _tryClassifyMultiple({
+    required String rawInput,
+    required List<AccountModel> accounts,
+    required List<CategoryItem> categories,
+    required DateTime effectiveNow,
+  }) {
+    // 1. Sanitize thousands separators (e.g., 1,000 -> 1000) so commas inside numbers
+    // are not mistakenly treated as clause delimiters.
+    final sanitized = rawInput.replaceAllMapped(
+      RegExp(r'(\d+),(\d{3})'),
+      (m) => '${m[1]}${m[2]}',
+    );
+
+    // 2. Split on sentence boundaries: commas, semicolons, newlines, and conjunctions
+    final clauses = sanitized
+        .split(RegExp(
+            r'(?:\r?\n)+|;\s*|,\s*(?:and\s+|at\s+saka\s+|tapos\s+|plus\s+|&\s*)?|\s+(?:and|at\s+saka|tapos|plus|&)\s+',
+            caseSensitive: false))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    if (clauses.length < 2) return null;
+
+    final parsedTxs = <ParsedTransaction>[];
+    double totalConfidence = 0.0;
+    AccountModel? lastResolvedAccount;
+
+    final allCategories = categories.isNotEmpty
+        ? categories
+        : CategoryDefaults.defaultCategories;
+
+    for (final clause in clauses) {
+      final clauseLower = clause.toLowerCase();
+      final (extractedAmount, cleanedWithoutAmount) = _extractAmount(clauseLower);
+      if (extractedAmount == null || extractedAmount <= 0) continue;
+
+      final txType = _determineTransactionType(clauseLower);
+      final matchedCategory = _matchCategory(clauseLower, txType, allCategories);
+      final (matchedAccount, matchedToAccount) = _matchAccount(clauseLower, accounts, txType);
+
+      if (matchedAccount != null) {
+        lastResolvedAccount = matchedAccount;
+      }
+
+      final defaultAccount = matchedAccount ??
+          lastResolvedAccount ??
+          (accounts.isNotEmpty
+              ? accounts.first
+              : AccountModel(
+                  id: 'acc_default',
+                  name: 'Main Wallet',
+                  type: AccountType.cash,
+                  balance: 0.0,
+                  icon: Icons.account_balance_wallet_rounded,
+                  color: const Color(0xFF00897B),
+                ));
+
+      final defaultCat = matchedCategory ??
+          (txType == TransactionType.income
+              ? allCategories.firstWhere((c) => c.id == 'salary', orElse: () => allCategories.first)
+              : allCategories.firstWhere((c) => c.id == 'food', orElse: () => allCategories.first));
+
+      final title = _generateTitle(clause, cleanedWithoutAmount, matchedCategory, txType);
+      final txDate = _resolveDate(clauseLower, effectiveNow);
+
+      double clauseConfidence = 0.50;
+      if (matchedCategory != null) clauseConfidence += 0.25;
+      if (matchedAccount != null) clauseConfidence += 0.20;
+      if (_hasDateCue(clauseLower)) clauseConfidence += 0.05;
+
+      parsedTxs.add(ParsedTransaction(
+        title: title,
+        amount: extractedAmount,
+        type: txType,
+        categoryId: defaultCat.id,
+        categoryName: defaultCat.name,
+        categoryIcon: defaultCat.icon,
+        categoryColor: defaultCat.color,
+        accountId: defaultAccount.id,
+        accountName: defaultAccount.name,
+        toAccountId: matchedToAccount?.id,
+        toAccountName: matchedToAccount?.name,
+        date: txDate,
+        confidence: clauseConfidence.clamp(0.0, 1.0),
+      ));
+
+      totalConfidence += clauseConfidence;
+    }
+
+    if (parsedTxs.length >= 2) {
+      final avgConfidence = (totalConfidence / parsedTxs.length).clamp(0.0, 1.0);
+      return ClassifierResult(
+        intent: ClassifierIntent.logTransaction,
+        confidence: avgConfidence,
+        transactions: parsedTxs,
+        conversationalReply:
+            "Parsed ${parsedTxs.length} transactions ready for confirmation:",
+      );
+    }
+
+    return null;
+  }
 
   static bool _isGreetingOrHelp(String lower) {
     final greetings = [
@@ -312,6 +442,7 @@ class ClassifierService {
     }
 
     if (lower.contains('salary') ||
+        lower.contains('sallary') ||
         lower.contains('sahod') ||
         lower.contains('sweldo') ||
         lower.contains('income') ||

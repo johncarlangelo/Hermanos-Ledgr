@@ -209,11 +209,25 @@ class DatabaseMappers {
   }
 
   static AiMessage chatMessageFromDrift(ChatMessagesTableData row) {
-    ParsedTransaction? parsedTx;
+    List<ParsedTransaction> parsedTxs = [];
     if (row.parsedTxJson != null && row.parsedTxJson!.isNotEmpty) {
       try {
-        final decoded = jsonDecode(row.parsedTxJson!) as Map<String, dynamic>;
-        parsedTx = ParsedTransaction.fromJson(decoded);
+        final decoded = jsonDecode(row.parsedTxJson!);
+        if (decoded is List) {
+          parsedTxs = decoded
+              .whereType<Map<String, dynamic>>()
+              .map(ParsedTransaction.fromJson)
+              .toList();
+        } else if (decoded is Map<String, dynamic>) {
+          if (decoded.containsKey('transactions') && decoded['transactions'] is List) {
+            parsedTxs = (decoded['transactions'] as List)
+                .whereType<Map<String, dynamic>>()
+                .map(ParsedTransaction.fromJson)
+                .toList();
+          } else {
+            parsedTxs = [ParsedTransaction.fromJson(decoded)];
+          }
+        }
       } catch (_) {}
     }
 
@@ -230,7 +244,7 @@ class DatabaseMappers {
       content: row.content,
       isUser: row.isUser,
       timestamp: row.timestamp,
-      parsedTransaction: parsedTx,
+      parsedTransactions: parsedTxs,
       isConfirmed: row.isConfirmed,
       intent: intent,
     );
@@ -238,8 +252,8 @@ class DatabaseMappers {
 
   static ChatMessagesTableCompanion chatMessageToCompanion(AiMessage msg) {
     String? txJson;
-    if (msg.parsedTransaction != null) {
-      txJson = jsonEncode(msg.parsedTransaction!.toJson());
+    if (msg.parsedTransactions.isNotEmpty) {
+      txJson = jsonEncode(msg.parsedTransactions.map((t) => t.toJson()).toList());
     }
 
     return ChatMessagesTableCompanion.insert(

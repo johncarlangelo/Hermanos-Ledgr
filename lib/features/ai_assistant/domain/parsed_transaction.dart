@@ -3,6 +3,7 @@ import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.da
 
 /// Standardized parsed transaction entity produced by Tier 1 Classifier or Tier 2 LLM (Task 9.6).
 class ParsedTransaction {
+  final String id;
   final String title;
   final double amount;
   final TransactionType type;
@@ -18,8 +19,10 @@ class ParsedTransaction {
   final String? note;
   final double confidence;
   final List<String> missingFields;
+  final bool isConfirmed;
 
-  const ParsedTransaction({
+  ParsedTransaction({
+    String? id,
     required this.title,
     required this.amount,
     required this.type,
@@ -35,12 +38,13 @@ class ParsedTransaction {
     this.note,
     this.confidence = 1.0,
     this.missingFields = const [],
-  });
+    this.isConfirmed = false,
+  }) : id = id ?? 'ptx_${DateTime.now().microsecondsSinceEpoch}';
 
   /// Converts this parsed transaction into a concrete TransactionModel for saving.
   TransactionModel toTransactionModel({String? customId}) {
     return TransactionModel(
-      id: customId ?? 'tx_ai_${DateTime.now().millisecondsSinceEpoch}',
+      id: customId ?? 'tx_ai_${DateTime.now().microsecondsSinceEpoch}',
       title: title,
       amount: amount,
       type: type,
@@ -58,6 +62,7 @@ class ParsedTransaction {
   }
 
   ParsedTransaction copyWith({
+    String? id,
     String? title,
     double? amount,
     TransactionType? type,
@@ -73,8 +78,10 @@ class ParsedTransaction {
     String? note,
     double? confidence,
     List<String>? missingFields,
+    bool? isConfirmed,
   }) {
     return ParsedTransaction(
+      id: id ?? this.id,
       title: title ?? this.title,
       amount: amount ?? this.amount,
       type: type ?? this.type,
@@ -90,11 +97,13 @@ class ParsedTransaction {
       note: note ?? this.note,
       confidence: confidence ?? this.confidence,
       missingFields: missingFields ?? this.missingFields,
+      isConfirmed: isConfirmed ?? this.isConfirmed,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'title': title,
       'amount': amount,
       'type': type.name,
@@ -110,11 +119,13 @@ class ParsedTransaction {
       'note': note,
       'confidence': confidence,
       'missingFields': missingFields,
+      'isConfirmed': isConfirmed,
     };
   }
 
   factory ParsedTransaction.fromJson(Map<String, dynamic> json) {
     return ParsedTransaction(
+      id: json['id'] as String?,
       title: json['title'] as String? ?? 'Expense',
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       type: TransactionType.values.firstWhere(
@@ -141,6 +152,7 @@ class ParsedTransaction {
       note: json['note'] as String?,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 1.0,
       missingFields: (json['missingFields'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+      isConfirmed: json['isConfirmed'] as bool? ?? false,
     );
   }
 }

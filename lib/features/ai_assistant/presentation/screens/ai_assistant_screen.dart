@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/ai_message.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/parsed_transaction.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/presentation/widgets/model_download_sheet.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/providers/ai_assistant_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
@@ -155,6 +157,14 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final chatAsync = ref.watch(aiChatProvider);
+    final isThinking = ref.watch(isAiThinkingProvider);
+    final thinkingStatus = ref.watch(aiThinkingStatusProvider);
+
+    ref.listen(isAiThinkingProvider, (_, isNowThinking) {
+      if (isNowThinking) {
+        _scrollToBottom();
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -231,7 +241,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
           Expanded(
             child: chatAsync.when(
               data: (messages) {
-                if (messages.isEmpty) {
+                if (messages.isEmpty && !isThinking) {
                   return SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: Spacing.xl),
@@ -248,11 +258,18 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                 }
 
                 WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                final totalItems = messages.length + (isThinking ? 1 : 0);
                 return ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.all(Spacing.lg),
-                  itemCount: messages.length,
+                  itemCount: totalItems,
                   itemBuilder: (context, index) {
+                    if (isThinking && index == messages.length) {
+                      return _ThinkingBubble(
+                        statusText: thinkingStatus,
+                        isDark: isDark,
+                      );
+                    }
                     final msg = messages[index];
                     return _buildMessageItem(msg, theme, isDark);
                   },
@@ -450,9 +467,16 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                   ),
                 ),
               ),
-              if (msg.parsedTransaction != null) ...[
+              if (msg.parsedTransactions.isNotEmpty) ...[
                 const SizedBox(height: Spacing.sm),
-                _buildActionCard(msg, theme, isDark),
+                if (msg.parsedTransactions.length > 1) ...[
+                  _buildBatchHeader(msg, theme, isDark),
+                  const SizedBox(height: Spacing.xs),
+                ],
+                for (int i = 0; i < msg.parsedTransactions.length; i++) ...[
+                  if (i > 0) const SizedBox(height: Spacing.xs),
+                  _buildActionCard(msg, msg.parsedTransactions[i], theme, isDark),
+                ],
               ],
             ],
           ),
@@ -461,13 +485,98 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     }
   }
 
-  Widget _buildActionCard(
+  Widget _buildBatchHeader(
     AiMessage msg,
     ThemeData theme,
     bool isDark,
   ) {
-    final tx = msg.parsedTransaction!;
-    final isConfirmed = msg.isConfirmed;
+    final unconfirmed = msg.parsedTransactions.where((t) => !t.isConfirmed).toList();
+    final hasUnconfirmed = unconfirmed.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs + 2),
+      decoration: BoxDecoration(
+        color: isDark ? StashColors.surface : theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? StashColors.line.withValues(alpha: 0.6)
+              : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.layers_rounded,
+                size: 16,
+                color: StashColors.tealAccent,
+              ),
+              const SizedBox(width: Spacing.xs),
+              Text(
+                '${msg.parsedTransactions.length} Items Detected',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? StashColors.dim : theme.colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          if (hasUnconfirmed && unconfirmed.length > 1)
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(
+                backgroundColor: StashColors.tealAccent,
+                foregroundColor: Colors.black,
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                ref.read(aiChatProvider.notifier).confirmAllTransactions(context, msg.id);
+              },
+              child: Text(
+                'Confirm All (${unconfirmed.length})',
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          else if (!hasUnconfirmed)
+            Row(
+              children: [
+                Icon(
+                  Icons.check_circle_rounded,
+                  size: 14,
+                  color: SemanticColors.income(isDark),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'All Committed',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: SemanticColors.income(isDark),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard(
+    AiMessage msg,
+    ParsedTransaction tx,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final isConfirmed = tx.isConfirmed;
+    final accounts = ref.watch(accountsProvider);
 
     return M3Card(
       color: theme.colorScheme.surfaceContainer,
@@ -502,12 +611,16 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       '${tx.categoryName} · ${tx.accountName}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -557,7 +670,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                       padding: EdgeInsets.zero,
                     ),
                     onPressed: () {
-                      ref.read(aiChatProvider.notifier).confirmTransaction(context, msg);
+                      ref.read(aiChatProvider.notifier).confirmSingleTransaction(context, msg.id, tx.id);
                     },
                     child: const Text(
                       'Confirm',
@@ -572,10 +685,15 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                   ),
                   onPressed: () {
-                    // Prefill AddTransactionSheet with parsed data
+                    final acc = accounts.where((a) => a.id == tx.accountId).firstOrNull;
                     AddTransactionSheet.show(
                       context,
                       initialType: tx.type,
+                      initialAmount: tx.amount,
+                      initialTitle: tx.title,
+                      initialCategoryId: tx.categoryId,
+                      initialAccount: acc,
+                      initialDate: tx.date,
                     );
                   },
                   child: const Text('Edit'),
@@ -585,12 +703,130 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                   icon: const Icon(Icons.close_rounded, size: 20),
                   tooltip: 'Discard',
                   onPressed: () {
-                    ref.read(aiChatProvider.notifier).discardTransaction(msg.id);
+                    ref.read(aiChatProvider.notifier).discardSingleTransaction(msg.id, tx.id);
                   },
                 ),
               ],
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ThinkingBubble extends StatefulWidget {
+  final String statusText;
+  final bool isDark;
+
+  const _ThinkingBubble({
+    required this.statusText,
+    required this.isDark,
+  });
+
+  @override
+  State<_ThinkingBubble> createState() => _ThinkingBubbleState();
+}
+
+class _ThinkingBubbleState extends State<_ThinkingBubble>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildDot(int index) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final start = index * 0.2;
+        final end = start + 0.6;
+        final progress = _controller.value;
+
+        double scale = 0.7;
+        double opacity = 0.35;
+
+        if (progress >= start && progress <= end) {
+          final t = (progress - start) / 0.6;
+          final wave = (1 - (2 * t - 1).abs()).clamp(0.0, 1.0);
+          scale = 0.7 + (0.5 * wave);
+          opacity = 0.35 + (0.65 * wave);
+        }
+
+        return Transform.scale(
+          scale: scale,
+          child: Opacity(
+            opacity: opacity,
+            child: Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 2.5),
+              decoration: const BoxDecoration(
+                color: StashColors.tealAccent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: Spacing.md, right: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: widget.isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+            bottomLeft: Radius.circular(4),
+          ),
+          border: Border.all(
+            color: widget.isDark
+                ? StashColors.line.withValues(alpha: 0.5)
+                : theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDot(0),
+                _buildDot(1),
+                _buildDot(2),
+              ],
+            ),
+            const SizedBox(width: Spacing.md),
+            Text(
+              widget.statusText,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: widget.isDark ? StashColors.dim : theme.colorScheme.onSurfaceVariant,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

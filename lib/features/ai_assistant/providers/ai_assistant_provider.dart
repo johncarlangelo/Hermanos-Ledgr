@@ -17,6 +17,30 @@ import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.da
 import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
+class AiThinkingNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  @override
+  set state(bool value) => super.state = value;
+}
+
+class AiThinkingStatusNotifier extends Notifier<String> {
+  @override
+  String build() => 'Hermano is thinking...';
+
+  @override
+  set state(String value) => super.state = value;
+}
+
+final isAiThinkingProvider = NotifierProvider<AiThinkingNotifier, bool>(() {
+  return AiThinkingNotifier();
+});
+
+final aiThinkingStatusProvider = NotifierProvider<AiThinkingStatusNotifier, String>(() {
+  return AiThinkingStatusNotifier();
+});
+
 final classifierServiceProvider = Provider<ClassifierService>((ref) {
   return ClassifierService();
 });
@@ -77,83 +101,95 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     state = AsyncData([...currentMessages, userMsg]);
     await repo.saveMessage(userMsg);
 
-    // 1. Evaluate with Tier 1 Classifier (< 15ms)
-    final classifier = ref.read(classifierServiceProvider);
-    final accounts = ref.read(accountsProvider);
-    final categories = CategoryDefaults.defaultCategories;
+    ref.read(isAiThinkingProvider.notifier).state = true;
+    ref.read(aiThinkingStatusProvider.notifier).state = 'Hermano is thinking...';
 
-    final result = classifier.classify(
-      rawInput: trimmed,
-      accounts: accounts,
-      categories: categories,
-    );
+    try {
+      // 1. Evaluate with Tier 1 Classifier (< 15ms)
+      final classifier = ref.read(classifierServiceProvider);
+      final accounts = ref.read(accountsProvider);
+      final categories = CategoryDefaults.defaultCategories;
 
-    // 2. Handle based on Intent
-    switch (result.intent) {
-      case ClassifierIntent.greetingOrHelp:
-        await _respondWithText(
-          result.conversationalReply ?? "Hello! How can I help with your budget today?",
-          intent: ClassifierIntent.greetingOrHelp,
-        );
-        break;
+      final result = classifier.classify(
+        rawInput: trimmed,
+        accounts: accounts,
+        categories: categories,
+      );
 
-      case ClassifierIntent.queryBalance:
-        final totalBal = accounts.fold<double>(0.0, (sum, a) => sum + a.balance);
-        final reply = accounts.isEmpty
-            ? "You don't have any accounts set up yet."
-            : "Your total balance across ${accounts.length} account${accounts.length == 1 ? '' : 's'} is ${CurrencyFormatter.format(totalBal)}.";
-        await _respondWithText(reply, intent: ClassifierIntent.queryBalance);
-        break;
-
-      case ClassifierIntent.querySpending:
-        final transactions = ref.read(transactionsProvider);
-        final now = DateTime.now();
-        final thisMonthTxs = transactions.where((t) =>
-            t.type == TransactionType.expense &&
-            t.date.year == now.year &&
-            t.date.month == now.month).toList();
-
-        final totalSpent = thisMonthTxs.fold<double>(0.0, (sum, t) => sum + t.amount);
-        final reply = thisMonthTxs.isEmpty
-            ? "You haven't logged any expenses yet this month. Everything is calm!"
-            : "You've logged ${thisMonthTxs.length} expense${thisMonthTxs.length == 1 ? '' : 's'} totaling ${CurrencyFormatter.format(totalSpent)} this month.";
-        await _respondWithText(reply, intent: ClassifierIntent.querySpending);
-        break;
-
-      case ClassifierIntent.unclearOrGibberish:
-        await _respondWithText(
-          result.conversationalReply ??
-              "I couldn't detect an amount or known expense. For example, try 'Coffee 150 GCash' or 'Salary 45k BDO'.",
-          intent: ClassifierIntent.unclearOrGibberish,
-        );
-        break;
-
-      case ClassifierIntent.complexOrSplit:
-        await _handleComplexOrSplit(trimmed, accounts, categories);
-        break;
-
-      case ClassifierIntent.logTransaction:
-        if (result.isHighConfidence && result.transaction != null) {
-          // Tier 1 direct return
-          await _respondWithTransaction(
-            result.transaction!,
-            replyText: "Parsed your transaction ready for confirmation:",
+      // 2. Handle based on Intent
+      switch (result.intent) {
+        case ClassifierIntent.greetingOrHelp:
+          await _respondWithText(
+            result.conversationalReply ?? "Hello! How can I help with your budget today?",
+            intent: ClassifierIntent.greetingOrHelp,
           );
-        } else {
-          // Lower confidence: attempt Tier 2 if model is present, else show best-guess
-          final modelManager = ref.read(modelManagerProvider);
-          final isModelReady = await modelManager.isModelDownloaded();
+          break;
 
-          if (isModelReady) {
-            await _handleWithTier2(trimmed, accounts, categories, fallbackTx: result.transaction);
-          } else {
-            await _respondWithTransaction(
-              result.transaction!,
-              replyText: "I extracted this from your input, please verify before confirming:",
+        case ClassifierIntent.queryBalance:
+          final totalBal = accounts.fold<double>(0.0, (sum, a) => sum + a.balance);
+          final reply = accounts.isEmpty
+              ? "You don't have any accounts set up yet."
+              : "Your total balance across ${accounts.length} account${accounts.length == 1 ? '' : 's'} is ${CurrencyFormatter.format(totalBal)}.";
+          await _respondWithText(reply, intent: ClassifierIntent.queryBalance);
+          break;
+
+        case ClassifierIntent.querySpending:
+          final transactions = ref.read(transactionsProvider);
+          final now = DateTime.now();
+          final thisMonthTxs = transactions.where((t) =>
+              t.type == TransactionType.expense &&
+              t.date.year == now.year &&
+              t.date.month == now.month).toList();
+
+          final totalSpent = thisMonthTxs.fold<double>(0.0, (sum, t) => sum + t.amount);
+          final reply = thisMonthTxs.isEmpty
+              ? "You haven't logged any expenses yet this month. Everything is calm!"
+              : "You've logged ${thisMonthTxs.length} expense${thisMonthTxs.length == 1 ? '' : 's'} totaling ${CurrencyFormatter.format(totalSpent)} this month.";
+          await _respondWithText(reply, intent: ClassifierIntent.querySpending);
+          break;
+
+        case ClassifierIntent.unclearOrGibberish:
+          await _respondWithText(
+            result.conversationalReply ??
+                "I couldn't detect an amount or known expense. For example, try 'Coffee 150 GCash' or 'Salary 45k BDO'.",
+            intent: ClassifierIntent.unclearOrGibberish,
+          );
+          break;
+
+        case ClassifierIntent.complexOrSplit:
+          await _handleComplexOrSplit(trimmed, accounts, categories);
+          break;
+
+        case ClassifierIntent.logTransaction:
+          if (result.isHighConfidence && result.transactions.isNotEmpty) {
+            // Tier 1 direct return
+            await _respondWithTransactions(
+              result.transactions,
+              replyText: result.transactions.length > 1
+                  ? "Parsed ${result.transactions.length} transactions ready for confirmation:"
+                  : "Parsed your transaction ready for confirmation:",
             );
+          } else {
+            // Lower confidence: attempt Tier 2 if model is present, else show best-guess
+            final modelManager = ref.read(modelManagerProvider);
+            final isModelReady = await modelManager.isModelDownloaded();
+
+            if (isModelReady) {
+              ref.read(aiThinkingStatusProvider.notifier).state = 'Qwen AI is analyzing...';
+              await _handleWithTier2(trimmed, accounts, categories, fallbackTxs: result.transactions);
+            } else {
+              await _respondWithTransactions(
+                result.transactions,
+                replyText: result.transactions.length > 1
+                    ? "I extracted ${result.transactions.length} transactions, please verify before confirming:"
+                    : "I extracted this from your input, please verify before confirming:",
+              );
+            }
           }
-        }
-        break;
+          break;
+      }
+    } finally {
+      ref.read(isAiThinkingProvider.notifier).state = false;
     }
   }
 
@@ -166,6 +202,21 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     final isModelReady = await modelManager.isModelDownloaded();
 
     if (!isModelReady) {
+      // Check if Tier 1 multiple extraction was able to grab transactions
+      final classifier = ref.read(classifierServiceProvider);
+      final multi = classifier.classifyMultiple(
+        rawInput: userText,
+        accounts: ref.read(accountsProvider),
+        categories: CategoryDefaults.defaultCategories,
+      );
+      if (multi != null && multi.transactions.isNotEmpty) {
+        await _respondWithTransactions(
+          multi.transactions,
+          replyText: "Parsed ${multi.transactions.length} transactions ready for confirmation:",
+        );
+        return;
+      }
+
       await _respondWithText(
         "This input looks like a multi-item split or complex request. Download the Hermano Brain (Qwen 2.5 0.5B ~350MB) to handle multi-item queries and detailed financial advice.",
         intent: ClassifierIntent.complexOrSplit,
@@ -173,6 +224,7 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
       return;
     }
 
+    ref.read(aiThinkingStatusProvider.notifier).state = 'Qwen AI is analyzing...';
     await _handleWithTier2(userText, accounts, categories);
   }
 
@@ -180,7 +232,7 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     String userText,
     List<dynamic> accounts,
     List<dynamic> categories, {
-    ParsedTransaction? fallbackTx,
+    List<ParsedTransaction> fallbackTxs = const [],
   }) async {
     final llm = ref.read(llmServiceProvider);
     final modelManager = ref.read(modelManagerProvider);
@@ -191,7 +243,8 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     }
 
     final catNames = CategoryDefaults.defaultCategories.map((c) => c.name).toList();
-    final accNames = ref.read(accountsProvider).map((a) => a.name).toList();
+    final accList = ref.read(accountsProvider);
+    final accNames = accList.map((a) => a.name).toList();
     final today = DateTime.now().toIso8601String().split('T').first;
 
     final jsonStr = await llm.generateStructuredJson(
@@ -202,21 +255,31 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     );
 
     if (jsonStr != null) {
-      final parsed = NlpParser.parseLlmJson(
+      final parsedList = NlpParser.parseLlmJsonList(
         rawLlmOutput: jsonStr,
-        accounts: ref.read(accountsProvider),
+        accounts: accList,
         categories: CategoryDefaults.defaultCategories,
       );
 
-      if (parsed != null) {
-        await _respondWithTransaction(parsed, replyText: "Qwen AI parsed this transaction:");
+      if (parsedList.isNotEmpty) {
+        await _respondWithTransactions(
+          parsedList,
+          replyText: parsedList.length > 1
+              ? "Qwen AI extracted ${parsedList.length} transactions:"
+              : "Qwen AI parsed this transaction:",
+        );
         return;
       }
     }
 
     // Fallback if LLM failed to return structured json
-    if (fallbackTx != null) {
-      await _respondWithTransaction(fallbackTx, replyText: "Extracted transaction details:");
+    if (fallbackTxs.isNotEmpty) {
+      await _respondWithTransactions(
+        fallbackTxs,
+        replyText: fallbackTxs.length > 1
+            ? "Extracted ${fallbackTxs.length} transactions:"
+            : "Extracted transaction details:",
+      );
     } else {
       await _respondWithText(
         "I couldn't quite extract the full transaction. Try phrasing it with an amount and category, like 'Lunch 250 GCash'.",
@@ -239,15 +302,19 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     await repo.saveMessage(botMsg);
   }
 
-  Future<void> _respondWithTransaction(ParsedTransaction tx, {required String replyText}) async {
+  Future<void> _respondWithTransactions(
+    List<ParsedTransaction> txs, {
+    required String replyText,
+    ClassifierIntent? intent,
+  }) async {
     final repo = ref.read(chatRepositoryProvider);
     final botMsg = AiMessage(
       id: 'msg_bot_${DateTime.now().millisecondsSinceEpoch}',
       content: replyText,
       isUser: false,
       timestamp: DateTime.now(),
-      parsedTransaction: tx,
-      intent: ClassifierIntent.logTransaction,
+      parsedTransactions: txs,
+      intent: intent ?? ClassifierIntent.logTransaction,
     );
 
     final current = state.value ?? [];
@@ -255,27 +322,45 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     await repo.saveMessage(botMsg);
   }
 
-  /// Confirms and commits the transaction to the real Drift SQLite database with 5s Undo (Task 9.12).
-  Future<void> confirmTransaction(BuildContext context, AiMessage message) async {
-    if (message.parsedTransaction == null || message.isConfirmed) return;
+  /// Confirms and commits a single parsed transaction from a message card to Drift SQLite.
+  Future<void> confirmSingleTransaction(
+    BuildContext context,
+    String messageId,
+    String txId,
+  ) async {
+    final messages = state.value ?? [];
+    final msgIndex = messages.indexWhere((m) => m.id == messageId);
+    if (msgIndex == -1) return;
 
-    final txModel = message.parsedTransaction!.toTransactionModel();
+    final msg = messages[msgIndex];
+    final txIndex = msg.parsedTransactions.indexWhere((t) => t.id == txId);
+    if (txIndex == -1) return;
+
+    final targetTx = msg.parsedTransactions[txIndex];
+    if (targetTx.isConfirmed) return;
+
+    final txModel = targetTx.toTransactionModel();
     final transactionsNotifier = ref.read(transactionsProvider.notifier);
 
     // Save to real Drift SQLite database
     transactionsNotifier.addTransaction(txModel);
 
-    // Mark confirmed in chat
-    final repo = ref.read(chatRepositoryProvider);
-    await repo.markConfirmed(message.id);
+    // Update in message
+    final updatedTxs = List<ParsedTransaction>.from(msg.parsedTransactions);
+    updatedTxs[txIndex] = targetTx.copyWith(isConfirmed: true);
 
-    final updated = (state.value ?? []).map((m) {
-      if (m.id == message.id) {
-        return m.copyWith(isConfirmed: true);
-      }
-      return m;
-    }).toList();
-    state = AsyncData(updated);
+    final allConfirmed = updatedTxs.every((t) => t.isConfirmed);
+    final updatedMsg = msg.copyWith(
+      parsedTransactions: updatedTxs,
+      isConfirmed: allConfirmed,
+    );
+
+    final repo = ref.read(chatRepositoryProvider);
+    await repo.saveMessage(updatedMsg);
+
+    final updatedList = List<AiMessage>.from(messages);
+    updatedList[msgIndex] = updatedMsg;
+    state = AsyncData(updatedList);
 
     // Show floating pill UndoSnackbar (Mandatory Design Rule)
     if (context.mounted) {
@@ -289,7 +374,88 @@ class AiChatNotifier extends AsyncNotifier<List<AiMessage>> {
     }
   }
 
-  /// Discards a proposed transaction card.
+  /// Confirms and commits ALL pending parsed transactions in a message.
+  Future<void> confirmAllTransactions(
+    BuildContext context,
+    String messageId,
+  ) async {
+    final messages = state.value ?? [];
+    final msgIndex = messages.indexWhere((m) => m.id == messageId);
+    if (msgIndex == -1) return;
+
+    final msg = messages[msgIndex];
+    final unconfirmed = msg.parsedTransactions.where((t) => !t.isConfirmed).toList();
+    if (unconfirmed.isEmpty) return;
+
+    final transactionsNotifier = ref.read(transactionsProvider.notifier);
+    final addedModels = <TransactionModel>[];
+
+    for (final ptx in unconfirmed) {
+      final model = ptx.toTransactionModel();
+      transactionsNotifier.addTransaction(model);
+      addedModels.add(model);
+    }
+
+    final updatedTxs = msg.parsedTransactions
+        .map((t) => t.copyWith(isConfirmed: true))
+        .toList();
+
+    final updatedMsg = msg.copyWith(
+      parsedTransactions: updatedTxs,
+      isConfirmed: true,
+    );
+
+    final repo = ref.read(chatRepositoryProvider);
+    await repo.saveMessage(updatedMsg);
+
+    final updatedList = List<AiMessage>.from(messages);
+    updatedList[msgIndex] = updatedMsg;
+    state = AsyncData(updatedList);
+
+    if (context.mounted) {
+      final count = addedModels.length;
+      final totalAmount = addedModels.fold<double>(0.0, (s, m) => s + m.amount);
+      UndoSnackbar.show(
+        context,
+        message: 'Logged $count transaction${count == 1 ? '' : 's'} (${CurrencyFormatter.format(totalAmount)})',
+        onUndo: () {
+          for (final m in addedModels) {
+            transactionsNotifier.deleteTransaction(m.id);
+          }
+        },
+      );
+    }
+  }
+
+  /// Confirms and commits the transaction to the real Drift SQLite database with 5s Undo (backward compatibility).
+  Future<void> confirmTransaction(BuildContext context, AiMessage message) async {
+    await confirmAllTransactions(context, message.id);
+  }
+
+  /// Discards a single proposed transaction from a message card.
+  Future<void> discardSingleTransaction(String messageId, String txId) async {
+    final messages = state.value ?? [];
+    final msgIndex = messages.indexWhere((m) => m.id == messageId);
+    if (msgIndex == -1) return;
+
+    final msg = messages[msgIndex];
+    final updatedTxs = msg.parsedTransactions.where((t) => t.id != txId).toList();
+    final allConfirmed = updatedTxs.isEmpty || updatedTxs.every((t) => t.isConfirmed);
+
+    final updatedMsg = msg.copyWith(
+      parsedTransactions: updatedTxs,
+      isConfirmed: allConfirmed,
+    );
+
+    final repo = ref.read(chatRepositoryProvider);
+    await repo.saveMessage(updatedMsg);
+
+    final updatedList = List<AiMessage>.from(messages);
+    updatedList[msgIndex] = updatedMsg;
+    state = AsyncData(updatedList);
+  }
+
+  /// Discards a proposed transaction card (backward compatibility).
   Future<void> discardTransaction(String messageId) async {
     final repo = ref.read(chatRepositoryProvider);
     await repo.markConfirmed(messageId); // mark so card disables action buttons

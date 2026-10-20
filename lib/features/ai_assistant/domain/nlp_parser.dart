@@ -7,15 +7,15 @@ import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.da
 
 /// Unified NLP Parser standardizing both Tier 1 Classifier and Tier 2 LLM outputs (Task 9.6).
 class NlpParser {
-  /// Parses JSON output from the Tier 2 LLM into a validated [ParsedTransaction].
-  static ParsedTransaction? parseLlmJson({
+  /// Parses JSON output from the Tier 2 LLM into a list of validated [ParsedTransaction]s.
+  /// Handles JSON arrays `[{...}, {...}]`, object wrappers `{"transactions": [...]}`, or single objects `{...}`.
+  static List<ParsedTransaction> parseLlmJsonList({
     required String rawLlmOutput,
     required List<AccountModel> accounts,
     List<CategoryItem> categories = const [],
     DateTime? fallbackDate,
   }) {
     try {
-      // 1. Extract JSON block if surrounded by markdown fences or explanation
       String cleanedJson = rawLlmOutput.trim();
       if (cleanedJson.contains('```json')) {
         final start = cleanedJson.indexOf('```json') + 7;
@@ -28,20 +28,70 @@ class NlpParser {
       }
 
       final dynamic decoded = jsonDecode(cleanedJson);
-      if (decoded is! Map<String, dynamic>) return null;
+      final results = <ParsedTransaction>[];
 
+      if (decoded is List) {
+        for (final item in decoded) {
+          if (item is Map<String, dynamic>) {
+            final tx = _parseSingleMap(item, accounts, categories, fallbackDate);
+            if (tx != null) results.add(tx);
+          }
+        }
+      } else if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey('transactions') && decoded['transactions'] is List) {
+          for (final item in decoded['transactions'] as List) {
+            if (item is Map<String, dynamic>) {
+              final tx = _parseSingleMap(item, accounts, categories, fallbackDate);
+              if (tx != null) results.add(tx);
+            }
+          }
+        } else {
+          final tx = _parseSingleMap(decoded, accounts, categories, fallbackDate);
+          if (tx != null) results.add(tx);
+        }
+      }
+
+      return results;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Parses JSON output from the Tier 2 LLM into a single validated [ParsedTransaction].
+  static ParsedTransaction? parseLlmJson({
+    required String rawLlmOutput,
+    required List<AccountModel> accounts,
+    List<CategoryItem> categories = const [],
+    DateTime? fallbackDate,
+  }) {
+    final list = parseLlmJsonList(
+      rawLlmOutput: rawLlmOutput,
+      accounts: accounts,
+      categories: categories,
+      fallbackDate: fallbackDate,
+    );
+    return list.isNotEmpty ? list.first : null;
+  }
+
+  static ParsedTransaction? _parseSingleMap(
+    Map<String, dynamic> decoded,
+    List<AccountModel> accounts,
+    List<CategoryItem> categories,
+    DateTime? fallbackDate,
+  ) {
+    try {
       // Check for error payload from system prompt
       if (decoded.containsKey('error')) return null;
 
-      // Extract amount
-      final rawAmount = decoded['amount'];
-      double? amount;
-      if (rawAmount is num) {
-        amount = rawAmount.toDouble();
-      } else if (rawAmount is String) {
-        amount = double.tryParse(rawAmount.replaceAll(',', ''));
-      }
-      if (amount == null || amount <= 0) return null;
+    // Extract amount
+    final rawAmount = decoded['amount'];
+    double? amount;
+    if (rawAmount is num) {
+      amount = rawAmount.toDouble();
+    } else if (rawAmount is String) {
+      amount = double.tryParse(rawAmount.replaceAll(',', ''));
+    }
+    if (amount == null || amount <= 0) return null;
 
       // Extract transaction type
       final rawType = (decoded['type'] as String?)?.toLowerCase() ?? 'expense';

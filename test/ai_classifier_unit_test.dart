@@ -249,6 +249,92 @@ void main() {
         isNull,
       );
     });
+
+    test('parses JSON array of multiple transactions from LLM output', () {
+      const llmMultiOutput = '''
+[
+  {
+    "type": "income",
+    "amount": 100.0,
+    "category": "Salary",
+    "account": "GCash",
+    "date": "2026-10-18",
+    "title": "Income to GCash"
+  },
+  {
+    "type": "expense",
+    "amount": 150.0,
+    "category": "Food & Dining",
+    "account": "GCash",
+    "date": "2026-10-18",
+    "title": "Starbucks Coffee"
+  },
+  {
+    "type": "income",
+    "amount": 500.0,
+    "category": "Salary",
+    "account": "GCash",
+    "date": "2026-10-18",
+    "title": "Salary to MariBank"
+  }
+]
+''';
+
+      final list = NlpParser.parseLlmJsonList(
+        rawLlmOutput: llmMultiOutput,
+        accounts: sampleAccounts,
+        categories: CategoryDefaults.defaultCategories,
+      );
+
+      expect(list.length, equals(3));
+      expect(list[0].amount, equals(100.0));
+      expect(list[0].type, equals(TransactionType.income));
+      expect(list[1].amount, equals(150.0));
+      expect(list[1].type, equals(TransactionType.expense));
+      expect(list[2].amount, equals(500.0));
+      expect(list[2].type, equals(TransactionType.income));
+    });
+
+    test('parses multi-transaction batch input (e.g. 100 income to gcash, 150 peso starbucks coffee, and 500 sallary to maribank)', () {
+      final maribankAccount = AccountModel(
+        id: 'acc_maribank',
+        name: 'MariBank',
+        type: AccountType.bank,
+        balance: 10000.0,
+        icon: Icons.account_balance_rounded,
+        color: const Color(0xFFE91E63),
+      );
+      final accountsWithMari = [...sampleAccounts, maribankAccount];
+
+      final result = classifier.classifyMultiple(
+        rawInput: '100 income to gcash, 150 peso starbucks coffee, and 500 sallary to maribank',
+        accounts: accountsWithMari,
+        categories: CategoryDefaults.defaultCategories,
+        now: testDate,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.transactions.length, equals(3));
+
+      // Transaction 1: 100 income to GCash
+      final tx1 = result.transactions[0];
+      expect(tx1.amount, equals(100.0));
+      expect(tx1.type, equals(TransactionType.income));
+      expect(tx1.accountId, equals('acc_gcash'));
+
+      // Transaction 2: 150 Starbucks coffee
+      final tx2 = result.transactions[1];
+      expect(tx2.amount, equals(150.0));
+      expect(tx2.type, equals(TransactionType.expense));
+      expect(tx2.categoryId, equals('food'));
+
+      // Transaction 3: 500 salary to MariBank
+      final tx3 = result.transactions[2];
+      expect(tx3.amount, equals(500.0));
+      expect(tx3.type, equals(TransactionType.income));
+      expect(tx3.categoryId, equals('salary'));
+      expect(tx3.accountId, equals('acc_maribank'));
+    });
   });
 
   group('AiPrompts System Prompt & ChatML Generation (Task 9.8)', () {

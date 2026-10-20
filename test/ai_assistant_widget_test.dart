@@ -8,7 +8,9 @@ import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
 import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/ai_message.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/domain/chat_repository.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/domain/parsed_transaction.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
+import 'package:hermanos_ledgr/features/ai_assistant/providers/ai_assistant_provider.dart';
 import 'package:hermanos_ledgr/features/ai_assistant/providers/chat_repository_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
@@ -192,5 +194,131 @@ void main() {
     expect(txNotifier.addedTxs.length, equals(1));
     expect(txNotifier.addedTxs.first.amount, equals(150.0));
     expect(txNotifier.addedTxs.first.accountId, equals('acc_gcash'));
+  });
+
+  testWidgets('Thinking animation indicator displays when AI is thinking', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final container = ProviderContainer(
+      overrides: [
+        onboardingProvider.overrideWith(_TestOnboardingNotifier.new),
+        chatRepositoryProvider.overrideWithValue(_InMemoryChatRepository()),
+        accountsProvider.overrideWith(() => _FakeAccountsNotifier([sampleAccount])),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          home: const AiAssistantScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Set thinking state to true
+    container.read(isAiThinkingProvider.notifier).state = true;
+    container.read(aiThinkingStatusProvider.notifier).state = 'Qwen AI is analyzing...';
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // Verify thinking indicator appears
+    expect(find.text('Qwen AI is analyzing...'), findsOneWidget);
+
+    // Stop thinking
+    container.read(isAiThinkingProvider.notifier).state = false;
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Qwen AI is analyzing...'), findsNothing);
+  });
+
+  testWidgets('Multi-transaction message displays batch header and Confirm All button', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final txNotifier = _FakeTransactionsNotifier();
+    final chatRepo = _InMemoryChatRepository();
+
+    // Prepopulate chat with a multi-transaction message
+    final multiMsg = AiMessage(
+      id: 'msg_multi_test',
+      content: 'Parsed 3 transactions ready for confirmation:',
+      isUser: false,
+      timestamp: DateTime.now(),
+      parsedTransactions: [
+        ParsedTransaction(
+          id: 'ptx_1',
+          title: 'Income',
+          amount: 100.0,
+          type: TransactionType.income,
+          categoryId: 'salary',
+          categoryName: 'Salary',
+          categoryIcon: Icons.payments_rounded,
+          categoryColor: const Color(0xFF00897B),
+          accountId: 'acc_gcash',
+          accountName: 'GCash',
+          date: DateTime.now(),
+        ),
+        ParsedTransaction(
+          id: 'ptx_2',
+          title: 'Starbucks Coffee',
+          amount: 150.0,
+          type: TransactionType.expense,
+          categoryId: 'food',
+          categoryName: 'Food & Dining',
+          categoryIcon: Icons.restaurant_rounded,
+          categoryColor: const Color(0xFF00897B),
+          accountId: 'acc_gcash',
+          accountName: 'GCash',
+          date: DateTime.now(),
+        ),
+        ParsedTransaction(
+          id: 'ptx_3',
+          title: 'Salary to MariBank',
+          amount: 500.0,
+          type: TransactionType.income,
+          categoryId: 'salary',
+          categoryName: 'Salary',
+          categoryIcon: Icons.payments_rounded,
+          categoryColor: const Color(0xFF00897B),
+          accountId: 'acc_gcash',
+          accountName: 'GCash',
+          date: DateTime.now(),
+        ),
+      ],
+    );
+    await chatRepo.saveMessage(multiMsg);
+
+    await tester.pumpWidget(buildTestChatApp(chatRepo: chatRepo, txNotifier: txNotifier));
+    await tester.pumpAndSettle();
+
+    // Verify 3 items detected header
+    expect(find.text('3 Items Detected'), findsOneWidget);
+    expect(find.text('Confirm All (3)'), findsOneWidget);
+
+    // Verify all 3 amounts exist
+    expect(find.textContaining('100.00'), findsOneWidget);
+    expect(find.textContaining('150.00'), findsOneWidget);
+    expect(find.textContaining('500.00'), findsOneWidget);
+
+    // Tap "Confirm All (3)"
+    await tester.tap(find.text('Confirm All (3)'));
+    await tester.pumpAndSettle();
+
+    // Verify all 3 were committed
+    expect(txNotifier.addedTxs.length, equals(3));
+    expect(find.text('All Committed'), findsOneWidget);
+    expect(find.text('Committed to Ledger'), findsNWidgets(3));
   });
 }

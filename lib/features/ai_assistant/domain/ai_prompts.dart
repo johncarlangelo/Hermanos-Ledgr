@@ -21,8 +21,30 @@ Rules:
 2. Extract numeric amount. Understand Taglish multipliers: "k" = thousands (e.g., 50k = 50000, 1.5k = 1500).
 3. Match category and account against the available lists above. If none match, use null.
 4. Output valid JSON ONLY. Never include markdown fences (```json), commentary, or conversational filler.
-
-Required JSON format:
+5. If the user message contains MULTIPLE transactions (e.g. '100 income to gcash, 150 coffee, and 500 salary to maribank'), output a JSON array of transaction objects:
+[
+  {
+    "type": "income",
+    "amount": 100.0,
+    "category": "Salary",
+    "account": "GCash Wallet",
+    "to_account": null,
+    "date": "$todayDate",
+    "title": "Income",
+    "note": null
+  },
+  {
+    "type": "expense",
+    "amount": 150.0,
+    "category": "Food & Dining",
+    "account": "GCash Wallet",
+    "to_account": null,
+    "date": "$todayDate",
+    "title": "Starbucks Coffee",
+    "note": null
+  }
+]
+If the message contains a single transaction, output a single JSON object:
 {
   "type": "expense",
   "amount": 250.0,

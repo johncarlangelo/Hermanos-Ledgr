@@ -7,24 +7,31 @@ class AiMessage {
   final String content;
   final bool isUser;
   final DateTime timestamp;
-  final ParsedTransaction? parsedTransaction;
+  final List<ParsedTransaction> parsedTransactions;
   final bool isConfirmed;
   final ClassifierIntent? intent;
 
-  const AiMessage({
+  /// Backward-compatible getter returning the first parsed transaction if any.
+  ParsedTransaction? get parsedTransaction =>
+      parsedTransactions.isNotEmpty ? parsedTransactions.first : null;
+
+  AiMessage({
     required this.id,
     required this.content,
     required this.isUser,
     required this.timestamp,
-    this.parsedTransaction,
+    ParsedTransaction? parsedTransaction,
+    List<ParsedTransaction>? parsedTransactions,
     this.isConfirmed = false,
     this.intent,
-  });
+  }) : parsedTransactions = parsedTransactions ??
+            (parsedTransaction != null ? [parsedTransaction] : const []);
 
   AiMessage copyWith({
     String? content,
     bool? isConfirmed,
     ParsedTransaction? parsedTransaction,
+    List<ParsedTransaction>? parsedTransactions,
     ClassifierIntent? intent,
   }) {
     return AiMessage(
@@ -32,7 +39,10 @@ class AiMessage {
       content: content ?? this.content,
       isUser: isUser,
       timestamp: timestamp,
-      parsedTransaction: parsedTransaction ?? this.parsedTransaction,
+      parsedTransactions: parsedTransactions ??
+          (parsedTransaction != null
+              ? [parsedTransaction]
+              : this.parsedTransactions),
       isConfirmed: isConfirmed ?? this.isConfirmed,
       intent: intent ?? this.intent,
     );
