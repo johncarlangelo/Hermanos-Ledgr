@@ -2,12 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hermanos_ledgr/app/theme/app_theme.dart';
+import 'package:hermanos_ledgr/features/accounts/domain/account_model.dart';
+import 'package:hermanos_ledgr/features/accounts/providers/accounts_provider.dart';
 import 'package:hermanos_ledgr/features/debts/domain/debt_model.dart';
 import 'package:hermanos_ledgr/features/debts/presentation/screens/debts_screen.dart';
 import 'package:hermanos_ledgr/features/debts/presentation/widgets/bill_split_sheet.dart';
 import 'package:hermanos_ledgr/features/debts/presentation/widgets/debt_card.dart';
 import 'package:hermanos_ledgr/features/debts/presentation/widgets/record_payment_sheet.dart';
 import 'package:hermanos_ledgr/features/debts/providers/debts_provider.dart';
+
+class _MockAccountsNotifier extends AccountsNotifier {
+  final List<AccountModel> _initial;
+  _MockAccountsNotifier(this._initial);
+
+  @override
+  List<AccountModel> build() => _initial;
+
+  @override
+  void updateBalanceInMemory(String accountId, double delta) {
+    state = [
+      for (final acc in state)
+        if (acc.id == accountId) acc.copyWith(balance: acc.balance + delta) else acc,
+    ];
+  }
+
+  @override
+  Future<void> updateBalance(String accountId, double delta) async {
+    updateBalanceInMemory(accountId, delta);
+  }
+}
 
 class _MockDebtsNotifier extends DebtsNotifier {
   final List<DebtModel> _initial;
@@ -230,5 +253,67 @@ void main() {
     // Amount should display 6000
     expect(find.text('6000'), findsOneWidget);
     expect(find.text('Confirm Repayment'), findsOneWidget);
+  });
+
+  testWidgets('RecordPaymentSheet updates linked account balance and undo reverses it', (tester) async {
+    const testAccount = AccountModel(
+      id: 'acc_gcash',
+      name: 'GCash',
+      type: AccountType.eWallet,
+      balance: 5000.0,
+      icon: Icons.wallet_rounded,
+      color: Colors.blue,
+      institution: 'Mynt',
+      monthlyChange: 0.0,
+    );
+
+    final container = ProviderContainer(
+      overrides: [
+        debtsProvider.overrideWith(() => _MockDebtsNotifier([samplePayable])),
+        accountsProvider.overrideWith(() => _MockAccountsNotifier([testAccount])),
+      ],
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: AppTheme.dark(),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => RecordPaymentSheet.show(context, samplePayable),
+                child: const Text('Open Pay Sheet'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open Pay Sheet'));
+    await tester.pumpAndSettle();
+
+    // Select GCash account chip
+    await tester.tap(find.text('GCash'));
+    await tester.pumpAndSettle();
+
+    // Enter payment amount 1000
+    await tester.enterText(find.byType(TextField).first, '1000');
+    await tester.pumpAndSettle();
+
+    // Confirm repayment (samplePayable is debt type, so balance decreases)
+    await tester.tap(find.text('Confirm Repayment'));
+    await tester.pumpAndSettle();
+
+    // GCash balance should decrease from 5000 to 4000
+    expect(container.read(accountsProvider).first.balance, 4000.0);
+
+    // Tap Undo on snackbar
+    await tester.tap(find.text('UNDO'));
+    await tester.pumpAndSettle();
+
+    // GCash balance should be restored to 5000
+    expect(container.read(accountsProvider).first.balance, 5000.0);
   });
 }

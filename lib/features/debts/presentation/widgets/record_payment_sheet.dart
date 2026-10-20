@@ -75,8 +75,17 @@ class _RecordPaymentSheetState extends ConsumerState<RecordPaymentSheet> {
     final debtId = widget.debt.id;
     final person = widget.debt.personName;
     final isReceivable = widget.debt.type == DebtType.receivable;
+    final accountId = _selectedAccountId;
 
-    ref.read(debtsProvider.notifier).recordPayment(debtId, amount);
+    final debtsNotifier = ref.read(debtsProvider.notifier);
+    final accountsNotifier = ref.read(accountsProvider.notifier);
+
+    debtsNotifier.recordPayment(debtId, amount);
+
+    if (accountId != null) {
+      final delta = isReceivable ? amount : -amount;
+      accountsNotifier.updateBalance(accountId, delta);
+    }
 
     Navigator.of(context).pop();
 
@@ -92,7 +101,11 @@ class _RecordPaymentSheetState extends ConsumerState<RecordPaymentSheet> {
               : 'Recorded ${CurrencyFormatter.format(amount)} payment to $person'),
       onUndo: () {
         // Reverse payment by recording negative amount
-        ref.read(debtsProvider.notifier).recordPayment(debtId, -amount);
+        debtsNotifier.recordPayment(debtId, -amount);
+        if (accountId != null) {
+          final reverseDelta = isReceivable ? -amount : amount;
+          accountsNotifier.updateBalance(accountId, reverseDelta);
+        }
       },
     );
   }
