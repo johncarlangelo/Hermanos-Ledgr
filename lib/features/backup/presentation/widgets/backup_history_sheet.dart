@@ -258,18 +258,102 @@ class BackupHistorySheet extends ConsumerWidget {
             icon: const Icon(Icons.delete_outline_rounded, size: 18),
             tooltip: 'Delete',
             color: theme.colorScheme.error,
-            onPressed: () async {
-              await notifier.deleteBackup(entry.filePath);
-              if (context.mounted) {
-                UndoSnackbar.info(
-                  context,
-                  message: 'Deleted "${entry.fileName}"',
-                );
-              }
-            },
+            onPressed: () => _confirmDeleteBackup(context, entry, notifier),
           ),
         ],
       ),
+    );
+  }
+
+  void _confirmDeleteBackup(
+    BuildContext context,
+    BackupEntry entry,
+    BackupNotifier notifier,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final isDark = theme.brightness == Brightness.dark;
+        final dangerColor = SemanticColors.expense(isDark);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(Spacing.lg),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: Spacing.md),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(Spacing.sm),
+                  decoration: BoxDecoration(
+                    color: dangerColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.delete_forever_rounded, color: dangerColor, size: 28),
+                ),
+                const SizedBox(height: Spacing.sm),
+                Text(
+                  'Delete Backup File?',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  'This will permanently delete "${entry.fileName}" from your device storage.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: Spacing.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          await notifier.deleteBackup(entry.filePath);
+                          if (context.mounted) {
+                            UndoSnackbar.info(
+                              context,
+                              message: 'Deleted "${entry.fileName}"',
+                            );
+                          }
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: dangerColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Delete'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

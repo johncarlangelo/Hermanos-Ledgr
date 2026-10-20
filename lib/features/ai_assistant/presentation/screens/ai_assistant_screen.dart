@@ -13,6 +13,7 @@ import 'package:hermanos_ledgr/features/transactions/domain/transaction_model.da
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
 import 'package:hermanos_ledgr/shared/widgets/empty_state_view.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 class AiAssistantScreen extends ConsumerStatefulWidget {
   const AiAssistantScreen({super.key});
@@ -59,6 +60,89 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
 
     ref.read(aiChatProvider.notifier).sendMessage(text);
     _scrollToBottom();
+  }
+
+  void _confirmClearChat(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final isDark = theme.brightness == Brightness.dark;
+        final dangerColor = SemanticColors.expense(isDark);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? StashColors.raised : theme.colorScheme.surfaceContainerHigh,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(Spacing.lg),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: Spacing.md),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(Spacing.sm),
+                  decoration: BoxDecoration(
+                    color: dangerColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.delete_sweep_rounded, color: dangerColor, size: 28),
+                ),
+                const SizedBox(height: Spacing.sm),
+                Text(
+                  'Clear Chat History?',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: Spacing.xs),
+                Text(
+                  'This will clear your current conversation and start fresh. Your recorded transactions will not be affected.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: Spacing.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          ref.read(aiChatProvider.notifier).clearChat();
+                          UndoSnackbar.info(context, message: 'Chat history cleared');
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: dangerColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Clear Chat'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _handleVoiceInput() {
@@ -229,9 +313,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined),
             tooltip: 'Clear Chat History',
-            onPressed: () {
-              ref.read(aiChatProvider.notifier).clearChat();
-            },
+            onPressed: () => _confirmClearChat(context),
           ),
         ],
       ),

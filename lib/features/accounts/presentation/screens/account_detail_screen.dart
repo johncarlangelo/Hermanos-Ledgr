@@ -14,6 +14,7 @@ import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_tr
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/transaction_card.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
+import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 
 enum AccountTxFilter { all, expense, income, transfer }
 
@@ -483,9 +484,18 @@ class _AccountDetailScreenState extends ConsumerState<AccountDetailScreen> {
                               existingTransaction: tx,
                             ),
                             onDelete: () {
-                              ref
+                              final deleted = ref
                                   .read(transactionsProvider.notifier)
                                   .deleteTransaction(tx.id);
+                              if (deleted != null && context.mounted) {
+                                UndoSnackbar.show(
+                                  context,
+                                  message: 'Deleted "${deleted.title}"',
+                                  onUndo: () => ref
+                                      .read(transactionsProvider.notifier)
+                                      .restoreTransaction(deleted),
+                                );
+                              }
                             },
                           ),
                         ),

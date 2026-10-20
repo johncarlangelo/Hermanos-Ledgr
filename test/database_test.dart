@@ -211,4 +211,35 @@ void main() {
     expect(acc, isNotNull);
     expect(acc!.balance, equals(7500.0));
   });
+
+  test('ChatDao persists messages and safely prunes history beyond 50 messages to avoid bloat', () async {
+    final now = DateTime.now();
+
+    // Insert 55 messages sequentially
+    for (int i = 1; i <= 55; i++) {
+      await db.chatDao.insertMessage(
+        ChatMessagesTableCompanion.insert(
+          id: 'msg_$i',
+          content: 'Message #$i',
+          isUser: i % 2 == 1,
+          timestamp: now.add(Duration(seconds: i)),
+        ),
+      );
+    }
+
+    // Should only keep the most recent 50 messages (55 - 50 = messages 1..5 pruned)
+    final allInDb = await (db.select(db.chatMessagesTable)..orderBy([(t) => OrderingTerm.asc(t.timestamp)])).get();
+    expect(allInDb.length, 50);
+
+    // Oldest surviving message should be msg_6
+    expect(allInDb.first.id, 'msg_6');
+    // Newest message should be msg_55
+    expect(allInDb.last.id, 'msg_55');
+
+    // getAllMessages returns chronological order (oldest to newest among surviving)
+    final retrieved = await db.chatDao.getAllMessages(limit: 50);
+    expect(retrieved.length, 50);
+    expect(retrieved.first.id, 'msg_6');
+    expect(retrieved.last.id, 'msg_55');
+  });
 }
