@@ -121,27 +121,6 @@ The app is built around the **"Calm Finance"** philosophy: an uncluttered, high-
 
 ---
 
-## 🎨 Design System Tokens
-
-Hermanos Ledgr strictly adheres to the specifications in [`DESIGN.md`](DESIGN.md) and [`.agents/skills/flutter-m3-premium-design/SKILL.md`](.agents/skills/flutter-m3-premium-design/SKILL.md):
-
-* **Seed Color**: `#00897B` (Stash Teal)
-* **Primary Accent**: `#7FB8AE` (Teal)
-* **Surfaces (Hermanos-Stash)**:
-  * `Base`: `#08090D`
-  * `Shell`: `#0B0D13`
-  * `Surface` (Cards): `#12151E`
-  * `Raised` (Modals & Cards): `#1A1F2B`
-  * `Overlay` (Bottom Sheets): `#212736`
-  * `AMOLED`: `#000000`
-* **Typography**: [Google Fonts Inter](https://fonts.google.com/specimen/Inter) with `FontFeature.tabularFigures()` for all financial figures.
-* **Cards**: Corner radius `16dp`, elevation `0`, background `surfaceContainer`.
-* **Sheets**: Top radius `28dp` with bottom `SafeArea` handling for system navigation bars.
-* **Zero Stock Android Native UI**: All dialogs, pickers, dropdowns, switches, and toasts are replaced with custom-crafted widgets (`UndoSnackbar`, custom animated containers, tailored sheets).
-* **Spacing Scale**: 4dp base unit (`xs: 4`, `sm: 8`, `md: 12`, `lg: 16`, `xl: 24`, `xxl: 32`, `xxxl: 48`).
-
----
-
 ## 🏗️ Architecture & Directory Structure
 
 Follows a **feature-first modular architecture** combined with **Clean Architecture** layering:
