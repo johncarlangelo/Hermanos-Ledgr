@@ -8,7 +8,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android%2012%2B%20(API%2031%2B)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
 [![Target Device](https://img.shields.io/badge/Target-Samsung%20Galaxy%20A36%20%2F%20A55-1428A0?style=flat-square&logo=samsung&logoColor=white)](https://samsung.com)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/Version-v0.18.8--alpha-00897B?style=flat-square)](pubspec.yaml)
+[![Version](https://img.shields.io/badge/Version-v0.18.9--alpha-00897B?style=flat-square)](pubspec.yaml)
 [![Design](https://img.shields.io/badge/Design-Material%20Design%203%20(Stash%20Teal)-7FB8AE?style=flat-square)](DESIGN.md)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20On--Device%20(Zero%20Cloud)-brightgreen?style=flat-square)](#-privacy--security)
 

@@ -341,4 +341,16 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 
 ---
 
+### D-023: Global Tabular Figures via Text Theme Instead of Per-Call-Site Styles
+**Date:** 2026-10-24
+**Status:** Accepted
+**Context:** DESIGN.md 3.1 and AGENTS.md mandate tabular figures for all monetary amounts, but only 3 of 14 text theme roles (`displaySmall`, `titleLarge`, `titleMedium`) and the `moneyStyle()` helper applied them. Money rendered through other roles (e.g., sheet titles, subtitles, captions, chips) used proportional digits and jittered during count-ups and list updates.
+**Decision:** Enable `FontFeature.tabularFigures()` on every role in `buildTextTheme` (including previously-uncustomized `displayLarge`/`displayMedium` at M3 base sizes), rather than hunting down each money call site.
+**Alternatives Considered:**
+- Adding a shared `MoneyText` widget and migrating ~20 call-site files — large diff, easy to miss future call sites.
+- Leaving per-role gaps and patching only observed jitter spots — whack-a-mole; the rule would keep regressing.
+**Rationale:** The app has zero `inherit: false` styles, no direct `TextPainter` use, and no `GoogleFonts` calls outside the theme, so every `Text` (including ad-hoc `TextStyle(...)` merges and `TextSpan` cascades) inherits from the theme. One central change therefore guarantees the rule for all current and future money text, matching the documented "Inter with tabular figures" token. Prose is unaffected visually — tabular figures only alter digit advance widths.
+
+---
+
 *Add new decisions below this line.*
