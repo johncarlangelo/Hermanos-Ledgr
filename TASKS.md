@@ -113,12 +113,12 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| 5.1 | Create `BudgetEntity` and `BudgetRepository` | 🟢 | 1.1 | ⬜ TODO |
-| 5.2 | Implement `BudgetRepositoryImpl` | 🟡 | 5.1, 3.2 | ⬜ TODO |
-| 5.3 | Create budget providers | 🟡 | 5.2 | ⬜ TODO |
+| 5.1 | Create `BudgetEntity` and `BudgetRepository` | 🟢 | 1.1 | ✅ DONE |
+| 5.2 | Implement `BudgetRepositoryImpl` | 🟡 | 5.1, 3.2 | ✅ DONE |
+| 5.3 | Create budget providers | 🟡 | 5.2 | ✅ DONE |
 | 5.4 | Build budget overview screen | 🔴 | 5.3 | ✅ DONE |
 | 5.5 | Build budget progress card widget | 🟡 | 5.4 | ✅ DONE |
-| 5.6 | Build budget creation/edit form | 🟡 | 5.3 | ⬜ TODO |
+| 5.6 | Build budget creation/edit form | 🟡 | 5.3 | ✅ DONE |
 | 5.7 | Build monthly spending chart | 🟡 | 5.3 | ✅ DONE |
 | 5.8 | Implement overspend warnings (75%, 90%, 100%) | 🟢 | 5.5 | ✅ DONE |
 
@@ -276,6 +276,25 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 ---
 
+## Standalone / Future Capabilities: Optional Self-Hosted Sync & Web Companion (Docker)
+> **Goal:** Sideloaded / offline-first hybrid architecture inspired by [openGym](https://github.com/DuarteSantos8/openGym). App functions 100% offline standalone, but users can optionally spin up a Docker container on their PC/NAS to sync data over LAN/Tailscale and manage budgets on desktop.
+> **Architecture Blueprint:** `SELF_HOSTED_SYNC_PLAN.md`
+
+| # | Task | Size | Dependencies | Status |
+|---|---|---|---|---|
+| SYNC.1 | Schema migration: Add UUIDs, `updated_at`, and `is_deleted` tombstones to Drift tables | 🟡 | 1.1 | ⬜ TODO |
+| SYNC.2 | Design differential sync protocol (handshake, pull changeset, push local changes) | 🟡 | SYNC.1 | ⬜ TODO |
+| SYNC.3 | Build client `SyncService` in Flutter (dirty tracking, LWW conflict resolver, retry queue) | 🔴 | SYNC.1, SYNC.2 | ⬜ TODO |
+| SYNC.4 | Build lightweight Docker container backend (Go/Dart Frog with embedded SQLite & sync API) | 🔴 | SYNC.2 | ⬜ TODO |
+| SYNC.5 | Create `docker-compose.yml` with host volume mounts and daily auto-backup cron | 🟢 | SYNC.4 | ⬜ TODO |
+| SYNC.6 | Implement LAN QR Code pairing (Mobile scans server screen to auto-fill IP and auth token) | 🟡 | SYNC.3, SYNC.4 | ⬜ TODO |
+| SYNC.7 | Build Desktop Web Companion UI (Stash M3 theme, full-screen ledger, batch edit, analytics) | 🔴 | SYNC.4 | ⬜ TODO |
+| SYNC.8 | Add "Self-Hosted Sync" settings screen in Mobile App (status badge, manual sync, server URL) | 🟡 | SYNC.3 | ⬜ TODO |
+| SYNC.9 | Implement background Wi-Fi sync worker (syncs silently when connected to home network) | 🟡 | SYNC.3, SYNC.8 | ⬜ TODO |
+| SYNC.10 | Write self-hosting setup guide with Docker, reverse proxy (Caddy/Nginx), and Tailscale VPN | 🟢 | SYNC.5 | ⬜ TODO |
+
+---
+
 ## Summary
 
 | Phase | Tasks | Completed | Est. Total | Status |
@@ -285,14 +304,15 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 2. Account Management | 7 | 7 / 7 | ~6 hours | ✅ Complete (100%) |
 | 3. Transaction Management | 18 | 18 / 18 | ~15 hours | ✅ Complete (100%) |
 | 4. Dashboard | 7 | 7 / 7 | ~6 hours | ✅ Complete (100%) |
-| 5. Budget System | 8 | 4 / 8 | ~8 hours | 🟡 In Progress (50%) |
+| 5. Budget System | 8 | 8 / 8 | ~8 hours | ✅ Complete (100%) |
 | 6. Savings Goals | 8 | 8 / 8 | ~6 hours | ✅ Complete (100%) |
-| 7. Debt & Receivables | 8 | 0 / 8 | ~7 hours | ⬜ Pending (0%) |
-| 8. Recurring & Forecast | 9 | 0 / 9 | ~10 hours | ⬜ Pending (0%) |
-| 9. AI Assistant | 17 | 3 / 17 | ~18 hours | 🟡 UI Mockup Built (18%) |
-| 10. Receipt Scanner | 6 | 0 / 6 | ~5 hours | ⬜ Pending (0%) |
-| 11. Backup & Data | 7 | 4 / 7 | ~8 hours | 🟡 In Progress (57%) |
-| 12. Settings & Profiles | 8 | 5 / 8 | ~6 hours | 🟡 Mostly Built (63%) |
-| 13. Polish & Optimization | 8 | 1 / 8 | ~7 hours | 🟡 Ongoing (13%) |
-| **Total** | **130** | **76 / 130** | **~114 hours** | **58.5% Completed** |
+| 7. Debt & Receivables | 8 | 8 / 8 | ~7 hours | ✅ Complete (100%) |
+| 8. Recurring & Forecast | 9 | 9 / 9 | ~10 hours | ✅ Complete (100%) |
+| 9. AI Assistant | 17 | 17 / 17 | ~18 hours | ✅ Complete (100%) |
+| 10. Receipt Scanner | 6 | 6 / 6 | ~5 hours | ✅ Complete (100%) |
+| 11. Backup & Data | 7 | 7 / 7 | ~8 hours | ✅ Complete (100%) |
+| 12. Settings & Profiles | 8 | 8 / 8 | ~6 hours | ✅ Complete (100%) |
+| 13. Polish & Optimization | 8 | 7 / 8 | ~7 hours | 🟡 In Progress (88% - Task 13.8 remaining) |
+| **Total (Core v1)** | **130** | **129 / 130** | **~114 hours** | **99.2% Completed** |
 | *Standalone: OTA Auto-Updater* | *9* | *0 / 9* | *~8 hours* | *⬜ Planned* |
+| *Standalone: Self-Hosted Docker Sync & Web Companion* | *10* | *0 / 10* | *~20 hours* | *⬜ Planned* |

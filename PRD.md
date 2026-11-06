@@ -105,6 +105,17 @@ This app is for **personal use only** and will never be published on any app sto
 | **Seamless Sideloading** | Background APK download with checksum verification and direct Android package installer invocation without Play Store |
 | **Update Notification** | Custom bottom sheet modal showing release notes and one-tap "Update Now" action |
 
+### 3.8 Optional Self-Hosted Sync & Web Companion (Docker — Future Roadmap)
+
+| Feature | Description |
+|---|---|
+| **Mobile-First & 100% Offline** | Mobile app operates completely standalone by default; self-hosting is strictly opt-in |
+| **Local Docker Container** | Single `docker-compose.yml` stack running on PC/home server with SQLite storage and automated cold backups |
+| **Differential Sync Protocol** | Offline changeset push/pull with UUIDs, microsecond timestamps, and tombstone soft-deletes |
+| **Zero Third-Party Cloud** | Syncs directly over local Wi-Fi / LAN (mDNS) or private mesh VPN (Tailscale/WireGuard) |
+| **Desktop Web Companion** | Stash-themed dashboard for big-screen ledger management, batch edits, and CSV imports |
+| **Instant QR LAN Pairing** | Mobile camera scans server QR code for instantaneous local setup |
+
 ---
 
 ## 4. Features — Out of Scope (v1)
@@ -114,10 +125,9 @@ This app is for **personal use only** and will never be published on any app sto
 | Stocks & Crypto tracking | Not needed for now |
 | Streaks & Achievement badges | Not needed |
 | Mascot customization | Not needed |
-| Cloud sync / web app | Personal device only |
+| Third-party Cloud Sync / SaaS | Prohibited; all sync must remain 100% self-hosted & local (see §3.8) |
 | User authentication / login | Single user, no need |
 | App Store publishing | Personal use only |
-| Multi-device sync | Import/export covers phone migration |
 | Shared/collaborative accounts | Single user |
 
 ---
