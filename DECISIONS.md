@@ -353,4 +353,17 @@ Record every non-obvious technical or design decision here. Future-you (or futur
 
 ---
 
+### D-024: Dockerized Web Companion via Localhost Browser Over Heavy Desktop Frameworks (Electron)
+**Date:** 2026-11-06
+**Status:** Accepted
+**Context:** When architecting optional PC synchronization and a desktop companion interface (inspired by openGym), we evaluated whether to package the desktop client as a dedicated heavy desktop runtime (e.g., Electron) or a lightweight, containerized Web Companion served directly by the Docker sync server over `localhost:8080`.
+**Decision:** Deploy the desktop experience as an embedded Web Companion served by the Docker sync container on `localhost:8080` (with optional browser PWA installation for a standalone window feel). Electron was rejected as overkill for a lightweight personal sync companion.
+**Alternatives Considered:**
+- **Electron Desktop Wrapper:** Heavy binary bundle (~150 MB+ installer), bundling Chromium and Node.js, with unnecessary resource footprint (~150 MB+ RAM) for a utility companion.
+- **Native Flutter Desktop (Windows C++ Runner):** Viable and high-performance, but requires maintaining platform-specific desktop runner pipelines and desktop-only plugin channels when the primary goal is simple local sync and occasional desktop review.
+- **Headless Sync Server Only (CLI / No UI):** Lacks visual desktop dashboard for large-screen ledger review, batch editing, and CSV imports.
+**Rationale:** A single, lightweight Docker container (<40 MB image size, <30 MB RAM) serves both the sync REST API and the Stash M3 Web Companion UI over `http://localhost:8080`. It requires zero software installations on the PC beyond Docker, and users can 1-click install it as a PWA in Chrome/Edge for a borderless window with a taskbar shortcut if desired, achieving the native desktop feel with zero packaging overhead or runtime bloat.
+
+---
+
 *Add new decisions below this line.*
