@@ -8,7 +8,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Android%2012%2B%20(API%2031%2B)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
 [![Target Device](https://img.shields.io/badge/Target-Samsung%20Galaxy%20A36%20%2F%20A55-1428A0?style=flat-square&logo=samsung&logoColor=white)](https://samsung.com)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/Version-v0.18.9--alpha-00897B?style=flat-square)](pubspec.yaml)
+[![Version](https://img.shields.io/badge/Version-v0.19.0--alpha-00897B?style=flat-square)](pubspec.yaml)
 [![Design](https://img.shields.io/badge/Design-Material%20Design%203%20(Stash%20Teal)-7FB8AE?style=flat-square)](DESIGN.md)
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20On--Device%20(Zero%20Cloud)-brightgreen?style=flat-square)](#-privacy--security)
 
@@ -119,6 +119,13 @@ The app is built around the **"Calm Finance"** philosophy: an uncluttered, high-
 * **GitHub In-App OTA Updater**: Checks `api.github.com/repos/johncarlangelo/hermanos-ledgr/releases/latest`, downloads release APKs in the background, and prompts for one-tap sideload install.
 * **Danger Zone**: One-tap data reset with confirmation sheets to wipe sample data or reset to default configurations.
 
+### 13. Optional Self-Hosted PC Companion (Docker & Flutter Web — WIP)
+* **Single-Codebase Multi-Target**: Compiles natively to both an Android APK (`flutter build apk`) and a zero-bloat web companion (`flutter build web`).
+* **100% Component & Asset Reuse**: The desktop interface reuses the entire Hermanos design system—Drift SQLite models, custom keypad, theme tokens, and all 31 custom Philippine bank SVG cards (`assets/cards/`).
+* **Responsive Desktop Sidebar**: On screens `width >= 900`, dynamically substitutes the mobile bottom navigation bar with a 260dp Stash sidebar navigation rail featuring quick action logging, account balances, and Drift database health status.
+* **Widescreen Layouts**: Responsive center-constrained containers (`maxWidth: 1040dp`) ensuring charts and transaction ledgers take full advantage of desktop monitors without awkward stretching.
+* **Localhost Docker Deployment (WIP)**: The compiled static bundle will be served locally via a lightweight Docker container (`http://localhost:8080`), syncing seamlessly with your Android device over your home Wi-Fi LAN or private Tailscale network with zero third-party cloud intermediaries.
+
 ---
 
 ## 🏗️ Architecture & Directory Structure
@@ -171,6 +178,7 @@ lib/
 └── shared/                     # Reusable UI widgets adhering to design skill
     └── widgets/
         ├── custom_keypad.dart
+        ├── desktop_sidebar.dart
         ├── empty_state_view.dart
         ├── hero_amount_display.dart
         ├── m3_card.dart
@@ -221,6 +229,16 @@ flutter build apk --release
 The compiled APK will be located at:
 `build/app/outputs/flutter-apk/app-release.apk`
 
+#### 3. Running & Building for Desktop / PC Companion (WIP)
+```bash
+# Launch locally in Chrome / desktop browser
+flutter run -d chrome
+
+# Compile production web bundle for Docker / self-hosted PC deployment
+flutter build web --release
+```
+The compiled static web app will be located at `build/web/`, ready to be served locally via Docker over `http://localhost:8080`.
+
 ### Verification & Testing
 
 ```bash
@@ -236,7 +254,7 @@ flutter test
 ## 🔒 Privacy & Philosophy
 
 Hermanos Ledgr is developed as personal-use software. It guarantees:
-* ❌ **No Cloud Sync or Remote Storage**: Your data never leaves your device.
+* ❌ **No Third-Party Cloud Storage or Corporate Servers**: Your data never touches remote third-party cloud servers. The optional self-hosted companion operates strictly within your personal local home network (LAN / Docker localhost) with end-to-end encryption.
 * ❌ **No Telemetry, Analytics, or Tracking**: Zero tracking SDKs or background beacons.
 * ❌ **No Account Sign-Ups or Logins**: No emails, passwords, phone numbers, or third-party auth.
 * ❌ **No Ads or Subscription Paywalls**: Completely free and fully featured forever.
