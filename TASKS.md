@@ -278,7 +278,7 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 ## Standalone / Future Capabilities: Optional Self-Hosted Sync & Web Companion (Docker)
 > **Goal:** Sideloaded / offline-first hybrid architecture inspired by [openGym](https://github.com/DuarteSantos8/openGym). App functions 100% offline standalone, but users can optionally spin up a Docker container on their PC/NAS to sync data over LAN/Tailscale and manage budgets on desktop.
-> **Architecture Blueprint:** `SELF_HOSTED_SYNC_PLAN.md`
+> **Architecture Blueprint:** `SELF_HOSTED_SYNC_GUIDE.md`
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
