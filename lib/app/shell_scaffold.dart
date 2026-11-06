@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hermanos_ledgr/app/theme/color_tokens.dart';
 import 'package:hermanos_ledgr/features/splash/providers/splash_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/presentation/widgets/add_transaction_sheet.dart';
+import 'package:hermanos_ledgr/shared/widgets/desktop_sidebar.dart';
 
 class ShellScaffold extends ConsumerWidget {
   final Widget child;
@@ -52,6 +53,23 @@ class ShellScaffold extends ConsumerWidget {
     final selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
     final splashState = ref.watch(splashProvider);
+    final isDesktop = media.width >= 900;
+
+    if (isDesktop) {
+      return Scaffold(
+        body: Row(
+          children: [
+            DesktopSidebar(
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (idx) => _onItemTapped(idx, context),
+            ),
+            Expanded(
+              child: child,
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(

@@ -48,16 +48,24 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
     final monthlyRecurring = ref.watch(monthlyRecurringExpenseProvider);
     final activeRecurring = ref.watch(activeRecurringProvider);
 
+    final isDesktop = MediaQuery.sizeOf(context).width >= 900;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Budget & Planning'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Spacing.lg,
-          vertical: Spacing.md,
-        ),
-        children: [
+      body: Align(
+        alignment: isDesktop ? Alignment.topCenter : Alignment.topLeft,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 1040 : double.infinity,
+          ),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.lg,
+              vertical: Spacing.md,
+            ),
+            children: [
           // 1. Monthly Budget Summary Hero Card
           M3Card(
             padding: const EdgeInsets.all(Spacing.lg),
@@ -593,6 +601,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
           const SizedBox(height: Spacing.xxl),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

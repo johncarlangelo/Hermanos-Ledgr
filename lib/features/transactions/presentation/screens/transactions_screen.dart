@@ -65,6 +65,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       grouped.putIfAbsent(header, () => []).add(tx);
     }
 
+    final isDesktop = MediaQuery.sizeOf(context).width >= 900;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transactions'),
@@ -81,8 +83,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
+      body: Align(
+        alignment: isDesktop ? Alignment.topCenter : Alignment.topLeft,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isDesktop ? 1040 : double.infinity,
+          ),
+          child: Column(
+            children: [
           // Search Bar
           Padding(
             padding: const EdgeInsets.symmetric(
@@ -226,7 +234,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildFilterChip(

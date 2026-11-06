@@ -35,6 +35,8 @@ class DashboardScreen extends ConsumerWidget {
       ref.read(backupProvider.notifier).checkAndRunDailyAutoBackup();
     });
 
+    final isDesktop = MediaQuery.sizeOf(context).width >= 900;
+
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
@@ -44,8 +46,14 @@ class DashboardScreen extends ConsumerWidget {
             ref.invalidate(dashboardProvider);
             await Future.delayed(const Duration(milliseconds: 300));
           },
-          child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: Spacing.md),
+          child: Align(
+            alignment: isDesktop ? Alignment.topCenter : Alignment.topLeft,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isDesktop ? 1040 : double.infinity,
+              ),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: Spacing.md),
             children: [
               // 1. Header Greeting & Profile Avatar
               Padding(
@@ -148,6 +156,8 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
