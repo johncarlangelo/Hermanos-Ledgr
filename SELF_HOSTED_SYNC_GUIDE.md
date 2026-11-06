@@ -260,3 +260,4 @@ Open your browser to:
 | **M5: QR LAN Pairing** | Mobile camera scan of server QR code for instantaneous zero-config pairing | Planned |
 | **M6: Web Companion UI** | Stash-themed desktop dashboard for large-screen ledger review and imports | Planned |
 | **M7: Background Wi-Fi Sync**| Automated silent sync when connected to home network | Planned |
+
