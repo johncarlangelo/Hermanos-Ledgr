@@ -264,15 +264,15 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 
 | # | Task | Size | Dependencies | Status |
 |---|---|---|---|---|
-| OTA.1 | Configure Android Manifest permissions (`REQUEST_INSTALL_PACKAGES`) & FileProvider | 🟢 | — | ⬜ TODO |
-| OTA.2 | Create `UpdateReleaseModel` and `GitHubUpdateService` (fetch latest release metadata from GitHub API) | 🟡 | — | ⬜ TODO |
-| OTA.3 | Implement SemVer version comparator (`remoteVersion > localVersion`) | 🟢 | OTA.2 | ⬜ TODO |
-| OTA.4 | Create `updateProvider` (Riverpod notifier managing check status, download progress, release info) | 🟡 | OTA.2, OTA.3 | ⬜ TODO |
-| OTA.5 | Build custom Stash-styled `UpdateAvailableSheet` (version badge, changelog markdown viewer, download progress) | 🟡 | OTA.4 | ⬜ TODO |
-| OTA.6 | Implement APK downloader with stream progress tracking to local temporary cache | 🟡 | OTA.4 | ⬜ TODO |
-| OTA.7 | Implement Android Package Installer trigger via intent (`application/vnd.android.package-archive`) | 🟡 | OTA.1, OTA.6 | ⬜ TODO |
-| OTA.8 | Add "Check for Updates" tile with instant status indicator to Settings screen | 🟢 | OTA.4 | ⬜ TODO |
-| OTA.9 | Implement optional startup background update check with 24-hour throttling | 🟢 | OTA.4 | ⬜ TODO |
+| OTA.1 | Configure Android Manifest permissions (`REQUEST_INSTALL_PACKAGES`) & FileProvider | 🟢 | — | ✅ DONE |
+| OTA.2 | Create `UpdateReleaseModel` and `GitHubUpdateService` (fetch latest release metadata from GitHub API) | 🟡 | — | ✅ DONE |
+| OTA.3 | Implement SemVer version comparator (`remoteVersion > localVersion`) | 🟢 | OTA.2 | ✅ DONE |
+| OTA.4 | Create `updateProvider` (Riverpod notifier managing check status, download progress, release info) | 🟡 | OTA.2, OTA.3 | ✅ DONE |
+| OTA.5 | Build custom Stash-styled `UpdateAvailableSheet` (version badge, changelog markdown viewer, download progress) | 🟡 | OTA.4 | ✅ DONE |
+| OTA.6 | Implement APK downloader with stream progress tracking to local temporary cache | 🟡 | OTA.4 | ✅ DONE |
+| OTA.7 | Implement Android Package Installer trigger via intent (`application/vnd.android.package-archive`) | 🟡 | OTA.1, OTA.6 | ✅ DONE |
+| OTA.8 | Add "Check for Updates" tile with instant status indicator to Settings screen | 🟢 | OTA.4 | ✅ DONE |
+| OTA.9 | Implement optional startup background update check with 24-hour throttling | 🟢 | OTA.4 | ✅ DONE |
 
 ---
 
@@ -314,5 +314,5 @@ Tasks are grouped into **phases**. Each phase builds on the previous one. Within
 | 12. Settings & Profiles | 8 | 8 / 8 | ~6 hours | ✅ Complete (100%) |
 | 13. Polish & Optimization | 8 | 7 / 8 | ~7 hours | 🟡 In Progress (88% - Task 13.8 remaining) |
 | **Total (Core v1)** | **130** | **129 / 130** | **~114 hours** | **99.2% Completed** |
-| *Standalone: OTA Auto-Updater* | *9* | *0 / 9* | *~8 hours* | *⬜ Planned* |
+| *Standalone: OTA Auto-Updater* | *9* | *9 / 9* | *~8 hours* | *✅ Complete (100%)* |
 | *Standalone: Self-Hosted Docker Sync & Web Companion* | *10* | *0 / 10* | *~20 hours* | *⬜ Planned* |

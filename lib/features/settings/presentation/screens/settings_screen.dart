@@ -24,7 +24,9 @@ import 'package:hermanos_ledgr/features/settings/presentation/widgets/profile_ed
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/reset_confirm_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:hermanos_ledgr/features/settings/presentation/widgets/stash_switch.dart';
+import 'package:hermanos_ledgr/features/settings/presentation/widgets/update_available_sheet.dart';
 import 'package:hermanos_ledgr/features/settings/providers/settings_provider.dart';
+import 'package:hermanos_ledgr/features/settings/providers/updater_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/undo_snackbar.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/mock_transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
@@ -302,7 +304,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: Spacing.xl),
 
           // 7. About Hermanos Ledgr
-          _buildAboutCard(context, theme, isDark),
+          _buildAboutCard(context, ref, theme, isDark),
           const SizedBox(height: Spacing.xxl),
         ],
       ),
@@ -752,7 +754,15 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   // --- About Card ---
-  Widget _buildAboutCard(BuildContext context, ThemeData theme, bool isDark) {
+  Widget _buildAboutCard(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeData theme,
+    bool isDark,
+  ) {
+    final updaterState = ref.watch(updaterProvider);
+    final isChecking = updaterState.status == UpdateStatus.checking;
+
     return Container(
       padding: const EdgeInsets.all(Spacing.lg),
       decoration: BoxDecoration(
@@ -823,26 +833,142 @@ class SettingsScreen extends ConsumerWidget {
               height: 1.45,
             ),
           ),
-          const SizedBox(height: Spacing.md),
-          Row(
-            children: [
-              Icon(
-                Icons.system_update_rounded,
-                size: 15,
-                color: theme.colorScheme.primary,
+          const SizedBox(height: Spacing.lg),
+          // Check for Updates Interactive Tile
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: isChecking
+                ? null
+                : () async {
+                    await ref.read(updaterProvider.notifier).checkForUpdates();
+                    final current = ref.read(updaterProvider);
+                    if (!context.mounted) return;
+
+                    if (current.status == UpdateStatus.available &&
+                        current.latestRelease != null) {
+                      UpdateAvailableSheet.show(context, current.latestRelease!);
+                    } else if (current.status == UpdateStatus.upToDate) {
+                      UndoSnackbar.info(
+                        context,
+                        message:
+                            'Hermanos Ledgr is up to date (${AppConstants.appVersionDisplay})',
+                      );
+                    } else if (current.status == UpdateStatus.error) {
+                      UndoSnackbar.error(
+                        context,
+                        message: current.errorMessage ?? 'Unable to check for updates',
+                      );
+                    }
+                  },
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.md,
+                vertical: Spacing.sm + 2,
               ),
-              const SizedBox(width: Spacing.xs),
-              Expanded(
-                child: Text(
-                  'Auto-updater via GitHub Releases coming in roadmap',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                  ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.35),
+                  width: 1,
                 ),
               ),
-            ],
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: isChecking
+                        ? Padding(
+                            padding: const EdgeInsets.all(7.0),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: theme.colorScheme.primary,
+                            ),
+                          )
+                        : Icon(
+                            Icons.system_update_rounded,
+                            size: 18,
+                            color: theme.colorScheme.primary,
+                          ),
+                  ),
+                  const SizedBox(width: Spacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Check for Updates',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          isChecking
+                              ? 'Checking GitHub Releases...'
+                              : 'Tap to check GitHub • OTA Sideload',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 13,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          // Test Update Preview Trigger (for instant testing in Chrome / dev)
+          Align(
+            alignment: Alignment.centerRight,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () {
+                ref.read(updaterProvider.notifier).simulateUpdate();
+                final current = ref.read(updaterProvider);
+                if (current.latestRelease != null && context.mounted) {
+                  UpdateAvailableSheet.show(context, current.latestRelease!);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Spacing.sm,
+                  vertical: Spacing.xs,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.science_outlined,
+                      size: 13,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Test Update Sheet Preview',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
