@@ -224,7 +224,7 @@ flutter run
 
 #### 2. Building Release APK (for Sideloading)
 ```bash
-flutter build apk --release
+flutter build apk --release --no-tree-shake-icons
 ```
 The compiled APK will be located at:
 `build/app/outputs/flutter-apk/app-release.apk`
