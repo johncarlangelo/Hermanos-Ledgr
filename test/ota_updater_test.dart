@@ -67,6 +67,41 @@ void main() {
       expect(release.apkSizeBytes, 35000000);
     });
 
+    test('prioritizes arm64-v8a split APK over other architectures', () {
+      final json = {
+        'tag_name': 'v0.20.2',
+        'name': 'Hermanos Ledgr v0.20.2',
+        'published_at': '2026-11-10T02:00:00Z',
+        'assets': [
+          {
+            'name': 'app-armeabi-v7a-release.apk',
+            'browser_download_url': 'https://github.com/.../app-armeabi-v7a-release.apk',
+            'size': 35500000,
+          },
+          {
+            'name': 'app-x86_64-release.apk',
+            'browser_download_url': 'https://github.com/.../app-x86_64-release.apk',
+            'size': 43400000,
+          },
+          {
+            'name': 'app-arm64-v8a-release.apk',
+            'browser_download_url': 'https://github.com/.../app-arm64-v8a-release.apk',
+            'size': 45800000,
+          },
+          {
+            'name': 'app-release.apk',
+            'browser_download_url': 'https://github.com/.../app-release.apk',
+            'size': 115000000,
+          },
+        ],
+      };
+
+      final release = UpdateReleaseModel.fromJson(json);
+      expect(release.apkFileName, 'app-arm64-v8a-release.apk');
+      expect(release.apkDownloadUrl, 'https://github.com/.../app-arm64-v8a-release.apk');
+      expect(release.apkSizeBytes, 45800000);
+    });
+
     test('handles missing assets gracefully', () {
       final json = {
         'tag_name': 'v0.21.0',

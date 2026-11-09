@@ -29,11 +29,13 @@ class UpdateReleaseModel {
         ? rawTag.substring(1)
         : rawTag;
 
-    // Search assets for the first .apk file
+    // Search and prioritize assets for the best matching .apk file.
+    // Priority order:
+    // 1. arm64-v8a (target architecture for modern devices like Samsung Galaxy A36/A55, ~45MB)
+    // 2. Universal / standard release APK (e.g. app-release.apk without arch tag)
+    // 3. Any available .apk asset
     final assets = (json['assets'] as List<dynamic>?) ?? [];
-    String apkUrl = '';
-    String apkName = 'hermanos-ledgr-$cleanVersion.apk';
-    int apkSize = 0;
+    final apkAssets = <Map<String, dynamic>>[];
 
     for (final asset in assets) {
       if (asset is Map<String, dynamic>) {
@@ -41,12 +43,39 @@ class UpdateReleaseModel {
         final contentType = (asset['content_type'] as String?) ?? '';
         if (name.toLowerCase().endsWith('.apk') ||
             contentType == 'application/vnd.android.package-archive') {
-          apkUrl = (asset['browser_download_url'] as String?) ?? '';
-          apkName = name;
-          apkSize = (asset['size'] as int?) ?? 0;
-          break;
+          apkAssets.add(asset);
         }
       }
+    }
+
+    Map<String, dynamic>? chosenAsset;
+
+    // 1. Prioritize arm64-v8a for modern Android devices
+    for (final asset in apkAssets) {
+      final name = ((asset['name'] as String?) ?? '').toLowerCase();
+      if (name.contains('arm64')) {
+        chosenAsset = asset;
+        break;
+      }
+    }
+
+    // 2. Fall back to universal APK (non-armeabi, non-x86)
+    chosenAsset ??= apkAssets.firstWhere(
+      (asset) {
+        final name = ((asset['name'] as String?) ?? '').toLowerCase();
+        return !name.contains('armeabi') && !name.contains('x86');
+      },
+      orElse: () => apkAssets.isNotEmpty ? apkAssets.first : <String, dynamic>{},
+    );
+
+    String apkUrl = '';
+    String apkName = 'hermanos-ledgr-$cleanVersion.apk';
+    int apkSize = 0;
+
+    if (chosenAsset.isNotEmpty) {
+      apkUrl = (chosenAsset['browser_download_url'] as String?) ?? '';
+      apkName = (chosenAsset['name'] as String?) ?? apkName;
+      apkSize = (chosenAsset['size'] as int?) ?? 0;
     }
 
     final publishedString = json['published_at'] as String?;

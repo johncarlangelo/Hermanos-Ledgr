@@ -218,8 +218,8 @@ dart run build_runner build --delete-conflicting-outputs
 # Run on connected Android device
 flutter run --flavor dev
 
-# Build release APK (for sideloading)
-flutter build apk --release
+# Build release APK (for sideloading - split ABI recommended for Samsung Galaxy ~45MB)
+flutter build apk --release --split-per-abi --no-tree-shake-icons
 ```
 
 ---
