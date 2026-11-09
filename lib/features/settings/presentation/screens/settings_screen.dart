@@ -930,46 +930,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: Spacing.sm),
-          // Test Update Preview Trigger (for instant testing in Chrome / dev)
-          Align(
-            alignment: Alignment.centerRight,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () {
-                ref.read(updaterProvider.notifier).simulateUpdate();
-                final current = ref.read(updaterProvider);
-                if (current.latestRelease != null && context.mounted) {
-                  UpdateAvailableSheet.show(context, current.latestRelease!);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Spacing.sm,
-                  vertical: Spacing.xs,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.science_outlined,
-                      size: 13,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Test Update Sheet Preview',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
