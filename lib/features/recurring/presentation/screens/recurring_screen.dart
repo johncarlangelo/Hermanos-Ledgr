@@ -6,6 +6,7 @@ import 'package:hermanos_ledgr/app/theme/text_theme.dart';
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
 import 'package:hermanos_ledgr/features/recurring/domain/recurring_model.dart';
 import 'package:hermanos_ledgr/features/recurring/presentation/widgets/add_recurring_sheet.dart';
+import 'package:hermanos_ledgr/features/recurring/presentation/widgets/insufficient_funds_banner.dart';
 import 'package:hermanos_ledgr/features/recurring/presentation/widgets/recurring_rule_card.dart';
 import 'package:hermanos_ledgr/features/recurring/providers/recurring_auto_log_provider.dart';
 import 'package:hermanos_ledgr/features/recurring/providers/recurring_provider.dart';
@@ -75,6 +76,15 @@ class _RecurringScreenState extends ConsumerState<RecurringScreen>
       body: SafeArea(
         child: Column(
           children: [
+            // Insufficient funds alert banner (if any recurring payments paused)
+            const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: Spacing.lg,
+                vertical: Spacing.xs,
+              ),
+              child: InsufficientFundsBanner(),
+            ),
+
             // 1. Monthly Recurring Commitment Hero Card
             Padding(
               padding: const EdgeInsets.symmetric(

@@ -52,6 +52,42 @@ class CashflowForecast {
 
   double get netChange => endingBalance - startingBalance;
   bool get isPositiveNet => netChange >= 0;
+
+  /// Whether the projected balance dips below zero at any point in the forecast horizon.
+  bool get hasShortfall => dataPoints.any((dp) => dp.projectedBalance < 0);
+
+  /// The first date when the projected balance dips below zero, or null if always solvent.
+  DateTime? get firstShortfallDate {
+    for (final dp in dataPoints) {
+      if (dp.projectedBalance < 0) return dp.date;
+    }
+    return null;
+  }
+
+  /// The maximum deficit (most negative projected balance) across this forecast horizon.
+  double get maxDeficit {
+    double lowest = 0.0;
+    for (final dp in dataPoints) {
+      if (dp.projectedBalance < lowest) {
+        lowest = dp.projectedBalance;
+      }
+    }
+    return lowest.abs();
+  }
+
+  /// The first scheduled occurrence that drives the running balance below zero.
+  ScheduledOccurrence? get firstShortfallOccurrence {
+    double bal = startingBalance;
+    for (final occ in upcomingOccurrences) {
+      if (occ.isExpense) {
+        bal -= occ.amount;
+      } else {
+        bal += occ.amount;
+      }
+      if (bal < 0) return occ;
+    }
+    return null;
+  }
 }
 
 /// Calculation engine generating cashflow projections and upcoming event schedules.

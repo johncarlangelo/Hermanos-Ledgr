@@ -12,11 +12,13 @@ import 'package:hermanos_ledgr/shared/widgets/m3_card.dart';
 class UpcomingPaymentsList extends StatelessWidget {
   final List<ScheduledOccurrence> occurrences;
   final void Function(ScheduledOccurrence item)? onLogEarly;
+  final DateTime? shortfallStartDate;
 
   const UpcomingPaymentsList({
     super.key,
     required this.occurrences,
     this.onLogEarly,
+    this.shortfallStartDate,
   });
 
   @override
@@ -74,6 +76,10 @@ class UpcomingPaymentsList extends StatelessWidget {
     final daysStr = daysUntil == 0
         ? 'Today'
         : (daysUntil == 1 ? 'Tomorrow' : 'In $daysUntil days');
+
+    final isShortfallRisk = shortfallStartDate != null &&
+        !item.date.isBefore(shortfallStartDate!) &&
+        item.isExpense;
 
     return M3Card(
       padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.md),
@@ -141,6 +147,24 @@ class UpcomingPaymentsList extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (isShortfallRisk) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: SemanticColors.expense(isDark).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Deficit Risk',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w700,
+                            color: SemanticColors.expense(isDark),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 2),

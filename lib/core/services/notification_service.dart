@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:hermanos_ledgr/core/utils/currency_formatter.dart';
+import 'package:hermanos_ledgr/features/recurring/domain/recurring_auto_log_engine.dart';
 import 'package:hermanos_ledgr/features/recurring/domain/recurring_model.dart';
 
 /// Service managing on-device local notifications for subscription and recurring bill reminders.
@@ -164,6 +165,31 @@ class NotificationService {
   Future<void> syncAllReminders(List<RecurringModel> rules) async {
     for (final rule in rules) {
       await scheduleSubscriptionReminders(rule);
+    }
+  }
+
+  /// Displays an immediate high-priority alert when a recurring subscription cannot be auto-logged due to low balance.
+  Future<void> showInsufficientFundsNotification(InsufficientFundsItem item) async {
+    if (!_isInitialized) await initialize();
+
+    final notifId = (item.rule.id.hashCode.abs() % 100000) + 900000;
+    final shortfallText = CurrencyFormatter.format(item.shortfall);
+    final balanceText = CurrencyFormatter.format(item.availableBalance);
+    final requiredText = CurrencyFormatter.format(item.requiredAmount);
+
+    final title = '⚠️ Insufficient Funds: ${item.rule.title}';
+    final body =
+        '$requiredText due on ${item.rule.accountName} (Balance: $balanceText). Needs $shortfallText more.';
+
+    try {
+      await _plugin.show(
+        id: notifId,
+        title: title,
+        body: body,
+        notificationDetails: _notificationDetails,
+      );
+    } catch (e) {
+      debugPrint('Failed to show insufficient funds notification: $e');
     }
   }
 

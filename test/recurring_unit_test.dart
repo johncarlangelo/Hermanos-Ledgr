@@ -248,6 +248,128 @@ void main() {
       expect(result.loggedCount, 0);
       expect(loggedTxs.isEmpty, isTrue);
     });
+
+    test('safeguards against negative balance when account balance is insufficient (User Scenario)', () {
+      // Scenario:
+      // Starting GCash balance = 1,000
+      // Reference date: Nov 26, 2026
+      // Rule 1: Nov 15 = 500 (sufficient, leaves 500)
+      // Rule 2: Nov 25 = 600 (insufficient, needs 100 more, paused!)
+      final referenceDate = DateTime(2026, 11, 26);
+
+      final bill1 = RecurringModel(
+        id: 'r_bill_1',
+        title: 'Electricity Bill',
+        amount: 500.0,
+        type: TransactionType.expense,
+        categoryId: 'utilities',
+        categoryName: 'Utilities & Bills',
+        accountId: 'acc_gcash',
+        accountName: 'GCash',
+        frequency: RecurringFrequency.monthly,
+        startDate: DateTime(2026, 10, 15),
+        nextDueDate: DateTime(2026, 11, 15),
+        isActive: true,
+      );
+
+      final bill2 = RecurringModel(
+        id: 'r_bill_2',
+        title: 'Gym Membership',
+        amount: 600.0,
+        type: TransactionType.expense,
+        categoryId: 'health',
+        categoryName: 'Health & Fitness',
+        accountId: 'acc_gcash',
+        accountName: 'GCash',
+        frequency: RecurringFrequency.monthly,
+        startDate: DateTime(2026, 10, 25),
+        nextDueDate: DateTime(2026, 11, 25),
+        isActive: true,
+      );
+
+      final List<TransactionModel> loggedTxs = [];
+      final Map<String, DateTime> updatedDueDates = {};
+      final accountBalances = {'acc_gcash': 1000.0};
+
+      final result = RecurringAutoLogEngine.checkAndProcess(
+        rules: [bill1, bill2],
+        accountBalances: accountBalances,
+        referenceDate: referenceDate,
+        onLogTransaction: (tx) => loggedTxs.add(tx),
+        onAdvanceDueDate: (id, newDueDate) => updatedDueDates[id] = newDueDate,
+      );
+
+      // Bill 1 was logged
+      expect(result.loggedCount, 1);
+      expect(loggedTxs.length, 1);
+      expect(loggedTxs.first.title, 'Electricity Bill');
+      expect(loggedTxs.first.amount, 500.0);
+      expect(updatedDueDates.containsKey('r_bill_1'), isTrue);
+
+      // Bill 2 was paused due to insufficient funds (500 < 600)
+      expect(result.hasInsufficientFunds, isTrue);
+      expect(result.insufficientFunds.length, 1);
+      final paused = result.insufficientFunds.first;
+      expect(paused.rule.title, 'Gym Membership');
+      expect(paused.requiredAmount, 600.0);
+      expect(paused.availableBalance, 500.0);
+      expect(paused.shortfall, 100.0);
+      expect(updatedDueDates.containsKey('r_bill_2'), isFalse);
+    });
+
+    test('forecast engine detects shortfall and calculates max deficit without erasing negative numbers', () {
+      // Scenario:
+      // Starting balance = 1,000
+      // Nov 15: -500 -> 500
+      // Nov 25: -600 -> -100
+      final now = DateTime(2026, 11, 12);
+
+      final bill1 = RecurringModel(
+        id: 'r_bill_1',
+        title: 'Bill 1',
+        amount: 500.0,
+        type: TransactionType.expense,
+        categoryId: 'utilities',
+        categoryName: 'Utilities & Bills',
+        accountId: 'acc_gcash',
+        accountName: 'GCash',
+        frequency: RecurringFrequency.monthly,
+        startDate: now,
+        nextDueDate: DateTime(2026, 11, 15),
+      );
+
+      final bill2 = RecurringModel(
+        id: 'r_bill_2',
+        title: 'Bill 2',
+        amount: 600.0,
+        type: TransactionType.expense,
+        categoryId: 'health',
+        categoryName: 'Health & Fitness',
+        accountId: 'acc_gcash',
+        accountName: 'GCash',
+        frequency: RecurringFrequency.monthly,
+        startDate: now,
+        nextDueDate: DateTime(2026, 11, 25),
+      );
+
+      final forecast = ForecastEngine.calculate(
+        startingBalance: 1000.0,
+        rules: [bill1, bill2],
+        daysHorizon: 30,
+        startDate: now,
+      );
+
+      // Negative balance math is preserved!
+      expect(forecast.endingBalance, -100.0);
+      expect(forecast.isPositiveNet, isFalse);
+      expect(forecast.netChange, -1100.0);
+
+      // Shortfall indicators
+      expect(forecast.hasShortfall, isTrue);
+      expect(forecast.maxDeficit, 100.0);
+      expect(forecast.firstShortfallDate, DateTime(2026, 11, 25));
+      expect(forecast.firstShortfallOccurrence?.rule.title, 'Bill 2');
+    });
   });
 
   group('RecurringRepositoryImpl SQLite Integration (Task 8.2)', () {

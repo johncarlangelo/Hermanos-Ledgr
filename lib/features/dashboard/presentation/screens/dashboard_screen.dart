@@ -11,6 +11,8 @@ import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/dashboard
 import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/net_worth_hero_card.dart';
 import 'package:hermanos_ledgr/features/dashboard/providers/dashboard_provider.dart';
 import 'package:hermanos_ledgr/features/dashboard/presentation/widgets/recent_activity_section.dart';
+import 'package:hermanos_ledgr/features/recurring/presentation/widgets/insufficient_funds_banner.dart';
+import 'package:hermanos_ledgr/features/recurring/providers/recurring_auto_log_provider.dart';
 import 'package:hermanos_ledgr/features/transactions/providers/transactions_provider.dart';
 import 'package:hermanos_ledgr/shared/widgets/motion_wrapper.dart';
 import 'package:hermanos_ledgr/shared/widgets/profile_avatar.dart';
@@ -30,9 +32,10 @@ class DashboardScreen extends ConsumerWidget {
         ? 'Good morning'
         : (hour < 17 ? 'Good afternoon' : 'Good evening');
 
-    // Trigger daily auto-backup check on launch (Task 11.3)
+    // Trigger daily auto-backup check and recurring auto-log check on launch
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(backupProvider.notifier).checkAndRunDailyAutoBackup();
+      ref.read(recurringAutoLogProvider.notifier).runAutoLog(context: context);
     });
 
     final isDesktop = MediaQuery.sizeOf(context).width >= 900;
@@ -120,9 +123,15 @@ class DashboardScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: Spacing.lg),
+              const SizedBox(height: Spacing.md),
 
-              // 2. Net Worth Hero Card (Count-up animation + tabular figures)
+              // 2. Insufficient Funds Alert Banner (if any recurring payments paused)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: Spacing.lg),
+                child: InsufficientFundsBanner(),
+              ),
+
+              // 3. Net Worth Hero Card (Count-up animation + tabular figures)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
                 child: StaggeredEntrance(

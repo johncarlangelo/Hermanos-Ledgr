@@ -77,6 +77,55 @@ class _ForecastScreenState extends ConsumerState<ForecastScreen> {
             ),
             const SizedBox(height: Spacing.md),
 
+            // Projected Deficit Alert (if balance drops below zero)
+            if (forecast.hasShortfall) ...[
+              M3Card(
+                color: SemanticColors.expense(isDark).withValues(alpha: 0.1),
+                padding: const EdgeInsets.all(Spacing.md),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: SemanticColors.expense(isDark).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.error_outline_rounded,
+                        color: SemanticColors.expense(isDark),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: Spacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Projected Deficit Warning',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: SemanticColors.expense(isDark),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Projected to drop to -${CurrencyFormatter.format(forecast.maxDeficit)} on ${_formatShortfallDate(forecast.firstShortfallDate)} due to scheduled payments.',
+                            style: moneyStyle(
+                              fontSize: 11.5,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: Spacing.md),
+            ],
+
             // 2. Projected Balance Hero Card
             M3Card(
               padding: const EdgeInsets.all(Spacing.lg),
@@ -235,6 +284,7 @@ class _ForecastScreenState extends ConsumerState<ForecastScreen> {
             const SizedBox(height: Spacing.xs),
             UpcomingPaymentsList(
               occurrences: forecast.upcomingOccurrences,
+              shortfallStartDate: forecast.firstShortfallDate,
               onLogEarly: (item) {
                 ref.read(recurringAutoLogProvider.notifier).manuallyLogRule(context, item.rule);
               },
@@ -244,6 +294,15 @@ class _ForecastScreenState extends ConsumerState<ForecastScreen> {
         ),
       ),
     );
+  }
+
+  String _formatShortfallDate(DateTime? date) {
+    if (date == null) return 'upcoming cycle';
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.day}';
   }
 
   Widget _buildHorizonChip({
